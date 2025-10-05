@@ -4,22 +4,18 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
-  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 
-const { width } = Dimensions.get("window");
-
 interface TutorialSlide {
   iconName: keyof typeof Ionicons.glyphMap;
   iconColor: string;
+  iconBg: string;
   title: string;
   description: string;
-  imageUrl: string;
-  gradientColors: [string, string];
+  features: string[];
 }
 
 export default function TutorialScreen() {
@@ -28,44 +24,40 @@ export default function TutorialScreen() {
 
   const slides: TutorialSlide[] = [
     {
-      iconName: "add-circle-outline",
+      iconName: "add-circle",
       iconColor: "#3498DB",
+      iconBg: "#D6EAF8",
       title: "Add Your Medications",
       description:
-        "Easily add medications by searching or scanning barcodes. Set dosages and frequencies with just a few taps.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1675851143055-23ae996bb212?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      gradientColors: ["#5DADE2", "#3498DB"],
+        "Easily add medications by searching our database or scanning prescription labels with your camera.",
+      features: ["Search by name", "Barcode scanner", "Dosage tracking"],
     },
     {
-      iconName: "notifications-outline",
+      iconName: "notifications",
       iconColor: "#27AE60",
+      iconBg: "#D5F4E6",
       title: "Smart Reminders",
       description:
-        "Get personalized reminders that fit your schedule. Never miss a dose with gentle notifications and easy logging.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1682706841289-9d7ddf5eb999?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      gradientColors: ["#52BE80", "#27AE60"],
+        "Never miss a dose with intelligent reminders that adapt to your schedule and preferences.",
+      features: ["Custom timing", "Snooze options", "Multiple notifications"],
     },
     {
-      iconName: "bar-chart-outline",
+      iconName: "bar-chart",
       iconColor: "#8E44AD",
+      iconBg: "#E8DAEF",
       title: "Track Your Progress",
       description:
-        "Monitor your adherence with detailed analytics. Share reports with your healthcare provider.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1675851143055-23ae996bb212?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      gradientColors: ["#A569BD", "#8E44AD"],
+        "See your adherence patterns and share progress reports with your healthcare team.",
+      features: ["Daily tracking", "Weekly reports", "Share with doctors"],
     },
     {
-      iconName: "book-outline",
-      iconColor: "#E67E22",
-      title: "Learn About Your Meds",
+      iconName: "shield-checkmark",
+      iconColor: "#F39C12",
+      iconBg: "#FCF3CF",
+      title: "Stay Safe",
       description:
-        "Access easy-to-understand information about your medications, including side effects and interactions.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1682706841289-9d7ddf5eb999?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400",
-      gradientColors: ["#EB984E", "#E67E22"],
+        "Get alerts about drug interactions, side effects, and important medication information.",
+      features: ["Interaction alerts", "Side effect info", "Safety reminders"],
     },
   ];
 
@@ -95,7 +87,12 @@ export default function TutorialScreen() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={["#EBF5FB", "#E8F8F5"]}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={prevSlide} style={styles.headerBtn}>
@@ -107,7 +104,10 @@ export default function TutorialScreen() {
           {slides.map((_, index) => (
             <View
               key={index}
-              style={[styles.dot, index === currentSlide && styles.dotActive]}
+              style={[
+                styles.dot,
+                index === currentSlide && styles.dotActive,
+              ]}
             />
           ))}
         </View>
@@ -117,82 +117,73 @@ export default function TutorialScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tutorial Content */}
+      {/* Content */}
       <View style={styles.content}>
-        {/* Visual Area with Gradient */}
-        <LinearGradient
-          colors={currentSlideData.gradientColors}
-          style={styles.visualArea}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        {/* Icon */}
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: currentSlideData.iconBg },
+          ]}
         >
-          <View style={styles.visualContent}>
-            {/* Icon Circle */}
-            <View style={styles.iconCircle}>
-              <Ionicons
-                name={currentSlideData.iconName}
-                size={48}
-                color={currentSlideData.iconColor}
-              />
+          <Ionicons
+            name={currentSlideData.iconName}
+            size={48}
+            color={currentSlideData.iconColor}
+          />
+        </View>
+
+        {/* Title and Description */}
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>{currentSlideData.title}</Text>
+          <Text style={styles.description}>
+            {currentSlideData.description}
+          </Text>
+        </View>
+
+        {/* Features */}
+        <View style={styles.featuresContainer}>
+          {currentSlideData.features.map((feature, index) => (
+            <View key={index} style={styles.featureRow}>
+              <View style={styles.featureDot} />
+              <Text style={styles.featureText}>{feature}</Text>
             </View>
-
-            {/* Image Container */}
-            <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: currentSlideData.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* Content Area */}
-        <View style={styles.textArea}>
-          <View style={styles.textContent}>
-            <Text style={styles.title}>{currentSlideData.title}</Text>
-            <Text style={styles.description}>
-              {currentSlideData.description}
-            </Text>
-          </View>
-
-          {/* Navigation */}
-          <View style={styles.navigation}>
-            <Text style={styles.slideCounter}>
-              {currentSlide + 1} of {slides.length}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.nextButton}
-              onPress={nextSlide}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.nextButtonText}>
-                {currentSlide === slides.length - 1 ? "Get Started" : "Next"}
-              </Text>
-              {currentSlide !== slides.length - 1 && (
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
-              )}
-            </TouchableOpacity>
-          </View>
+          ))}
         </View>
       </View>
-    </View>
+
+      {/* Navigation */}
+      <View style={styles.navigation}>
+        <Text style={styles.slideCounter}>
+          {currentSlide + 1} of {slides.length}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={nextSlide}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.nextButtonText}>
+            {currentSlide === slides.length - 1 ? "Get Started" : "Next"}
+          </Text>
+          <Ionicons name="arrow-forward" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingTop: 60,
+    paddingHorizontal: 24,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    marginBottom: 32,
   },
   headerBtn: {
     padding: 8,
@@ -215,25 +206,17 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     backgroundColor: "#3498DB",
-    width: 24,
+    width: 8,
   },
   content: {
     flex: 1,
-  },
-  visualArea: {
-    flex: 1,
-    padding: 32,
     alignItems: "center",
     justifyContent: "center",
-  },
-  visualContent: {
-    alignItems: "center",
   },
   iconCircle: {
-    width: 128,
-    height: 128,
-    borderRadius: 64,
-    backgroundColor: "#fff",
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 32,
@@ -243,66 +226,65 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  imageContainer: {
-    width: width - 128,
-    height: 160,
-    borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    opacity: 0.8,
-  },
-  textArea: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 32,
-    paddingVertical: 48,
-  },
-  textContent: {
+  textContainer: {
     alignItems: "center",
     marginBottom: 32,
+    maxWidth: 320,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "700",
-    color: "#333",
+    color: "#2C3E50",
     textAlign: "center",
     marginBottom: 16,
   },
   description: {
-    fontSize: 16,
+    fontSize: 17,
     color: "#555",
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: 26,
+  },
+  featuresContainer: {
+    gap: 12,
+  },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  featureDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#3498DB",
+  },
+  featureText: {
+    fontSize: 16,
+    color: "#444",
   },
   navigation: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingTop: 32,
+    paddingBottom: 32,
   },
   slideCounter: {
     fontSize: 14,
-    color: "#888",
+    color: "#7F8C8D",
   },
   nextButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#3498DB",
     paddingVertical: 12,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
     borderRadius: 12,
     gap: 8,
   },
   nextButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
   },
 });
