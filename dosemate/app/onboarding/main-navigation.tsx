@@ -4,7 +4,9 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 // Import card components
@@ -17,6 +19,7 @@ import WeeklyOverviewCard from "@/components/dashboard/WeeklyOverviewCard";
 import RecentActivityCard from "@/components/dashboard/RecentActivityCard";
 import ShareHealthcareCard from "@/components/dashboard/ShareHealthcareCard";
 import BottomNavigation from "@/components/dashboard/Navbar";
+import Card from "@/components/dashboard/Card";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -84,8 +87,8 @@ export default function HomeScreen() {
     },
     {
       medicationName: "Atorvastatin 20mg",
-      time: "Due at 9:00 PM",
-      status: "upcoming" as const,
+      time: "Today at 12:00 PM",
+      status: "taken" as const,
     },
   ];
 
@@ -114,6 +117,22 @@ export default function HomeScreen() {
     console.log("Generate & share pressed");
     // Generate and share report
   };
+
+  const handleViewAllMedications = () => {
+    console.log("View all medications pressed");
+    // Navigate to medication list
+  };
+
+  const handleAddMedication = () => {
+    console.log("Add medication pressed");
+    // Navigate to add medication screen
+  };
+
+    const handleMedicationPress = (medicationName: string) => {
+    console.log("Medication pressed:", medicationName);
+    // Navigate to medication detail
+  };
+
 
   // ============ RENDER FUNCTIONS ============
   const renderHomeTab = () => (
@@ -174,6 +193,68 @@ export default function HomeScreen() {
     </ScrollView>
   );
 
+
+
+const renderMedicationsTab = () => (
+    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Medications</Text>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.section}>
+        <View style={styles.quickActionsGrid}>
+          <TouchableOpacity
+            style={[styles.quickActionButton, styles.blueAction]}
+            onPress={handleViewAllMedications}
+          >
+            <Ionicons name="medical" size={32} color="#3498DB" />
+            <Text style={styles.quickActionText}>View All</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.quickActionButton, styles.greenAction]}
+            onPress={handleAddMedication}
+          >
+            <Ionicons name="add-circle" size={32} color="#27AE60" />
+            <Text style={styles.quickActionText}>Add New</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Recent Medications */}
+      <View style={[styles.section, { marginBottom: 24 }]}>
+        <Text style={styles.subsectionTitle}>Recent Medications</Text>
+        <View style={styles.medicationList}>
+          {recentActivities.map((med, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleMedicationPress(med.medicationName)}
+            >
+              <Card style={styles.medicationCard}>
+                <View style={styles.medicationContent}>
+                  <View style={styles.medicationIcon}>
+                    <Ionicons name="medical" size={20} color="#fff" />
+                  </View>
+                  <View style={styles.medicationInfo}>
+                    <Text style={styles.medicationName}>{med.medicationName}</Text>
+                    <Text style={styles.medicationStatus}>Taken today</Text>
+                  </View>
+                  <Ionicons name="time-outline" size={16} color="#888" />
+                </View>
+              </Card>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
+
+
+
+
+  
   const renderPlaceholder = (title: string) => (
     <View style={styles.placeholderContainer}>
       <Text style={styles.placeholderText}>{title} - Coming Soon</Text>
@@ -185,7 +266,7 @@ export default function HomeScreen() {
       case "home":
         return renderHomeTab();
       case "medications":
-        return renderPlaceholder("Medications");
+        return renderMedicationsTab();
       case "reminders":
         return renderPlaceholder("Reminders");
       case "progress":
@@ -268,6 +349,12 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 24,
   },
+    subsectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 16,
+  },
   statsGrid: {
     flexDirection: "row",
     gap: 16,
@@ -280,5 +367,68 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 18,
     color: "#888",
+  },
+   quickActionText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  medicationList: {
+    gap: 12,
+  },
+  medicationCard: {
+    padding: 16,
+  },
+  medicationContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  medicationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#3498DB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  medicationInfo: {
+    flex: 1,
+  },
+  medicationName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  medicationStatus: {
+    fontSize: 14,
+    color: "#666",
+  },
+    quickActionsGrid: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  quickActionButton: {
+    flex: 1,
+    height: 80,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  blueAction: {
+    backgroundColor: "#EBF5FB",
+    borderColor: "#AED6F1",
+  },
+  greenAction: {
+    backgroundColor: "#D5F4E6",
+    borderColor: "#A9DFBF",
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
   },
 });
