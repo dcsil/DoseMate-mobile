@@ -165,14 +165,27 @@ export default function HomeScreen() {
 
   const handleMarkTaken = (medication: string) => {
     console.log("Mark taken:", medication);
+    // Update reminder status for medication
   };
 
   const handleViewAllReminders = () => {
     console.log("View all reminders pressed");
+    // Navigate to full reminders list
   };
 
   const handleViewDetailedProgress = () => {
     console.log("View detailed progress pressed");
+    // Navigate to detailed progress screen
+  };
+
+    const handleProfileOption = (option: string) => {
+    console.log("Profile option pressed:", option);
+    // Navigate to respective profile option screen
+  };
+
+  const handleLearnMorePremium = () => {
+    console.log("Learn more about premium pressed");
+    // Navigate to premium info screen
   };
   
 
@@ -442,10 +455,84 @@ const renderRemindersTab = () => (
     </ScrollView>
   );
   
-  const renderPlaceholder = (title: string) => (
-    <View style={styles.placeholderContainer}>
-      <Text style={styles.placeholderText}>{title} - Coming Soon</Text>
-    </View>
+  const renderProfileTab = () => (
+    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Profile Header */}
+      <View style={styles.profileHeader}>
+        <View style={styles.profileIconContainer}>
+          <Ionicons name="person" size={40} color="#3498DB" />
+        </View>
+        <Text style={styles.profileTitle}>Your Profile</Text>
+        <Text style={styles.profileSubtitle}>Manage your account and preferences</Text>
+      </View>
+
+      {/* Profile Options */}
+      <View style={styles.section}>
+        <TouchableOpacity onPress={() => handleProfileOption("personal-info")}>
+          <Card style={styles.profileOptionCard}>
+            <View style={styles.profileOptionContent}>
+              <Ionicons name="person-outline" size={24} color="#888" />
+              <View style={styles.profileOptionText}>
+                <Text style={styles.profileOptionTitle}>Personal Information</Text>
+                <Text style={styles.profileOptionSubtitle}>Update your profile details</Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => handleProfileOption("notifications")}>
+          <Card style={styles.profileOptionCard}>
+            <View style={styles.profileOptionContent}>
+              <Ionicons name="notifications-outline" size={24} color="#888" />
+              <View style={styles.profileOptionText}>
+                <Text style={styles.profileOptionTitle}>Notification Settings</Text>
+                <Text style={styles.profileOptionSubtitle}>Customize your reminders</Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => handleProfileOption("schedule")}>
+          <Card style={styles.profileOptionCard}>
+            <View style={styles.profileOptionContent}>
+              <Ionicons name="calendar-outline" size={24} color="#888" />
+              <View style={styles.profileOptionText}>
+                <Text style={styles.profileOptionTitle}>Schedule Preferences</Text>
+                <Text style={styles.profileOptionSubtitle}>Set your daily routine</Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => handleProfileOption("health-goals")}>
+          <Card style={styles.profileOptionCard}>
+            <View style={styles.profileOptionContent}>
+              <Ionicons name="bar-chart-outline" size={24} color="#888" />
+              <View style={styles.profileOptionText}>
+                <Text style={styles.profileOptionTitle}>Health Goals</Text>
+                <Text style={styles.profileOptionSubtitle}>Set adherence targets</Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+      </View>
+
+      {/* Premium Section */}
+      <View style={[styles.section, { marginBottom: 24 }]}>
+        <View style={styles.profileDivider} />
+        <Card style={styles.premiumCard}>
+          <View style={styles.premiumContent}>
+            <Text style={styles.premiumTitle}>DoseMate Premium</Text>
+            <Text style={styles.premiumDescription}>
+              Get advanced analytics and family sharing
+            </Text>
+            <TouchableOpacity style={styles.premiumButton} onPress={handleLearnMorePremium}>
+              <Text style={styles.premiumButtonText}>Learn More</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+      </View>
+    </ScrollView>
   );
 
   const renderTabContent = () => {
@@ -459,7 +546,7 @@ const renderRemindersTab = () => (
       case "progress":
         return renderProgressTab();
       case "profile":
-        return renderPlaceholder("Profile");
+        return renderProfileTab();
       default:
         return renderHomeTab();
     }
@@ -468,8 +555,8 @@ const renderRemindersTab = () => (
   const getHeaderTitle = () => {
     const titles: { [key: string]: string } = {
       home: "Dashboard",
-      medications: "My Medications",
-      reminders: "Today's Reminders",
+      medications: "Medications",
+      reminders: "Reminders",
       progress: "Progress",
       profile: "Profile",
     };
@@ -791,5 +878,89 @@ const styles = StyleSheet.create({
   progressActivityTime: {
     fontSize: 12,
     color: "#666",
+  },
+    profileHeader: {
+    alignItems: "center",
+    marginTop: 24,
+    marginBottom: 32,
+  },
+  profileIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#EBF5FB",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  profileTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 8,
+  },
+  profileSubtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+  },
+  profileOptionCard: {
+    padding: 16,
+    marginBottom: 16,
+  },
+  profileOptionContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  profileOptionText: {
+    flex: 1,
+  },
+  profileOptionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  profileOptionSubtitle: {
+    fontSize: 14,
+    color: "#666",
+  },
+  profileDivider: {
+    height: 1,
+    backgroundColor: "#E5E5E5",
+    marginVertical: 24,
+  },
+  premiumCard: {
+    backgroundColor: "#EBF5FB",
+    borderWidth: 1,
+    borderColor: "#AED6F1",
+    padding: 16,
+  },
+  premiumContent: {
+    alignItems: "center",
+  },
+  premiumTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1A5490",
+    marginBottom: 8,
+  },
+  premiumDescription: {
+    fontSize: 14,
+    color: "#2874A6",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  premiumButton: {
+    backgroundColor: "#3498DB",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  premiumButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
