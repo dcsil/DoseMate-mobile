@@ -199,7 +199,7 @@ export default function HomeScreen() {
 
   const getHeaderTitle = () => {
     const titles: { [key: string]: string } = {
-      home: "Good morning!",
+      home: "Dashboard",
       medications: "Medications",
       reminders: "Reminders",
       progress: "Progress",
