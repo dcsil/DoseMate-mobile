@@ -16,7 +16,7 @@ interface WeeklyOverviewCardProps {
 export default function WeeklyOverviewCard({ weekData, onViewDetails }: WeeklyOverviewCardProps) {
   const getColor = (score: number) => {
     if (score === 100) return "#27AE60";
-    if (score >= 80) return "#F39C12";
+    if (score >= 50) return "#F39C12";
     return "#E74C3C";
   };
 
