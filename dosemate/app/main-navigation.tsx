@@ -91,7 +91,7 @@ export default function HomeScreen() {
   const recentActivities = [
     {
       medicationName: "Metformin 500mg",
-      time: "Today at 8:00 AM",
+      time: "Today at 12:00 PM",
       status: "taken" as const,
     },
     {
@@ -101,7 +101,7 @@ export default function HomeScreen() {
     },
     {
       medicationName: "Atorvastatin 20mg",
-      time: "Today at 12:00 PM",
+      time: "Today at 8:00 AM",
       status: "taken" as const,
     },
   ];
@@ -113,6 +113,12 @@ export default function HomeScreen() {
     pending: 2,
     completed: 3,
     overdue: 1,
+  };
+
+  const progressData = {
+    weeklyAdherence: 88,
+    dayStreak: 5,
+    weeklyDoses: { taken: 19, total: 21 },
   };
 
 
@@ -163,6 +169,10 @@ export default function HomeScreen() {
 
   const handleViewAllReminders = () => {
     console.log("View all reminders pressed");
+  };
+
+  const handleViewDetailedProgress = () => {
+    console.log("View detailed progress pressed");
   };
   
 
@@ -229,10 +239,6 @@ export default function HomeScreen() {
 
 const renderMedicationsTab = () => (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>My Medications</Text>
-      </View>
 
       {/* Quick Actions */}
       <View style={styles.section}>
@@ -286,10 +292,6 @@ const renderMedicationsTab = () => (
 
 const renderRemindersTab = () => (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Today's Reminders</Text>
-      </View>
 
       {/* Pending Reminders Summary */}
       <View style={styles.section}>
@@ -372,6 +374,73 @@ const renderRemindersTab = () => (
     </ScrollView>
   );
 
+
+  const renderProgressTab = () => (
+    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+      {/* Weekly Overview Card */}
+      <View style={styles.section}>
+        <View style={styles.progressCard}>
+          <Text style={styles.progressNumber}>{progressData.weeklyAdherence}%</Text>
+          <Text style={styles.progressLabel}>Weekly Adherence</Text>
+          <View style={styles.progressBarContainer}>
+            <View 
+              style={[
+                styles.progressBarFill, 
+                { width: `${progressData.weeklyAdherence}%` }
+              ]} 
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Quick Stats */}
+      <View style={styles.section}>
+        <View style={styles.progressStatsGrid}>
+          <Card style={styles.progressStatCard}>
+            <Text style={[styles.progressStatNumber, { color: "#27AE60" }]}>
+              {progressData.dayStreak}
+            </Text>
+            <Text style={styles.progressStatLabel}>Day Streak</Text>
+          </Card>
+
+          <Card style={styles.progressStatCard}>
+            <Text style={[styles.progressStatNumber, { color: "#3498DB" }]}>
+              {progressData.weeklyDoses.taken}/{progressData.weeklyDoses.total}
+            </Text>
+            <Text style={styles.progressStatLabel}>This Week</Text>
+          </Card>
+        </View>
+      </View>
+
+      {/* Recent Activity */}
+      <View style={[styles.section, { marginBottom: 24 }]}>
+        <Text style={styles.subsectionTitle}>Recent Activity</Text>
+        <View style={styles.progressActivityList}>
+          {recentActivities.map((activity, index) => (
+            <View key={index} style={styles.progressActivityItem}>
+              <View style={styles.progressActivityIcon}>
+                <Ionicons name="medical" size={16} color="#27AE60" />
+              </View>
+              <View style={styles.progressActivityInfo}>
+                <Text style={styles.progressActivityText}>
+                  Took {activity.medicationName}
+                </Text>
+                <Text style={styles.progressActivityTime}>{activity.time}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={handleViewDetailedProgress}
+        >
+          <Text style={styles.viewAllButtonText}>View Detailed Progress</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
   
   const renderPlaceholder = (title: string) => (
     <View style={styles.placeholderContainer}>
@@ -388,7 +457,7 @@ const renderRemindersTab = () => (
       case "reminders":
         return renderRemindersTab();
       case "progress":
-        return renderPlaceholder("Progress");
+        return renderProgressTab();
       case "profile":
         return renderPlaceholder("Profile");
       default:
@@ -399,8 +468,8 @@ const renderRemindersTab = () => (
   const getHeaderTitle = () => {
     const titles: { [key: string]: string } = {
       home: "Dashboard",
-      medications: "Medications",
-      reminders: "Reminders",
+      medications: "My Medications",
+      reminders: "Today's Reminders",
       progress: "Progress",
       profile: "Profile",
     };
@@ -531,7 +600,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 80,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -539,10 +608,12 @@ const styles = StyleSheet.create({
   blueAction: {
     backgroundColor: "#EBF5FB",
     borderColor: "#AED6F1",
+    borderWidth: 1,
   },
   greenAction: {
     backgroundColor: "#D5F4E6",
     borderColor: "#A9DFBF",
+    borderWidth: 1,
   },
   sectionTitle: {
     fontSize: 24,
@@ -622,14 +693,17 @@ const styles = StyleSheet.create({
   blueSummary: {
     backgroundColor: "#EBF5FB",
     borderColor: "#AED6F1",
+    borderWidth: 1,
   },
   greenSummary: {
     backgroundColor: "#D5F4E6",
     borderColor: "#A9DFBF",
+    borderWidth: 1,
   },
   redSummary: {
     backgroundColor: "#FADBD8",
     borderColor: "#F5B7B1",
+    borderWidth: 1,
   },
   summaryNumber: {
     fontSize: 24,
@@ -637,6 +711,84 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryLabel: {
+    fontSize: 12,
+    color: "#666",
+  },
+  progressCard: {
+    backgroundColor: "#EBF5FB",
+    borderColor: "#AED6F1",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+  },
+  progressNumber: {
+    fontSize: 48,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 8,
+  },
+  progressLabel: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 16,
+  },
+  progressBarContainer: {
+    width: "100%",
+    height: 8,
+    backgroundColor: "#E5E5E5",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "#3498DB",
+    borderRadius: 4,
+  },
+  progressStatsGrid: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  progressStatCard: {
+    flex: 1,
+    padding: 16,
+    alignItems: "center",
+  },
+  progressStatNumber: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  progressStatLabel: {
+    fontSize: 14,
+    color: "#666",
+  },
+  progressActivityList: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  progressActivityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  progressActivityIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#D5F4E6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  progressActivityInfo: {
+    flex: 1,
+  },
+  progressActivityText: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 2,
+  },
+  progressActivityTime: {
     fontSize: 12,
     color: "#666",
   },
