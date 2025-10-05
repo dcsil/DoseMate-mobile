@@ -35,10 +35,24 @@ export default function HomeScreen() {
     percentage: 92,
   };
 
-  const nextReminderData = {
-    medicationName: "Metformin",
-    time: "2:00 PM",
-  };
+
+    const nextReminderData = [
+    {
+      medicationName: "Metformin",
+      time: "2:00 PM",
+      isUrgent: true,
+    },
+    {
+      medicationName: "Lisinopril",
+      time: "8:00 PM",
+      isUrgent: false,
+    },
+    {
+      medicationName: "Atorvastatin",
+      time: "9:00 PM",
+      isUrgent: false,
+    },
+  ];
 
   const adherenceData = {
     todayData: {
@@ -92,6 +106,16 @@ export default function HomeScreen() {
     },
   ];
 
+  const remindersSummary = {
+    // pending: apiResponse.pendingCount,
+    // completed: apiResponse.completedCount,
+    // overdue: apiResponse.overdueCount,
+    pending: 2,
+    completed: 3,
+    overdue: 1,
+  };
+
+
   // ============ EVENT HANDLERS ============
   const handleViewReminder = () => {
     console.log("View reminder pressed");
@@ -133,6 +157,14 @@ export default function HomeScreen() {
     // Navigate to medication detail
   };
 
+  const handleMarkTaken = (medication: string) => {
+    console.log("Mark taken:", medication);
+  };
+
+  const handleViewAllReminders = () => {
+    console.log("View all reminders pressed");
+  };
+  
 
   // ============ RENDER FUNCTIONS ============
   const renderHomeTab = () => (
@@ -148,8 +180,8 @@ export default function HomeScreen() {
       {/* Next Reminder */}
       <View style={styles.section}>
         <NextReminderCard
-          medicationName={nextReminderData.medicationName}
-          time={nextReminderData.time}
+          medicationName={nextReminderData[0]?.medicationName ?? ""}
+          time={nextReminderData[0]?.time ?? ""}
           onViewPress={handleViewReminder}
         />
       </View>
@@ -252,7 +284,93 @@ const renderMedicationsTab = () => (
   );
 
 
+const renderRemindersTab = () => (
+    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Today's Reminders</Text>
+      </View>
 
+      {/* Pending Reminders Summary */}
+      <View style={styles.section}>
+        <View style={styles.reminderSummaryGrid}>
+          <Card style={[styles.summaryCard, styles.blueSummary]}>
+            <View style={styles.summaryCardContent}>
+              <Text style={[styles.summaryNumber, { color: "#3498DB" }]}>
+                {remindersSummary.pending}
+              </Text>
+              <Text style={styles.summaryLabel}>Pending</Text>
+            </View>
+          </Card>
+
+          <Card style={[styles.summaryCard, styles.greenSummary]}>
+            <View style={styles.summaryCardContent}>
+              <Text style={[styles.summaryNumber, { color: "#27AE60" }]}>
+                {remindersSummary.completed}
+              </Text>
+              <Text style={styles.summaryLabel}>Completed</Text>
+            </View>
+          </Card>
+
+          <Card style={[styles.summaryCard, styles.redSummary]}>
+            <View style={styles.summaryCardContent}>
+              <Text style={[styles.summaryNumber, { color: "#E74C3C" }]}>
+                {remindersSummary.overdue}
+              </Text>
+              <Text style={styles.summaryLabel}>Overdue</Text>
+            </View>
+          </Card>
+        </View>
+      </View>
+
+      {/* Next Reminders */}
+      <View style={[styles.section, { marginBottom: 24 }]}>
+        <Text style={styles.subsectionTitle}>Next Reminders</Text>
+        <View style={styles.remindersList}>
+          {nextReminderData.map((reminder, index) => (
+            <Card
+              key={index}
+              style={[
+                styles.reminderCard,
+                reminder.isUrgent && styles.urgentReminderCard,
+              ]}
+            >
+              <View style={styles.reminderContent}>
+                <View style={styles.reminderLeft}>
+                  <Ionicons
+                    name="notifications"
+                    size={24}
+                    color={reminder.isUrgent ? "#F39C12" : "#888"}
+                  />
+                  <View style={styles.reminderInfo}>
+                    <Text style={styles.reminderMedication}>
+                      {reminder.medicationName}
+                    </Text>
+                    <Text style={styles.reminderTime}>{reminder.time}</Text>
+                  </View>
+                </View>
+                {reminder.isUrgent && (
+                  <TouchableOpacity
+                    style={styles.markTakenButton}
+                    onPress={() => handleMarkTaken(reminder.medicationName ?? "")}
+                  >
+                    <Text style={styles.markTakenText}>Mark Taken</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </Card>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={handleViewAllReminders}
+        >
+          <Text style={styles.viewAllButtonText}>View All Reminders</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
 
   
   const renderPlaceholder = (title: string) => (
@@ -268,7 +386,7 @@ const renderMedicationsTab = () => (
       case "medications":
         return renderMedicationsTab();
       case "reminders":
-        return renderPlaceholder("Reminders");
+        return renderRemindersTab();
       case "progress":
         return renderPlaceholder("Progress");
       case "profile":
@@ -430,5 +548,96 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "700",
     color: "#333",
+  },
+  remindersList: {
+    gap: 12,
+  },
+  reminderCard: {
+    padding: 16,
+  },
+  urgentReminderCard: {
+    backgroundColor: "#FCF3CF",
+    borderWidth: 1,
+    borderColor: "#F9E79F",
+  },
+  reminderContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  reminderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  reminderInfo: {
+    flex: 1,
+  },
+  reminderMedication: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  reminderTime: {
+    fontSize: 14,
+    color: "#666",
+  },
+  markTakenButton: {
+    backgroundColor: "#27AE60",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  markTakenText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  viewAllButton: {
+    backgroundColor: "#3498DB",
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 24,
+  },
+  viewAllButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  reminderSummaryGrid: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  summaryCard: {
+    flex: 1,
+    padding: 16,
+    borderWidth: 2,
+  },
+  summaryCardContent: {
+    alignItems: "center",
+  },
+  blueSummary: {
+    backgroundColor: "#EBF5FB",
+    borderColor: "#AED6F1",
+  },
+  greenSummary: {
+    backgroundColor: "#D5F4E6",
+    borderColor: "#A9DFBF",
+  },
+  redSummary: {
+    backgroundColor: "#FADBD8",
+    borderColor: "#F5B7B1",
+  },
+  summaryNumber: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: "#666",
   },
 });

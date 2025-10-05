@@ -3,7 +3,7 @@ import { View, StyleSheet, ViewStyle } from "react-native";
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: ViewStyle | ViewStyle[] | (ViewStyle | false)[];
 }
 
 export default function Card({ children, style }: CardProps) {
