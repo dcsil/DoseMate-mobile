@@ -6,22 +6,21 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 // Import card components
-import TodaysMedsCard from "@/components/dashboard/TodaysMedsCard";
-import WeekStatsCard from "@/components/dashboard/WeekStatsCard";
-import NextReminderCard from "@/components/dashboard/NextReminderCard";
-import AdherenceProgressCard from "@/components/dashboard/AdherenceProgressCard";
-import MotivationalCard from "@/components/dashboard/MotivationalCard";
-import WeeklyOverviewCard from "@/components/dashboard/WeeklyOverviewCard";
-import RecentActivityCard from "@/components/dashboard/RecentActivityCard";
-import ShareHealthcareCard from "@/components/dashboard/ShareHealthcareCard";
-import BottomNavigation from "@/components/dashboard/Navbar";
-import Card from "@/components/dashboard/Card";
+import StatsCard from "@/components/main-navigation/StatsCard";
+import NextReminderCard from "@/components/main-navigation/NextReminderCard";
+import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
+import MotivationalCard from "@/components/main-navigation/MotivationalCard";
+import WeeklyOverviewCard from "@/components/main-navigation/WeeklyOverviewCard";
+import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
+import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
+import BottomNavigation from "@/components/main-navigation/Navbar";
+import Card from "@/components/main-navigation/Card";
 
-export default function HomeScreen() {
+export default function NavigationScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
 
@@ -66,8 +65,8 @@ export default function HomeScreen() {
   const progressData = { weeklyAdherence: 88, dayStreak: 5, weeklyDoses: { taken: 19, total: 21 } };
 
   // ============ EVENT HANDLERS ============
-  const handleViewReminder = () => console.log("View reminder pressed");
-  const handleViewDetails = () => console.log("View detailed analytics pressed");
+  const handleViewReminder = () => {console.log("View reminder pressed"); setActiveTab("reminders"); };
+  const handleViewDetails = () => {console.log("View detailed analytics pressed"); setActiveTab("progress"); };
   const handleWeeklyReport = () => console.log("Weekly report pressed");
   const handleMonthlyReport = () => console.log("Monthly report pressed");
   const handleGenerateShare = () => console.log("Generate & share pressed");
@@ -85,8 +84,25 @@ export default function HomeScreen() {
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <View style={styles.row}>
-          <TodaysMedsCard taken={todaysMedsData.taken} total={todaysMedsData.total} />
-          <WeekStatsCard percentage={weekStatsData.percentage} />
+          <StatsCard
+            icon="pill"
+            iconLibrary="material"
+            iconColor="#ffffff"
+            iconBgColor="#3498DB"
+            label="Today's Meds"
+            value={`${todaysMedsData.taken} of ${todaysMedsData.total}`}
+            cardBgColor="#EBF5FB"
+            borderColor="#AED6F1"
+          />
+          <StatsCard
+            icon="bar-chart"
+            iconColor="#ffffff"
+            iconBgColor="#27AE60"
+            label="This Week"
+            value={`${weekStatsData.percentage}%`}
+            cardBgColor="#D5F4E6"
+            borderColor="#A9DFBF"
+          />
         </View>
       </View>
 
@@ -137,7 +153,7 @@ export default function HomeScreen() {
       <View style={styles.section}>
         <View style={styles.row}>
           <TouchableOpacity style={[styles.actionButton, styles.blueAction]} onPress={handleViewAllMedications}>
-            <Ionicons name="medical" size={32} color="#3498DB" />
+            <MaterialCommunityIcons name="pill" size={32} color="#3498DB" />
             <Text style={styles.actionButtonText}>View All</Text>
           </TouchableOpacity>
 
@@ -156,7 +172,7 @@ export default function HomeScreen() {
               <Card style={styles.listItem}>
                 <View style={styles.listItemContent}>
                   <View style={styles.iconCircle}>
-                    <Ionicons name="medical" size={20} color="#fff" />
+                    <MaterialCommunityIcons name="pill" size={20} color="#fff" />
                   </View>
                   <View style={styles.listItemText}>
                     <Text style={styles.listItemTitle}>{med.medicationName}</Text>
@@ -257,7 +273,7 @@ export default function HomeScreen() {
           {recentActivities.map((activity, index) => (
             <View key={index} style={styles.activityItem}>
               <View style={styles.activityIcon}>
-                <Ionicons name="medical" size={16} color="#27AE60" />
+                <MaterialCommunityIcons name="pill" size={16} color="#27AE60" />
               </View>
               <View style={styles.listItemText}>
                 <Text style={styles.activityText}>Took {activity.medicationName}</Text>
@@ -328,7 +344,7 @@ export default function HomeScreen() {
   };
 
   const getHeaderTitle = () => ({
-    home: "Dashboard",
+    home: "Home",
     medications: "Medications",
     reminders: "Reminders",
     progress: "Progress",
