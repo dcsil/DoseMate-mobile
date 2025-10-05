@@ -139,7 +139,7 @@ export default function PrivacyScreen() {
           { backgroundColor: hasScrolledToEnd ? "#E74C3C" : "#BDC3C7" },
         ]}
         disabled={!hasScrolledToEnd}
-        // onPress={() => router.push("/")}
+        onPress={() => router.push("/onboarding/profile-setup")}
       >
         <Text style={styles.buttonText}>
           {hasScrolledToEnd ? "Accept Terms" : "Please read the full policy"}
