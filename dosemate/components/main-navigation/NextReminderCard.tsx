@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface NextReminderCardProps {
-  medicationName: string;
+  name: string;
+  dose: string;
   time: string;
   onViewPress?: () => void;
 }
 
-export default function NextReminderCard({ medicationName, time, onViewPress }: NextReminderCardProps) {
+export default function NextReminderCard({ name, dose, time, onViewPress }: NextReminderCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.content}>
@@ -16,7 +17,7 @@ export default function NextReminderCard({ medicationName, time, onViewPress }: 
           <Ionicons name="notifications" size={24} color="#F39C12" />
           <View style={styles.text}>
             <Text style={styles.label}>Next reminder</Text>
-            <Text style={styles.medication}>{medicationName} - {time}</Text>
+            <Text style={styles.medication}>{name} {dose} - {time}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={onViewPress}>

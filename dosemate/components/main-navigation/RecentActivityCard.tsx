@@ -5,7 +5,10 @@ import Card from "./Card";
 import ActivityItem from "./ActivityItem";
 
 interface Activity {
-  medicationName: string;
+  id: string;
+  name: string;
+  dose: string;
+  lastTaken: string;
   time: string;
   status: "taken" | "upcoming" | "overdue";
 }
@@ -25,7 +28,8 @@ export default function RecentActivityCard({ activities }: RecentActivityCardPro
         {activities.map((activity, index) => (
           <ActivityItem
             key={index}
-            medicationName={activity.medicationName}
+            name={activity.name}
+            dose={activity.dose}
             time={activity.time}
             status={activity.status}
           />

@@ -24,45 +24,96 @@ export default function NavigationScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
 
-  // ============ DYNAMIC DATA ============
-  const todaysMedsData = { taken: 3, total: 4 };
-  const weekStatsData = { percentage: 92 };
-  const nextReminderData = [
-    { medicationName: "Metformin", time: "2:00 PM", isUrgent: true },
-    { medicationName: "Lisinopril", time: "8:00 PM", isUrgent: false },
-    { medicationName: "Atorvastatin", time: "9:00 PM", isUrgent: false },
-  ];
+  // ============ DYNAMIC DATA - Organized for Backend Integration ============
+  const navigationData = {
+    user: {
+      id: "user123",
+      name: "John Doe",
+    },
+    
+    medications: {
+      today: {
+        taken: 3,
+        total: 4,
+      },
+      recent: [
+        { 
+          id: "med1",
+          name: "Amlodipine", 
+          dose: "5mg",
+          lastTaken: "Today at 12:00 PM", 
+          time: "12:00 PM",
+          status: "taken" as const 
+        },
+        { 
+          id: "med2",
+          name: "Levothyroxine", 
+          dose: "50mcg",
+          lastTaken: "Today at 8:00 AM", 
+          time: "8:00 AM",
+          status: "taken" as const 
+        },
+        { 
+          id: "med3",
+          name: "Hydrochlorothiazide", 
+          dose: "25mg",
+          lastTaken: "Today at 8:00 AM", 
+          time: "8:00 AM",
+          status: "taken" as const 
+        },
+      ],
+    },
 
-  const adherenceData = {
-    todayData: { label: "Today", percentage: 92, subtitle: "Target: 90%" },
-    weekData: { label: "This Week", percentage: 88, subtitle: "19 of 21 doses taken" },
-    monthData: { label: "This Month", percentage: 85, subtitle: "85 of 90 doses taken" },
+    reminders: {
+      summary: {
+        pending: 2,
+        completed: 3,
+        overdue: 1,
+      },
+      upcoming: [
+        { id: "rem1", name: "Metformin", dose: "500mg", time: "2:00 PM", isUrgent: true },
+        { id: "rem2", name: "Lisinopril", dose: "10mg", time: "8:00 PM", isUrgent: false },
+        { id: "rem3", name: "Atorvastatin", dose: "20mg", time: "9:00 PM", isUrgent: false },
+      ],
+    },
+
+    progress: {
+      today: { 
+        percentage: 92, 
+        target: 90,
+        subtitle: "Target: 90%" 
+      },
+      week: { 
+        percentage: 88, 
+        taken: 19,
+        total: 21,
+        currentStreak: 5,
+        subtitle: `19 of 21 doses taken`
+      },
+      month: { 
+        percentage: 85, 
+        taken: 85,
+        total: 90,
+        subtitle: "85 of 90 doses taken" 
+      },
+      weeklyData: [
+        { day: "Mon", score: 100 },
+        { day: "Tue", score: 100 },
+        { day: "Wed", score: 67 },
+        { day: "Thu", score: 100 },
+        { day: "Fri", score: 42 },
+        { day: "Sat", score: 100 },
+        { day: "Sun", score: 100 },
+      ],
+    },
+
+    motivation: {
+      title: "Great job this week!",
+      message: "You've maintained a 88% adherence rate. Keep up the excellent work!",
+      badgeText: "Above Target",
+      type: "positive" as const,
+    },
   };
-
-  const motivationalData = {
-    title: "Great job this week!",
-    message: "You've maintained a 88% adherence rate. Keep up the excellent work!",
-    badgeText: "Above Target",
-  };
-
-  const weeklyData = [
-    { day: "Mon", score: 100 },
-    { day: "Tue", score: 100 },
-    { day: "Wed", score: 67 },
-    { day: "Thu", score: 100 },
-    { day: "Fri", score: 42 },
-    { day: "Sat", score: 100 },
-    { day: "Sun", score: 100 },
-  ];
-
-  const recentActivities = [
-    { medicationName: "Metformin 500mg", time: "Today at 12:00 PM", status: "taken" as const },
-    { medicationName: "Lisinopril 10mg", time: "Today at 8:00 AM", status: "taken" as const },
-    { medicationName: "Atorvastatin 20mg", time: "Today at 8:00 AM", status: "taken" as const },
-  ];
-
-  const remindersSummary = { pending: 2, completed: 3, overdue: 1 };
-  const progressData = { weeklyAdherence: 88, dayStreak: 5, weeklyDoses: { taken: 19, total: 21 } };
 
   // ============ EVENT HANDLERS ============
   const handleViewReminder = () => {console.log("View reminder pressed"); setActiveTab("reminders"); };
@@ -80,6 +131,10 @@ export default function NavigationScreen() {
   const handleLearnMorePremium = () => console.log("Learn more about premium pressed");
 
   // ============ RENDER FUNCTIONS ============
+  
+  const { medications, reminders, progress, motivation } = navigationData;
+
+  
   const renderHomeTab = () => (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
@@ -90,7 +145,7 @@ export default function NavigationScreen() {
             iconColor="#ffffff"
             iconBgColor="#3498DB"
             label="Today's Meds"
-            value={`${todaysMedsData.taken} of ${todaysMedsData.total}`}
+            value={`${medications.today.taken} of ${medications.today.total}`}
             cardBgColor="#EBF5FB"
             borderColor="#AED6F1"
           />
@@ -99,7 +154,7 @@ export default function NavigationScreen() {
             iconColor="#ffffff"
             iconBgColor="#27AE60"
             label="This Week"
-            value={`${weekStatsData.percentage}%`}
+            value={`${progress.week.percentage}%`}
             cardBgColor="#D5F4E6"
             borderColor="#A9DFBF"
           />
@@ -108,34 +163,51 @@ export default function NavigationScreen() {
 
       <View style={styles.section}>
         <NextReminderCard
-          medicationName={nextReminderData[0]?.medicationName ?? ""}
-          time={nextReminderData[0]?.time ?? ""}
+          name={reminders.upcoming[0]?.name ?? ""}
+          dose={reminders.upcoming[0]?.dose ?? ""}
+          time={reminders.upcoming[0]?.time ?? ""}
           onViewPress={handleViewReminder}
         />
       </View>
 
       <View style={styles.section}>
         <AdherenceProgressCard
-          todayData={adherenceData.todayData}
-          weekData={adherenceData.weekData}
-          monthData={adherenceData.monthData}
+          todayData={{
+            label: "Today",
+            percentage: progress.today.percentage,
+            subtitle: progress.today.subtitle,
+          }}
+          weekData={{
+            label: "This Week",
+            percentage: progress.week.percentage,
+            subtitle: progress.week.subtitle,
+          }}
+          monthData={{
+            label: "This Month",
+            percentage: progress.month.percentage,
+            subtitle: progress.month.subtitle,
+          }}
         />
       </View>
 
       <View style={styles.section}>
         <MotivationalCard
-          title={motivationalData.title}
-          message={motivationalData.message}
-          badgeText={motivationalData.badgeText}
+          title={motivation.title}
+          message={motivation.message}
+          badgeText={motivation.badgeText}
+          type={motivation.type}
         />
       </View>
 
       <View style={styles.section}>
-        <WeeklyOverviewCard weekData={weeklyData} onViewDetails={handleViewDetails} />
+        <WeeklyOverviewCard 
+          weekData={progress.weeklyData} 
+          onViewDetails={handleViewDetails} 
+        />
       </View>
 
       <View style={styles.section}>
-        <RecentActivityCard activities={recentActivities} />
+        <RecentActivityCard activities={medications.recent} />
       </View>
 
       <View style={[styles.section, styles.lastSection]}>
@@ -147,6 +219,7 @@ export default function NavigationScreen() {
       </View>
     </ScrollView>
   );
+
 
   const renderMedicationsTab = () => (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -167,15 +240,15 @@ export default function NavigationScreen() {
       <View style={[styles.section, styles.lastSection]}>
         <Text style={styles.subtitle}>Recent Medications</Text>
         <View style={styles.list}>
-          {recentActivities.map((med, index) => (
-            <TouchableOpacity key={index} onPress={() => handleMedicationPress(med.medicationName)}>
+          {medications.recent.map((med) => (
+            <TouchableOpacity key={med.id} onPress={() => handleMedicationPress(med.name)}>
               <Card style={styles.listItem}>
                 <View style={styles.listItemContent}>
                   <View style={styles.iconCircle}>
                     <MaterialCommunityIcons name="pill" size={20} color="#fff" />
                   </View>
                   <View style={styles.listItemText}>
-                    <Text style={styles.listItemTitle}>{med.medicationName}</Text>
+                    <Text style={styles.listItemTitle}>{med.name}</Text>
                     <Text style={styles.listItemSubtitle}>Taken today</Text>
                   </View>
                   <Ionicons name="time-outline" size={16} color="#888" />
@@ -192,18 +265,19 @@ export default function NavigationScreen() {
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <View style={styles.row}>
+          
           <Card style={[styles.summaryCard, styles.blueSummary]}>
-            <Text style={[styles.summaryNumber, { color: "#3498DB" }]}>{remindersSummary.pending}</Text>
+            <Text style={[styles.summaryNumber, { color: "#3498DB" }]}>{reminders.summary.pending}</Text>
             <Text style={styles.summaryLabel}>Pending</Text>
           </Card>
 
           <Card style={[styles.summaryCard, styles.greenSummary]}>
-            <Text style={[styles.summaryNumber, { color: "#27AE60" }]}>{remindersSummary.completed}</Text>
+            <Text style={[styles.summaryNumber, { color: "#27AE60" }]}>{reminders.summary.completed}</Text>
             <Text style={styles.summaryLabel}>Completed</Text>
           </Card>
 
           <Card style={[styles.summaryCard, styles.redSummary]}>
-            <Text style={[styles.summaryNumber, { color: "#E74C3C" }]}>{remindersSummary.overdue}</Text>
+            <Text style={[styles.summaryNumber, { color: "#E74C3C" }]}>{reminders.summary.overdue}</Text>
             <Text style={styles.summaryLabel}>Overdue</Text>
           </Card>
         </View>
@@ -212,18 +286,18 @@ export default function NavigationScreen() {
       <View style={[styles.section, styles.lastSection]}>
         <Text style={styles.subtitle}>Next Reminders</Text>
         <View style={styles.list}>
-          {nextReminderData.map((reminder, index) => (
-            <Card key={index} style={reminder.isUrgent ? styles.urgentCard : undefined}>
+          {reminders.upcoming.map((reminder) => (
+            <Card key={reminder.id} style={reminder.isUrgent ? styles.urgentCard : undefined}>
               <View style={styles.reminderContent}>
                 <View style={styles.reminderLeft}>
                   <Ionicons name="notifications" size={24} color={reminder.isUrgent ? "#F39C12" : "#888"} />
                   <View style={styles.listItemText}>
-                    <Text style={styles.listItemTitle}>{reminder.medicationName}</Text>
+                    <Text style={styles.listItemTitle}>{reminder.name} {reminder.dose}</Text>
                     <Text style={styles.listItemSubtitle}>{reminder.time}</Text>
                   </View>
                 </View>
                 {reminder.isUrgent && (
-                  <TouchableOpacity style={styles.primaryButton} onPress={() => handleMarkTaken(reminder.medicationName ?? "")}>
+                  <TouchableOpacity style={styles.primaryButton} onPress={() => handleMarkTaken(reminder.name ?? "")}>
                     <Text style={styles.primaryButtonText}>Mark Taken</Text>
                   </TouchableOpacity>
                 )}
@@ -243,10 +317,10 @@ export default function NavigationScreen() {
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <View style={styles.progressCard}>
-          <Text style={styles.progressNumber}>{progressData.weeklyAdherence}%</Text>
+          <Text style={styles.progressNumber}>{progress.week.percentage}%</Text>
           <Text style={styles.progressLabel}>Weekly Adherence</Text>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progressData.weeklyAdherence}%` }]} />
+            <View style={[styles.progressFill, { width: `${progress.week.percentage}%` }]} />
           </View>
         </View>
       </View>
@@ -254,13 +328,13 @@ export default function NavigationScreen() {
       <View style={styles.section}>
         <View style={styles.row}>
           <Card style={styles.statCard}>
-            <Text style={[styles.statNumber, { color: "#27AE60" }]}>{progressData.dayStreak}</Text>
+            <Text style={[styles.statNumber, { color: "#27AE60" }]}>{progress.week.currentStreak}</Text>
             <Text style={styles.statLabel}>Day Streak</Text>
           </Card>
 
           <Card style={styles.statCard}>
             <Text style={[styles.statNumber, { color: "#3498DB" }]}>
-              {progressData.weeklyDoses.taken}/{progressData.weeklyDoses.total}
+              {progress.week.taken}/{progress.week.total}
             </Text>
             <Text style={styles.statLabel}>This Week</Text>
           </Card>
@@ -270,14 +344,14 @@ export default function NavigationScreen() {
       <View style={[styles.section, styles.lastSection]}>
         <Text style={styles.subtitle}>Recent Activity</Text>
         <View style={styles.activityList}>
-          {recentActivities.map((activity, index) => (
-            <View key={index} style={styles.activityItem}>
+          {medications.recent.map((activity) => (
+            <View key={activity.id} style={styles.activityItem}>
               <View style={styles.activityIcon}>
                 <MaterialCommunityIcons name="pill" size={16} color="#27AE60" />
               </View>
               <View style={styles.listItemText}>
-                <Text style={styles.activityText}>Took {activity.medicationName}</Text>
-                <Text style={styles.listItemSubtitle}>{activity.time}</Text>
+                <Text style={styles.activityText}>Took {activity.name} {activity.dose}</Text>
+                <Text style={styles.listItemSubtitle}>{activity.lastTaken}</Text>
               </View>
             </View>
           ))}

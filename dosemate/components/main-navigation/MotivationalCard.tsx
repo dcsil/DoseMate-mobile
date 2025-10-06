@@ -7,20 +7,53 @@ interface MotivationalCardProps {
   title: string;
   message: string;
   badgeText: string;
+  type?: "positive" | "negative";
 }
 
-export default function MotivationalCard({ title, message, badgeText }: MotivationalCardProps) {
+export default function MotivationalCard({ 
+  title, 
+  message, 
+  badgeText, 
+  type = "positive" 
+}: MotivationalCardProps) {
+  const colors = {
+    positive: {
+      cardBg: "#F4ECF7",
+      cardBorder: "#D7BDE2",
+      iconBg: "#E8DAEF",
+      iconColor: "#8E44AD",
+      icon: "trending-up" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#6C3483",
+      messageColor: "#7D3C98",
+      badgeBg: "#E8DAEF",
+      badgeText: "#6C3483",
+    },
+    negative: {
+      cardBg: "#FADBD8",
+      cardBorder: "#F5B7B1",
+      iconBg: "#F5B7B1",
+      iconColor: "#C0392B",
+      icon: "trending-down" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#922B21",
+      messageColor: "#C0392B",
+      badgeBg: "#F5B7B1",
+      badgeText: "#922B21",
+    },
+  };
+
+  const theme = colors[type];
+
   return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
       <View style={styles.content}>
-        <View style={styles.icon}>
-          <Ionicons name="trending-up" size={24} color="#8E44AD" />
+        <View style={[styles.icon, { backgroundColor: theme.iconBg }]}>
+          <Ionicons name={theme.icon} size={24} color={theme.iconColor} />
         </View>
         <View style={styles.text}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badgeText}</Text>
+          <Text style={[styles.title, { color: theme.titleColor }]}>{title}</Text>
+          <Text style={[styles.message, { color: theme.messageColor }]}>{message}</Text>
+          <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
+            <Text style={[styles.badgeText, { color: theme.badgeText }]}>{badgeText}</Text>
           </View>
         </View>
       </View>
@@ -30,9 +63,7 @@ export default function MotivationalCard({ title, message, badgeText }: Motivati
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#F4ECF7",
     borderWidth: 1,
-    borderColor: "#D7BDE2",
   },
   content: {
     flexDirection: "row",
@@ -41,7 +72,6 @@ const styles = StyleSheet.create({
   icon: {
     width: 48,
     height: 48,
-    backgroundColor: "#E8DAEF",
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
@@ -52,17 +82,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#6C3483",
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
-    color: "#7D3C98",
     lineHeight: 20,
     marginBottom: 12,
   },
   badge: {
-    backgroundColor: "#E8DAEF",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -71,6 +98,5 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6C3483",
   },
 });

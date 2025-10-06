@@ -1,14 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface ActivityItemProps {
-  medicationName: string;
+  name: string;
+  dose: string;
   time: string;
   status: "taken" | "upcoming" | "overdue";
 }
 
-export default function ActivityItem({ medicationName, time, status }: ActivityItemProps) {
+export default function ActivityItem({ name, dose, time, status }: ActivityItemProps) {
   const statusConfig = {
     taken: {
       bg: "#D5F4E6",
@@ -39,10 +40,10 @@ export default function ActivityItem({ medicationName, time, status }: ActivityI
     <View style={[styles.activityItem, { backgroundColor: config.bg }]}>
       <View style={styles.activityContent}>
         <View style={[styles.activityIcon, { backgroundColor: config.iconBg }]}>
-          <Ionicons name="medical" size={16} color="#fff" />
+          <MaterialCommunityIcons name="pill" size={16} color="#fff" />
         </View>
         <View style={styles.activityText}>
-          <Text style={styles.activityName}>{medicationName}</Text>
+          <Text style={styles.activityName}>{name} {dose}</Text>
           <Text style={styles.activityTime}>{time}</Text>
         </View>
       </View>
