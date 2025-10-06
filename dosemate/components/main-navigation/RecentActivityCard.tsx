@@ -7,7 +7,7 @@ import ActivityItem from "./ActivityItem";
 interface Activity {
   id: string;
   name: string;
-  dose: string;
+  strength: string;
   lastTaken: string;
   time: string;
   status: "taken" | "upcoming" | "overdue";
@@ -29,7 +29,7 @@ export default function RecentActivityCard({ activities }: RecentActivityCardPro
           <ActivityItem
             key={index}
             name={activity.name}
-            dose={activity.dose}
+            strength={activity.strength}
             time={activity.time}
             status={activity.status}
           />

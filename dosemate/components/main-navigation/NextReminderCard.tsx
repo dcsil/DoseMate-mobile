@@ -4,12 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 
 interface NextReminderCardProps {
   name: string;
-  dose: string;
+  strength: string;
   time: string;
   onViewPress?: () => void;
 }
 
-export default function NextReminderCard({ name, dose, time, onViewPress }: NextReminderCardProps) {
+export default function NextReminderCard({ name, strength, time, onViewPress }: NextReminderCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.content}>
@@ -17,7 +17,7 @@ export default function NextReminderCard({ name, dose, time, onViewPress }: Next
           <Ionicons name="notifications" size={24} color="#F39C12" />
           <View style={styles.text}>
             <Text style={styles.label}>Next reminder</Text>
-            <Text style={styles.medication}>{name} {dose}{"\n"}{time}</Text>
+            <Text style={styles.medication}>{name} {strength}{"\n"}{time}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={onViewPress}>

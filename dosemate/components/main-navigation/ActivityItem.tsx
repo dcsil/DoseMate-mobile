@@ -4,12 +4,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface ActivityItemProps {
   name: string;
-  dose: string;
+  strength: string;
   time: string;
   status: "taken" | "upcoming" | "overdue";
 }
 
-export default function ActivityItem({ name, dose, time, status }: ActivityItemProps) {
+export default function ActivityItem({ name, strength, time, status }: ActivityItemProps) {
   const statusConfig = {
     taken: {
       bg: "#D5F4E6",
@@ -43,7 +43,7 @@ export default function ActivityItem({ name, dose, time, status }: ActivityItemP
           <MaterialCommunityIcons name="pill" size={16} color="#fff" />
         </View>
         <View style={styles.activityText}>
-          <Text style={styles.activityName}>{name} {dose}</Text>
+          <Text style={styles.activityName}>{name} {strength}</Text>
           <Text style={styles.activityTime}>{time}</Text>
         </View>
       </View>

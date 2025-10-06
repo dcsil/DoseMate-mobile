@@ -17,6 +17,7 @@ import MotivationalCard from "@/components/main-navigation/MotivationalCard";
 import WeeklyOverviewCard from "@/components/main-navigation/WeeklyOverviewCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
+import MedicationCard from "@/components/main-navigation/MedicationCard";
 import BottomNavigation from "@/components/main-navigation/Navbar";
 import Card from "@/components/main-navigation/Card";
 
@@ -40,7 +41,7 @@ export default function NavigationScreen() {
         { 
           id: "med1",
           name: "Amlodipine", 
-          dose: "5mg",
+          strength: "5mg",
           lastTaken: "Today at 12:00 PM", 
           time: "12:00 PM",
           status: "taken" as const 
@@ -48,7 +49,7 @@ export default function NavigationScreen() {
         { 
           id: "med2",
           name: "Levothyroxine", 
-          dose: "50mcg",
+          strength: "50mcg",
           lastTaken: "Today at 8:00 AM", 
           time: "8:00 AM",
           status: "taken" as const 
@@ -56,11 +57,65 @@ export default function NavigationScreen() {
         { 
           id: "med3",
           name: "Hydrochlorothiazide", 
-          dose: "25mg",
+          strength: "25mg",
           lastTaken: "Today at 8:00 AM", 
           time: "8:00 AM",
           status: "taken" as const 
         },
+      ],
+      allMedications: [
+        {
+          id: 1,
+          name: 'Metformin',
+          strength: '500mg',
+          quantity: '1 tablet',
+          frequency: 'Twice daily',
+          times: ['8:00 AM', '8:00 PM'],
+          color: '#2196F3',
+          nextDose: '8:00 PM',
+          adherence: 95,
+          foodInstructions: 'Take with food',
+          purpose: 'Diabetes management'
+        },
+        {
+          id: 2,
+          name: 'Lisinopril',
+          strength: '10mg',
+          quantity: '1 tablet',
+          frequency: 'Once daily',
+          times: ['8:00 AM'],
+          color: '#4CAF50',
+          nextDose: 'Tomorrow 8:00 AM',
+          adherence: 88,
+          foodInstructions: 'No food restrictions',
+          purpose: 'Blood pressure control'
+        },
+        {
+          id: 3,
+          name: 'Atorvastatin',
+          strength: '20mg',
+          quantity: '1 tablet',
+          frequency: 'Once daily',
+          times: ['9:00 PM'],
+          color: '#9C27B0',
+          nextDose: '9:00 PM',
+          adherence: 92,
+          foodInstructions: 'Take in the evening',
+          purpose: 'Cholesterol management'
+        },
+        {
+          id: 4,
+          name: 'Aspirin',
+          strength: '81mg',
+          quantity: '1 tablet',
+          frequency: 'Once daily',
+          times: ['8:00 AM'],
+          color: '#FF9800',
+          nextDose: 'Tomorrow 8:00 AM',
+          adherence: 97,
+          foodInstructions: 'Take with food',
+          purpose: 'Heart protection'
+        }
       ],
     },
 
@@ -71,9 +126,9 @@ export default function NavigationScreen() {
         overdue: 1,
       },
       upcoming: [
-        { id: "rem1", name: "Metformin", dose: "500mg", time: "2:00 PM", isUrgent: true },
-        { id: "rem2", name: "Lisinopril", dose: "10mg", time: "8:00 PM", isUrgent: false },
-        { id: "rem3", name: "Atorvastatin", dose: "20mg", time: "9:00 PM", isUrgent: false },
+        { id: "rem1", name: "Metformin", strength: "500mg", time: "2:00 PM", isUrgent: true },
+        { id: "rem2", name: "Lisinopril", strength: "10mg", time: "8:00 PM", isUrgent: false },
+        { id: "rem3", name: "Atorvastatin", strength: "20mg", time: "9:00 PM", isUrgent: false },
       ],
     },
 
@@ -121,7 +176,6 @@ export default function NavigationScreen() {
   const handleWeeklyReport = () => console.log("Weekly report pressed");
   const handleMonthlyReport = () => console.log("Monthly report pressed");
   const handleGenerateShare = () => console.log("Generate & share pressed");
-  const handleViewAllMedications = () => console.log("View all medications pressed");
   const handleAddMedication = () => console.log("Add medication pressed");
   const handleMedicationPress = (medicationName: string) => console.log("Medication pressed:", medicationName);
   const handleMarkTaken = (medication: string) => console.log("Mark taken:", medication);
@@ -129,6 +183,9 @@ export default function NavigationScreen() {
   const handleViewDetailedProgress = () => console.log("View detailed progress pressed");
   const handleProfileOption = (option: string) => console.log("Profile option pressed:", option);
   const handleLearnMorePremium = () => console.log("Learn more about premium pressed");
+  const handleEditMedication = (id: number) => console.log("Edit medication:", id);
+  const handleDeleteMedication = (id: number) => console.log("Delete medication:", id);
+  const handleViewMedicationDetails = (id: number) => console.log("View details:", id);
 
   // ============ RENDER FUNCTIONS ============
   
@@ -164,7 +221,7 @@ export default function NavigationScreen() {
       <View style={styles.section}>
         <NextReminderCard
           name={reminders.upcoming[0]?.name ?? ""}
-          dose={reminders.upcoming[0]?.dose ?? ""}
+          strength={reminders.upcoming[0]?.strength ?? ""}
           time={reminders.upcoming[0]?.time ?? ""}
           onViewPress={handleViewReminder}
         />
@@ -225,38 +282,24 @@ export default function NavigationScreen() {
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <View style={styles.row}>
-          <TouchableOpacity style={[styles.actionButton, styles.blueAction]} onPress={handleViewAllMedications}>
-            <MaterialCommunityIcons name="pill" size={32} color="#3498DB" />
-            <Text style={styles.actionButtonText}>View All</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity style={[styles.actionButton, styles.greenAction]} onPress={handleAddMedication}>
             <Ionicons name="add-circle" size={32} color="#27AE60" />
             <Text style={styles.actionButtonText}>Add New</Text>
           </TouchableOpacity>
         </View>
       </View>
-
       <View style={[styles.section, styles.lastSection]}>
-        <Text style={styles.subtitle}>Recent Medications</Text>
-        <View style={styles.list}>
-          {medications.recent.map((med) => (
-            <TouchableOpacity key={med.id} onPress={() => handleMedicationPress(med.name)}>
-              <Card style={styles.listItem}>
-                <View style={styles.listItemContent}>
-                  <View style={styles.iconCircle}>
-                    <MaterialCommunityIcons name="pill" size={20} color="#fff" />
-                  </View>
-                  <View style={styles.listItemText}>
-                    <Text style={styles.listItemTitle}>{med.name}</Text>
-                    <Text style={styles.listItemSubtitle}>Taken today</Text>
-                  </View>
-                  <Ionicons name="time-outline" size={16} color="#888" />
-                </View>
-              </Card>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <Text style={styles.subtitle}>All Medications</Text>
+        {medications.allMedications.map((med) => (
+          <TouchableOpacity key={med.id} onPress={() => handleMedicationPress(med.name)} activeOpacity={0.9}>
+            <MedicationCard
+              medication={med}
+              onEdit={() => handleEditMedication(med.id)}
+              onDelete={() => handleDeleteMedication(med.id)}
+              onViewDetails={() => handleViewMedicationDetails(med.id)}
+            />
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -292,7 +335,7 @@ export default function NavigationScreen() {
                 <View style={styles.reminderLeft}>
                   <Ionicons name="notifications" size={24} color={reminder.isUrgent ? "#F39C12" : "#888"} />
                   <View style={styles.listItemText}>
-                    <Text style={styles.listItemTitle}>{reminder.name} {reminder.dose}</Text>
+                    <Text style={styles.listItemTitle}>{reminder.name} {reminder.strength}</Text>
                     <Text style={styles.listItemSubtitle}>{reminder.time}</Text>
                   </View>
                 </View>
@@ -350,7 +393,7 @@ export default function NavigationScreen() {
                 <MaterialCommunityIcons name="pill" size={16} color="#27AE60" />
               </View>
               <View style={styles.listItemText}>
-                <Text style={styles.activityText}>Took {activity.name} {activity.dose}</Text>
+                <Text style={styles.activityText}>Took {activity.name} {activity.strength}</Text>
                 <Text style={styles.listItemSubtitle}>{activity.lastTaken}</Text>
               </View>
             </View>
