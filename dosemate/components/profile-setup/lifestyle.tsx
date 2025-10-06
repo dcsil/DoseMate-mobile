@@ -43,6 +43,7 @@ export default function Lifestyle({
             selectedValue={selectedSleep}
             onValueChange={setSleep}
             style={styles.picker}
+            itemStyle={{ fontSize: 16, height: 56, color: "#333" }}
           >
             <Picker.Item label="Select sleep schedule..." value="" />
             {sleepSchedules.map((s) => (
@@ -60,6 +61,7 @@ export default function Lifestyle({
             selectedValue={selectedActivity}
             onValueChange={setActivity}
             style={styles.picker}
+            itemStyle={{ fontSize: 16, height: 56, color: "#333" }}
           >
             <Picker.Item label="Select activity level..." value="" />
             {activityLevels.map((a) => (
@@ -105,9 +107,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
     backgroundColor: "#fff",
+    height: 56,
+    justifyContent: "center",
   },
   picker: {
-    height: 50,
+    height: 56,
     width: "100%",
+    color: "#333",
   },
 });
