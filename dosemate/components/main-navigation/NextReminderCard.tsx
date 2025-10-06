@@ -17,7 +17,7 @@ export default function NextReminderCard({ name, dose, time, onViewPress }: Next
           <Ionicons name="notifications" size={24} color="#F39C12" />
           <View style={styles.text}>
             <Text style={styles.label}>Next reminder</Text>
-            <Text style={styles.medication}>{name} {dose} - {time}</Text>
+            <Text style={styles.medication}>{name} {dose}{"\n"}{time}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={onViewPress}>

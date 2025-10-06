@@ -370,6 +370,7 @@ export default function NavigationScreen() {
         <View style={styles.profileIconContainer}>
           <Ionicons name="person" size={40} color="#3498DB" />
         </View>
+        <Text style={styles.title}>{navigationData.user.name}</Text>
       </View>
 
       <View style={styles.section}>
@@ -572,6 +573,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EBF5FB",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 16,
   },
 
   divider: { height: 1, backgroundColor: "#E5E5E5", marginBottom: 24 },
