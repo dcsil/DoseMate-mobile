@@ -37,7 +37,6 @@ export default function ProfileSetupScreen() {
     "Asthma",
     "Depression",
     "Anxiety",
-    "No Health Conditions",
   ];
   const sleepSchedules = [
     { label: "Early Bird (9 PM - 6 AM)", value: "early" },
@@ -57,7 +56,7 @@ export default function ProfileSetupScreen() {
       case 1:
         return profile.age !== "";
       case 2:
-        return profile.conditions.length > 0;
+        return profile.conditions.length >= 0;
       case 3:
         return profile.sleepSchedule !== "" && profile.activityLevel !== "";
       default:
