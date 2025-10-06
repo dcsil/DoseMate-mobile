@@ -43,7 +43,7 @@ export default function HealthInfo({
       </View>
       <Text style={styles.stepTitle}>Health Conditions</Text>
       <Text style={styles.stepSubtitle}>
-        Select any conditions you manage (optional but helpful)
+        Select any conditions you manage {"\n"}(optional but helpful)
       </Text>
 
       <View style={styles.checkboxSection}>

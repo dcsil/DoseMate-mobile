@@ -37,6 +37,7 @@ export default function ProfileSetupScreen() {
     "Asthma",
     "Depression",
     "Anxiety",
+    "No Health Conditions",
   ];
   const sleepSchedules = [
     { label: "Early Bird (9 PM - 6 AM)", value: "early" },

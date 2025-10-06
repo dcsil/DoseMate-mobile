@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 
 interface TutorialSlide {
   iconName: keyof typeof Ionicons.glyphMap;
@@ -87,12 +86,7 @@ export default function TutorialScreen() {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <LinearGradient
-      colors={["#EBF5FB", "#E8F8F5"]}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={prevSlide} style={styles.headerBtn}>
@@ -169,7 +163,7 @@ export default function TutorialScreen() {
           <Ionicons name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -178,6 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 60,
     paddingHorizontal: 24,
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
