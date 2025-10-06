@@ -66,7 +66,7 @@ export default function TutorialScreen() {
       setCurrentSlide(currentSlide + 1);
     } else {
       // Navigate to main app
-      // router.push("/");
+      router.push("../main-navigation");
       console.log("Tutorial complete");
     }
   };
@@ -80,7 +80,7 @@ export default function TutorialScreen() {
   };
 
   const skipTutorial = () => {
-    // router.push("/");
+    router.push("../main-navigation");
     console.log("Tutorial skipped");
   };
 

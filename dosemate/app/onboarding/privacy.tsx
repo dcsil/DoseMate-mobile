@@ -39,7 +39,7 @@ export default function PrivacyScreen() {
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Privacy & Security</Text>
-        <View style={{ width: 24 }} /> {/* Spacer for layout balance */}
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView
