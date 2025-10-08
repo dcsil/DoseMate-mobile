@@ -1,10 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
+
+WebBrowser.maybeCompleteAuthSession();
+
 export default function CreateAccountScreen() {
   const router = useRouter();
+
+  useEffect(() => {
+    const handleDeepLink = async ({ url }: { url: string }) => {
+      console.log("Deep link received:", url);
+      const { queryParams } = Linking.parse(url);
+      const token = queryParams?.token;
+      console.log("Received token:", token);
+
+      if (token && typeof token === "string") {
+        await SecureStore.setItemAsync("jwt", token);
+        router.replace("/onboarding/privacy");
+      }
+    };
+
+    const subscription = Linking.addEventListener("url", handleDeepLink);
+    return () => subscription.remove();
+  }, [router]);
+
+  const handleGoogleLogin = async () => {
+    const authUrl =
+      "https://ferulaceous-kenneth-septimal.ngrok-free.dev/auth/google";
+
+    // open in external browser
+    await WebBrowser.openBrowserAsync(authUrl);
+  };
 
   return (
     <View style={styles.container}>
@@ -25,10 +56,7 @@ export default function CreateAccountScreen() {
         </Text>
 
         {/* Google Option */}
-        <TouchableOpacity
-          style={styles.googleBtn}
-          onPress={() => router.push("/onboarding/privacy")}
-        >
+        <TouchableOpacity style={styles.googleBtn} onPress={handleGoogleLogin}>
           <FontAwesome name="google" size={20} color="#fff" />
           <Text style={styles.googleText}>Continue with Google</Text>
         </TouchableOpacity>
@@ -41,7 +69,10 @@ export default function CreateAccountScreen() {
         </View>
 
         {/* Email & Phone Options */}
-        <TouchableOpacity style={styles.optionBtn}>
+        <TouchableOpacity
+          style={styles.optionBtn}
+          onPress={() => router.push("/onboarding/privacy")}
+        >
           <Ionicons name="mail-outline" size={22} color="#333" />
           <Text style={styles.optionText}>Use Email Address</Text>
         </TouchableOpacity>
