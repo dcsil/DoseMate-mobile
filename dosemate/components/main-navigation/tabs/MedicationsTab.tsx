@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import MedicationCard from "@/components/main-navigation/MedicationCard";
 import AddMedicationScreen from "@/components/main-navigation/AddMedicationScreen";
+import MedicationDetailsScreen from "@/components/main-navigation/MedicationsDetailsScreen";
 import { FullMedication } from "./types";
 
 interface MedicationsTabProps {
@@ -10,7 +11,6 @@ interface MedicationsTabProps {
   onMedicationPress: (name: string) => void;
   onEditMedication: (id: number) => void;
   onDeleteMedication: (id: number) => void;
-  onViewMedicationDetails: (id: number) => void;
 }
 
 export default function MedicationsTab({
@@ -18,9 +18,18 @@ export default function MedicationsTab({
   onMedicationPress,
   onEditMedication,
   onDeleteMedication,
-  onViewMedicationDetails,
 }: MedicationsTabProps) {
   const [showAddMedication, setShowAddMedication] = useState(false);
+  const [showMedicationDetails, setShowMedicationDetails] = useState(false);
+  const [selectedMedication, setSelectedMedication] = useState<FullMedication | null>(null);
+
+  const handleViewDetails = (id: number) => {
+  const medication = medications.find(med => med.id === id);
+  if (medication) {
+    setSelectedMedication(medication);
+    setShowMedicationDetails(true);  // Opens the modal
+  }
+};
 
   return (
     <>
@@ -51,7 +60,7 @@ export default function MedicationsTab({
                 medication={med}
                 onEdit={() => onEditMedication(med.id)}
                 onDelete={() => onDeleteMedication(med.id)}
-                onViewDetails={() => onViewMedicationDetails(med.id)}
+                onViewDetails={() => handleViewDetails(med.id)}
               />
             </TouchableOpacity>
           ))}
@@ -61,6 +70,14 @@ export default function MedicationsTab({
       <AddMedicationScreen
         visible={showAddMedication}
         onClose={() => setShowAddMedication(false)}
+      />
+      <MedicationDetailsScreen
+        visible={showMedicationDetails}
+        onClose={() => {
+          setShowMedicationDetails(false);
+          setSelectedMedication(null);
+        }}
+        medication={selectedMedication}
       />
     </>
   );
