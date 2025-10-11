@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import MedicationCard from "@/components/main-navigation/MedicationCard";
+import AddMedicationScreen from "@/components/main-navigation/AddMedicationScreen";
 import { FullMedication } from "./types";
 
 interface MedicationsTabProps {
   medications: FullMedication[];
-  onAddMedication: () => void;
   onMedicationPress: (name: string) => void;
   onEditMedication: (id: number) => void;
   onDeleteMedication: (id: number) => void;
@@ -15,43 +15,54 @@ interface MedicationsTabProps {
 
 export default function MedicationsTab({
   medications,
-  onAddMedication,
   onMedicationPress,
   onEditMedication,
   onDeleteMedication,
   onViewMedicationDetails,
 }: MedicationsTabProps) {
-  return (
-    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.section}>
-        <View style={styles.row}>
-          <TouchableOpacity style={styles.actionButton} onPress={onAddMedication}>
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="add-circle" size={26} color="#E85D5B" />
-            </View>
-            <Text style={styles.actionButtonText}>Add New</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+  const [showAddMedication, setShowAddMedication] = useState(false);
 
-      <View style={[styles.section, styles.lastSection]}>
-        <Text style={styles.subtitle}>All Medications</Text>
-        {medications.map((med) => (
-          <TouchableOpacity 
-            key={med.id} 
-            onPress={() => onMedicationPress(med.name)} 
-            activeOpacity={0.9}
-          >
-            <MedicationCard
-              medication={med}
-              onEdit={() => onEditMedication(med.id)}
-              onDelete={() => onDeleteMedication(med.id)}
-              onViewDetails={() => onViewMedicationDetails(med.id)}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+  return (
+    <>
+      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <View style={styles.row}>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => setShowAddMedication(true)}
+            >
+              <View style={styles.actionIconCircle}>
+                <Ionicons name="add-circle" size={26} color="#E85D5B" />
+              </View>
+              <Text style={styles.actionButtonText}>Add New</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={[styles.section, styles.lastSection]}>
+          <Text style={styles.subtitle}>All Medications</Text>
+          {medications.map((med) => (
+            <TouchableOpacity 
+              key={med.id} 
+              onPress={() => onMedicationPress(med.name)} 
+              activeOpacity={0.9}
+            >
+              <MedicationCard
+                medication={med}
+                onEdit={() => onEditMedication(med.id)}
+                onDelete={() => onDeleteMedication(med.id)}
+                onViewDetails={() => onViewMedicationDetails(med.id)}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+
+      <AddMedicationScreen
+        visible={showAddMedication}
+        onClose={() => setShowAddMedication(false)}
+      />
+    </>
   );
 }
 

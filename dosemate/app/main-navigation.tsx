@@ -167,7 +167,7 @@ export default function NavigationScreen() {
     handleWeeklyReport: () => console.log("Weekly report pressed"),
     handleMonthlyReport: () => console.log("Monthly report pressed"),
     handleGenerateShare: () => console.log("Generate & share pressed"),
-    handleAddMedication: () => console.log("Add medication pressed"),
+    // handleAddMedication: () => console.log("Add medication pressed"),
     handleMedicationPress: (name: string) => console.log("Medication pressed:", name),
     handleMarkTaken: (medication: string) => console.log("Mark taken:", medication),
     handleViewAllReminders: () => console.log("View all reminders pressed"),
@@ -203,7 +203,7 @@ export default function NavigationScreen() {
         return (
           <MedicationsTab
             medications={medications.allMedications}
-            onAddMedication={handlers.handleAddMedication}
+            // onAddMedication={handlers.handleAddMedication}
             onMedicationPress={handlers.handleMedicationPress}
             onEditMedication={handlers.handleEditMedication}
             onDeleteMedication={handlers.handleDeleteMedication}
