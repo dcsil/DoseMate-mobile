@@ -4,32 +4,86 @@ import { Ionicons } from "@expo/vector-icons";
 import MedicationCard from "@/components/main-navigation/MedicationCard";
 import AddMedicationScreen from "@/components/main-navigation/AddMedicationScreen";
 import MedicationDetailsScreen from "@/components/main-navigation/MedicationsDetailsScreen";
-import { FullMedication } from "./types";
+import { Medication } from "./types";
 
-interface MedicationsTabProps {
-  medications: FullMedication[];
-  onMedicationPress: (name: string) => void;
-  onEditMedication: (id: number) => void;
-  onDeleteMedication: (id: number) => void;
-}
+export default function MedicationsTab() {
 
-export default function MedicationsTab({
-  medications,
-  onMedicationPress,
-  onEditMedication,
-  onDeleteMedication,
-}: MedicationsTabProps) {
+  // ============ STATIC DATA FOR MEDICATIONS TAB - Organized for Backend Integration ============
+  const medicationsData = {
+    allMedications: [
+      {
+        id: 1,
+        name: 'Metformin',
+        strength: '500mg',
+        quantity: '1 tablet',
+        frequency: 'Twice daily',
+        times: ['8:00 AM', '8:00 PM'],
+        color: '#2196F3',
+        nextDose: '8:00 PM',
+        adherence: 95,
+        foodInstructions: 'Take with food',
+        purpose: 'Diabetes management'
+      },
+      {
+        id: 2,
+        name: 'Lisinopril',
+        strength: '10mg',
+        quantity: '1 tablet',
+        frequency: 'Once daily',
+        times: ['8:00 AM'],
+        color: '#4CAF50',
+        nextDose: 'Tomorrow 8:00 AM',
+        adherence: 88,
+        foodInstructions: 'No food restrictions',
+        purpose: 'Blood pressure control'
+      },
+      {
+        id: 3,
+        name: 'Atorvastatin',
+        strength: '20mg',
+        quantity: '1 tablet',
+        frequency: 'Once daily',
+        times: ['9:00 PM'],
+        color: '#9C27B0',
+        nextDose: '9:00 PM',
+        adherence: 92,
+        foodInstructions: 'Take in the evening',
+        purpose: 'Cholesterol management'
+      },
+      {
+        id: 4,
+        name: 'Aspirin',
+        strength: '81mg',
+        quantity: '1 tablet',
+        frequency: 'Once daily',
+        times: ['8:00 AM'],
+        color: '#FF9800',
+        nextDose: 'Tomorrow 8:00 AM',
+        adherence: 97,
+        foodInstructions: 'Take with food',
+        purpose: 'Heart protection'
+      }
+    ],
+  };
+
+  const { allMedications: medications } = medicationsData;
+
+  const handleMedicationPress = (name: string) => console.log("Medication pressed:", name);
+  const handleEditMedication = (id: number) => console.log("Edit medication:", id);
+  const handleDeleteMedication = (id: number) => console.log("Delete medication:", id);
+
+
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
-  const [selectedMedication, setSelectedMedication] = useState<FullMedication | null>(null);
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
 
   const handleViewDetails = (id: number) => {
-  const medication = medications.find(med => med.id === id);
-  if (medication) {
-    setSelectedMedication(medication);
-    setShowMedicationDetails(true);  // Opens the modal
-  }
-};
+    const medication = medications.find(med => med.id === id);
+    if (medication) {
+      setSelectedMedication(medication);
+      setShowMedicationDetails(true);
+    }
+  };
 
   return (
     <>
@@ -53,13 +107,13 @@ export default function MedicationsTab({
           {medications.map((med) => (
             <TouchableOpacity 
               key={med.id} 
-              onPress={() => onMedicationPress(med.name)} 
+              onPress={() => handleMedicationPress(med.name)} 
               activeOpacity={0.9}
             >
               <MedicationCard
                 medication={med}
-                onEdit={() => onEditMedication(med.id)}
-                onDelete={() => onDeleteMedication(med.id)}
+                onEdit={() => handleEditMedication(med.id)}
+                onDelete={() => handleDeleteMedication(med.id)}
                 onViewDetails={() => handleViewDetails(med.id)}
               />
             </TouchableOpacity>

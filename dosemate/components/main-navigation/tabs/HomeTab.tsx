@@ -7,31 +7,146 @@ import MotivationalCard from "@/components/main-navigation/MotivationalCard";
 import WeeklyOverviewCard from "@/components/main-navigation/WeeklyOverviewCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
-import { MedicationData, ReminderData, ProgressData, MotivationData } from "./types";
 
 interface HomeTabProps {
-  medications: MedicationData;
-  reminders: ReminderData;
-  progress: ProgressData;
-  motivation: MotivationData;
   onViewReminder: () => void;
   onViewDetails: () => void;
-  onWeeklyReport: () => void;
-  onMonthlyReport: () => void;
-  onGenerateShare: () => void;
 }
 
 export default function HomeTab({
-  medications,
-  reminders,
-  progress,
-  motivation,
   onViewReminder,
   onViewDetails,
-  onWeeklyReport,
-  onMonthlyReport,
-  onGenerateShare,
 }: HomeTabProps) {
+  
+  // ============ STATIC DATA FOR HOME TAB - Organized for Backend Integration ============
+  const homeData = {
+    medications: {
+      today: {
+        taken: 3,
+        total: 4,
+      },
+      recent: [
+        { 
+          id: "med1",
+          name: "Amlodipine", 
+          strength: "5mg",
+          lastTaken: "Today at 12:00 PM", 
+          time: "12:00 PM",
+          status: "taken" as const 
+        },
+        { 
+          id: "med2",
+          name: "Levothyroxine", 
+          strength: "50mcg",
+          lastTaken: "Today at 8:00 AM", 
+          time: "8:00 AM",
+          status: "taken" as const 
+        },
+        { 
+          id: "med3",
+          name: "Hydrochlorothiazide", 
+          strength: "25mg",
+          lastTaken: "Today at 8:00 AM", 
+          time: "8:00 AM",
+          status: "taken" as const 
+        },
+      ],
+    },
+
+    reminders: {
+      allReminders: [
+        {
+          id: 1,
+          name: 'Metformin',
+          strength: '500mg',
+          quantity: '1 tablet',
+          time: '2:00 PM',
+          status: 'pending' as const,
+          color: '#2196F3',
+          overdue: false,
+          instructions: 'Take with food'
+        },
+        {
+          id: 2,
+          name: 'Atorvastatin',
+          strength: '20mg',
+          quantity: '1 tablet',
+          time: '9:00 PM',
+          status: 'pending' as const,
+          color: '#9C27B0',
+          overdue: false,
+          instructions: 'Take in the evening'
+        },
+        {
+          id: 3,
+          name: 'Lisinopril',
+          strength: '10mg',
+          quantity: '1 tablet',
+          time: '8:00 AM',
+          status: 'taken' as const,
+          color: '#4CAF50',
+          overdue: false,
+          instructions: 'No food restrictions'
+        },
+        {
+          id: 4,
+          name: 'Aspirin',
+          strength: '81mg',
+          quantity: '1 tablet',
+          time: '8:00 AM',
+          status: 'overdue' as const,
+          color: '#FF9800',
+          overdue: true,
+          instructions: 'Take with food'
+        }
+      ],
+    },
+
+    progress: {
+      today: { 
+        percentage: 92, 
+        target: 90,
+        subtitle: "Target: 90%" 
+      },
+      week: { 
+        percentage: 88, 
+        taken: 19,
+        total: 21,
+        currentStreak: 5,
+        subtitle: `19 of 21 doses taken`
+      },
+      month: { 
+        percentage: 85, 
+        taken: 85,
+        total: 90,
+        subtitle: "85 of 90 doses taken" 
+      },
+      weeklyData: [
+        { day: "Mon", score: 100 },
+        { day: "Tue", score: 100 },
+        { day: "Wed", score: 67 },
+        { day: "Thu", score: 100 },
+        { day: "Fri", score: 42 },
+        { day: "Sat", score: 100 },
+        { day: "Sun", score: 100 },
+      ],
+    },
+
+    motivation: {
+      title: "Great job this week!",
+      message: "You've maintained a 88% adherence rate. Keep up the excellent work!",
+      badgeText: "Above Target",
+      type: "positive" as const,
+    },
+  };
+
+  const { medications, reminders, progress, motivation } = homeData;
+
+  const handleWeeklyReport = () => console.log("Weekly report pressed");
+  const handleMonthlyReport = () => console.log("Monthly report pressed");
+  const handleGenerateShare = () => console.log("Generate & share pressed");
+
+
   return (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
@@ -59,12 +174,6 @@ export default function HomeTab({
       </View>
 
       <View style={styles.section}>
-        {/* <NextReminderCard
-          name={reminders.upcoming[0]?.name ?? ""}
-          strength={reminders.upcoming[0]?.strength ?? ""}
-          time={reminders.upcoming[0]?.time ?? ""}
-          onViewPress={onViewReminder}
-        /> */}
         <NextReminderCard
           name={reminders.allReminders[0]?.name ?? ""}
           strength={reminders.allReminders[0]?.strength ?? ""}
@@ -115,9 +224,9 @@ export default function HomeTab({
 
       <View style={[styles.section, styles.lastSection]}>
         <ShareHealthcareCard
-          onWeeklyReport={onWeeklyReport}
-          onMonthlyReport={onMonthlyReport}
-          onGenerateShare={onGenerateShare}
+          onWeeklyReport={handleWeeklyReport}
+          onMonthlyReport={handleMonthlyReport}
+          onGenerateShare={handleGenerateShare}
         />
       </View>
     </ScrollView>

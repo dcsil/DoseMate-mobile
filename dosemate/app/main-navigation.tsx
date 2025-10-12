@@ -15,205 +15,13 @@ export default function NavigationScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
 
-  // ============ DYNAMIC DATA - Organized for Backend Integration ============
-  const navigationData = {
-    user: {
-      id: "user123",
-      name: "John Doe",
-    },
-    
-    medications: {
-      today: {
-        taken: 3,
-        total: 4,
-      },
-      recent: [
-        { 
-          id: "med1",
-          name: "Amlodipine", 
-          strength: "5mg",
-          lastTaken: "Today at 12:00 PM", 
-          time: "12:00 PM",
-          status: "taken" as const 
-        },
-        { 
-          id: "med2",
-          name: "Levothyroxine", 
-          strength: "50mcg",
-          lastTaken: "Today at 8:00 AM", 
-          time: "8:00 AM",
-          status: "taken" as const 
-        },
-        { 
-          id: "med3",
-          name: "Hydrochlorothiazide", 
-          strength: "25mg",
-          lastTaken: "Today at 8:00 AM", 
-          time: "8:00 AM",
-          status: "taken" as const 
-        },
-      ],
-      allMedications: [
-        {
-          id: 1,
-          name: 'Metformin',
-          strength: '500mg',
-          quantity: '1 tablet',
-          frequency: 'Twice daily',
-          times: ['8:00 AM', '8:00 PM'],
-          color: '#2196F3',
-          nextDose: '8:00 PM',
-          adherence: 95,
-          foodInstructions: 'Take with food',
-          purpose: 'Diabetes management'
-        },
-        {
-          id: 2,
-          name: 'Lisinopril',
-          strength: '10mg',
-          quantity: '1 tablet',
-          frequency: 'Once daily',
-          times: ['8:00 AM'],
-          color: '#4CAF50',
-          nextDose: 'Tomorrow 8:00 AM',
-          adherence: 88,
-          foodInstructions: 'No food restrictions',
-          purpose: 'Blood pressure control'
-        },
-        {
-          id: 3,
-          name: 'Atorvastatin',
-          strength: '20mg',
-          quantity: '1 tablet',
-          frequency: 'Once daily',
-          times: ['9:00 PM'],
-          color: '#9C27B0',
-          nextDose: '9:00 PM',
-          adherence: 92,
-          foodInstructions: 'Take in the evening',
-          purpose: 'Cholesterol management'
-        },
-        {
-          id: 4,
-          name: 'Aspirin',
-          strength: '81mg',
-          quantity: '1 tablet',
-          frequency: 'Once daily',
-          times: ['8:00 AM'],
-          color: '#FF9800',
-          nextDose: 'Tomorrow 8:00 AM',
-          adherence: 97,
-          foodInstructions: 'Take with food',
-          purpose: 'Heart protection'
-        }
-      ],
-    },
-
-    reminders: {
-      allReminders: [
-        {
-          id: 1,
-          name: 'Metformin',
-          strength: '500mg',
-          quantity: '1 tablet',
-          time: '2:00 PM',
-          status: 'pending' as const,
-          color: '#2196F3',
-          overdue: false,
-          instructions: 'Take with food'
-        },
-        {
-          id: 2,
-          name: 'Atorvastatin',
-          strength: '20mg',
-          quantity: '1 tablet',
-          time: '9:00 PM',
-          status: 'pending' as const,
-          color: '#9C27B0',
-          overdue: false,
-          instructions: 'Take in the evening'
-        },
-        {
-          id: 3,
-          name: 'Lisinopril',
-          strength: '10mg',
-          quantity: '1 tablet',
-          time: '8:00 AM',
-          status: 'taken' as const,
-          color: '#4CAF50',
-          overdue: false,
-          instructions: 'No food restrictions'
-        },
-        {
-          id: 4,
-          name: 'Aspirin',
-          strength: '81mg',
-          quantity: '1 tablet',
-          time: '8:00 AM',
-          status: 'overdue' as const,
-          color: '#FF9800',
-          overdue: true,
-          instructions: 'Take with fooood'
-        }
-      ],
-    },
-
-    progress: {
-      today: { 
-        percentage: 92, 
-        target: 90,
-        subtitle: "Target: 90%" 
-      },
-      week: { 
-        percentage: 88, 
-        taken: 19,
-        total: 21,
-        currentStreak: 5,
-        subtitle: `19 of 21 doses taken`
-      },
-      month: { 
-        percentage: 85, 
-        taken: 85,
-        total: 90,
-        subtitle: "85 of 90 doses taken" 
-      },
-      weeklyData: [
-        { day: "Mon", score: 100 },
-        { day: "Tue", score: 100 },
-        { day: "Wed", score: 67 },
-        { day: "Thu", score: 100 },
-        { day: "Fri", score: 42 },
-        { day: "Sat", score: 100 },
-        { day: "Sun", score: 100 },
-      ],
-    },
-
-    motivation: {
-      title: "Great job this week!",
-      message: "You've maintained a 88% adherence rate. Keep up the excellent work!",
-      badgeText: "Above Target",
-      type: "positive" as const,
-    },
-  };
 
   // ============ EVENT HANDLERS ============
   const handlers = {
     handleViewReminder: () => { console.log("View reminder pressed"); setActiveTab("reminders"); },
     handleViewDetails: () => { console.log("View detailed analytics pressed"); setActiveTab("progress"); },
-    handleWeeklyReport: () => console.log("Weekly report pressed"),
-    handleMonthlyReport: () => console.log("Monthly report pressed"),
-    handleGenerateShare: () => console.log("Generate & share pressed"),
-    handleMedicationPress: (name: string) => console.log("Medication pressed:", name),
-    handleMarkTaken: (medication: string) => console.log("Mark taken:", medication),
-    handleViewAllReminders: () => console.log("View all reminders pressed"),
-    handleViewDetailedProgress: () => console.log("View detailed progress pressed"),
-    handleProfileOption: (option: string) => console.log("Profile option pressed:", option),
-    handleLearnMorePremium: () => console.log("Learn more about premium pressed"),
-    handleEditMedication: (id: number) => console.log("Edit medication:", id),
-    handleDeleteMedication: (id: number) => console.log("Delete medication:", id),
   };
 
-  const { medications, reminders, progress, motivation, user } = navigationData;
 
   // ============ RENDER TAB CONTENT ============
   const renderTabContent = () => {
@@ -221,65 +29,36 @@ export default function NavigationScreen() {
       case "home":
         return (
           <HomeTab
-            medications={medications}
-            reminders={reminders}
-            progress={progress}
-            motivation={motivation}
             onViewReminder={handlers.handleViewReminder}
             onViewDetails={handlers.handleViewDetails}
-            onWeeklyReport={handlers.handleWeeklyReport}
-            onMonthlyReport={handlers.handleMonthlyReport}
-            onGenerateShare={handlers.handleGenerateShare}
           />
         );
       
       case "medications":
         return (
-          <MedicationsTab
-            medications={medications.allMedications}
-            onMedicationPress={handlers.handleMedicationPress}
-            onEditMedication={handlers.handleEditMedication}
-            onDeleteMedication={handlers.handleDeleteMedication}
-          />
+          <MedicationsTab />
         );
       
       case "reminders":
         return (
-          <RemindersTab
-            reminders={reminders.allReminders}
-          />
+          <RemindersTab />
         );
       
       case "progress":
         return (
-          <ProgressTab
-            progress={progress}
-            recentActivity={medications.recent}
-            onViewDetailedProgress={handlers.handleViewDetailedProgress}
-          />
+          <ProgressTab />
         );
       
       case "profile":
         return (
-          <ProfileTab
-            user={user}
-            onProfileOption={handlers.handleProfileOption}
-            onLearnMorePremium={handlers.handleLearnMorePremium}
-          />
+          <ProfileTab />
         );
       
       default:
         return (
           <HomeTab
-            medications={medications}
-            reminders={reminders}
-            progress={progress}
-            motivation={motivation}
             onViewReminder={handlers.handleViewReminder}
             onViewDetails={handlers.handleViewDetails}
-            onWeeklyReport={handlers.handleWeeklyReport}
-            onMonthlyReport={handlers.handleMonthlyReport}
-            onGenerateShare={handlers.handleGenerateShare}
           />
         );
     }

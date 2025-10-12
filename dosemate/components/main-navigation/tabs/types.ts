@@ -1,13 +1,4 @@
 export interface Medication {
-  id: string;
-  name: string;
-  strength: string;
-  lastTaken: string;
-  time: string;
-  status: "taken";
-}
-
-export interface FullMedication {
   id: number;
   name: string;
   strength: string;
@@ -33,18 +24,13 @@ export interface Reminder {
   instructions: string;
 }
 
-export interface User {
+export interface UserData {
   id: string;
   name: string;
 }
 
 export interface MedicationData {
-  today: {
-    taken: number;
-    total: number;
-  };
-  recent: Medication[];
-  allMedications: FullMedication[];
+  allMedications: Medication[];
 }
 
 export interface ReminderData {
@@ -52,27 +38,37 @@ export interface ReminderData {
 }
 
 export interface ProgressData {
-  today: {
-    percentage: number;
-    target: number;
-    subtitle: string;
+  progress: {
+    today: {
+      percentage: number;
+      target: number;
+      subtitle: string;
+    };
+    week: {
+      percentage: number;
+      taken: number;
+      total: number;
+      currentStreak: number;
+      subtitle: string;
+    };
+    month: {
+      percentage: number;
+      taken: number;
+      total: number;
+      subtitle: string;
+    };
+    weeklyData: Array<{
+      day: string;
+      score: number;
+    }>;
   };
-  week: {
-    percentage: number;
-    taken: number;
-    total: number;
-    currentStreak: number;
-    subtitle: string;
-  };
-  month: {
-    percentage: number;
-    taken: number;
-    total: number;
-    subtitle: string;
-  };
-  weeklyData: Array<{
-    day: string;
-    score: number;
+  recentActivity: Array<{
+    id: string;
+    name: string;
+    strength: string;
+    lastTaken: string;
+    time: string;
+    status: "taken";
   }>;
 }
 
@@ -84,7 +80,7 @@ export interface MotivationData {
 }
 
 export interface NavigationData {
-  user: User;
+  profile: UserData;
   medications: MedicationData;
   reminders: ReminderData;
   progress: ProgressData;

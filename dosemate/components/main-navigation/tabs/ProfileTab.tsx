@@ -1,14 +1,8 @@
+
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import { User } from "./types";
-
-interface ProfileTabProps {
-  user: User;
-  onProfileOption: (option: string) => void;
-  onLearnMorePremium: () => void;
-}
 
 const profileOptions = [
   { 
@@ -37,11 +31,21 @@ const profileOptions = [
   },
 ];
 
-export default function ProfileTab({
-  user,
-  onProfileOption,
-  onLearnMorePremium,
-}: ProfileTabProps) {
+export default function ProfileTab() {
+  
+  // ============ STATIC DATA FOR PROFILE TAB - Organized for Backend Integration ============
+  const profileData = {
+    user: {
+      id: "user123",
+      name: "John Doe",
+    },
+  };
+
+  const { user } = profileData;
+
+  const handleProfileOption = (option: string) => console.log("Profile option pressed:", option);
+  const handleLearnMorePremium = () => console.log("Learn more about premium pressed");
+
   return (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.profileHeader}>
@@ -55,7 +59,7 @@ export default function ProfileTab({
         {profileOptions.map((option, index) => (
           <TouchableOpacity 
             key={index} 
-            onPress={() => onProfileOption(option.action)}
+            onPress={() => handleProfileOption(option.action)}
           >
             <Card style={styles.listItem}>
               <View style={styles.listItemContent}>
@@ -86,7 +90,7 @@ export default function ProfileTab({
           <Text style={styles.premiumSubtitle}>
             Get advanced analytics and family sharing
           </Text>
-          <TouchableOpacity style={styles.premiumButton} onPress={onLearnMorePremium}>
+          <TouchableOpacity style={styles.premiumButton} onPress={handleLearnMorePremium}>
             <Text style={styles.primaryButtonText}>Learn More</Text>
           </TouchableOpacity>
         </Card>

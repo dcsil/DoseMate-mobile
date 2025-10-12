@@ -2,19 +2,72 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import { ProgressData, Medication } from "./types";
 
-interface ProgressTabProps {
-  progress: ProgressData;
-  recentActivity: Medication[];
-  onViewDetailedProgress: () => void;
-}
+export default function ProgressTab() {
+  
+  // ============ STATIC DATA FOR PROGRESS TAB - Organized for Backend Integration ============
+  const progressData = {
+    progress: {
+      today: { 
+        percentage: 92, 
+        target: 90,
+        subtitle: "Target: 90%" 
+      },
+      week: { 
+        percentage: 88, 
+        taken: 19,
+        total: 21,
+        currentStreak: 5,
+        subtitle: `19 of 21 doses taken`
+      },
+      month: { 
+        percentage: 85, 
+        taken: 85,
+        total: 90,
+        subtitle: "85 of 90 doses taken" 
+      },
+      weeklyData: [
+        { day: "Mon", score: 100 },
+        { day: "Tue", score: 100 },
+        { day: "Wed", score: 67 },
+        { day: "Thu", score: 100 },
+        { day: "Fri", score: 42 },
+        { day: "Sat", score: 100 },
+        { day: "Sun", score: 100 },
+      ],
+    },
+    recentActivity: [
+      { 
+        id: "1",
+        name: "Amlodipine", 
+        strength: "5mg",
+        lastTaken: "Today at 12:00 PM", 
+        time: "12:00 PM",
+        status: "taken" as const 
+      },
+      { 
+        id: "2",
+        name: "Levothyroxine", 
+        strength: "50mcg",
+        lastTaken: "Today at 8:00 AM", 
+        time: "8:00 AM",
+        status: "taken" as const 
+      },
+      { 
+        id: "3",
+        name: "Hydrochlorothiazide", 
+        strength: "25mg",
+        lastTaken: "Today at 8:00 AM", 
+        time: "8:00 AM",
+        status: "taken" as const 
+      },
+    ],
+  };
 
-export default function ProgressTab({
-  progress,
-  recentActivity,
-  onViewDetailedProgress,
-}: ProgressTabProps) {
+  const { progress, recentActivity } = progressData;
+
+  const handleViewDetailedProgress = () => console.log("View detailed progress pressed");
+
   return (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
@@ -72,7 +125,7 @@ export default function ProgressTab({
           ))}
         </View>
 
-        <TouchableOpacity style={styles.fullWidthButton} onPress={onViewDetailedProgress}>
+        <TouchableOpacity style={styles.fullWidthButton} onPress={handleViewDetailedProgress}>
           <Text style={styles.fullWidthButtonText}>View Detailed Progress</Text>
         </TouchableOpacity>
       </View>
