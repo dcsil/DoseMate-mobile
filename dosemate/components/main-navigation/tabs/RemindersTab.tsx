@@ -1,91 +1,196 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import { ReminderData } from "./types";
 
-interface RemindersTabProps {
-  reminders: ReminderData;
-  onMarkTaken: (medication: string) => void;
-  onViewAllReminders: () => void;
+interface Reminder {
+  id: number;
+  name: string;
+  strength: string;
+  quantity: string;
+  time: string;
+  status: 'pending' | 'taken' | 'overdue' | 'snoozed';
+  color: string;
+  overdue: boolean;
+  instructions: string;
 }
 
-export default function RemindersTab({
-  reminders,
-  onMarkTaken,
-  onViewAllReminders,
-}: RemindersTabProps) {
+interface RemindersTabProps {
+  reminders: Reminder[];
+}
+
+export default function RemindersTab({ reminders: initialReminders }: RemindersTabProps) {
+  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
+
+  const handleMarkTaken = (id: number) => {
+    setReminders(reminders.map(reminder => 
+      reminder.id === id 
+        ? { ...reminder, status: 'taken' as const, overdue: false }
+        : reminder
+    ));
+  };
+
+  const handleSnooze = (id: number) => {
+    setReminders(reminders.map(reminder => 
+      reminder.id === id 
+        ? { ...reminder, status: 'snoozed' as const }
+        : reminder
+    ));
+  };
+
+  const pendingReminders = reminders.filter(r => r.status === 'pending' || r.status === 'overdue' || r.status === 'snoozed');
+  const completedReminders = reminders.filter(r => r.status === 'taken');
+  const overdueCount = reminders.filter(r => r.overdue).length;
+
   return (
     <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Summary Cards */}
       <View style={styles.section}>
         <View style={styles.row}>
           <Card style={styles.summaryCard}>
             <Text style={[styles.summaryNumber, { color: "#E85D5B" }]}>
-              {reminders.summary.pending}
+              {pendingReminders.length}
             </Text>
             <Text style={styles.summaryLabel}>Pending</Text>
           </Card>
 
           <Card style={styles.summaryCard}>
             <Text style={[styles.summaryNumber, { color: "#4CAF50" }]}>
-              {reminders.summary.completed}
+              {completedReminders.length}
             </Text>
             <Text style={styles.summaryLabel}>Completed</Text>
           </Card>
 
           <Card style={styles.summaryCard}>
             <Text style={[styles.summaryNumber, { color: "#FF6B6B" }]}>
-              {reminders.summary.overdue}
+              {overdueCount}
             </Text>
             <Text style={styles.summaryLabel}>Overdue</Text>
           </Card>
         </View>
       </View>
 
-      <View style={[styles.section, styles.lastSection]}>
-        <Text style={styles.subtitle}>Next Reminders</Text>
-        <View style={styles.list}>
-          {reminders.upcoming.map((reminder) => (
-            <Card 
-              key={reminder.id} 
-              style={reminder.isUrgent ? styles.urgentCard : undefined}
-            >
-              <View style={styles.reminderContent}>
-                <View style={styles.reminderLeft}>
-                  <View style={[
-                    styles.reminderIconCircle, 
-                    reminder.isUrgent && styles.urgentIconCircle
-                  ]}>
-                    <Ionicons 
-                      name="notifications" 
-                      size={20} 
-                      color={reminder.isUrgent ? "#F4A124" : "#999"} 
-                    />
+      {/* Pending Reminders */}
+      {pendingReminders.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.subtitle}>Pending Reminders</Text>
+          <View style={styles.list}>
+            {pendingReminders.map((reminder) => (
+              <Card 
+                key={reminder.id} 
+                style={[
+                  styles.reminderCard,
+                  reminder.overdue && styles.overdueCard,
+                  !reminder.overdue && reminder.status === 'snoozed' && styles.snoozedCard
+                ]}
+              >
+                <View style={styles.reminderHeader}>
+                  <View style={styles.reminderInfo}>
+                    <View style={[styles.pillIcon, { backgroundColor: reminder.color }]}>
+                      <MaterialCommunityIcons name="pill" size={32} color="#FFFFFF" />
+                      {reminder.overdue ? (
+                        <View style={styles.overdueIndicator}>
+                          <Ionicons name="time" size={12} color="#FFFFFF" />
+                        </View>
+                      ) : reminder.status === 'snoozed' ? (
+                        <View style={styles.snoozedIndicator}>
+                          <Ionicons name="hourglass" size={12} color="#FFFFFF" />
+                        </View>
+                      ) : null}
+                    </View>
+                    <View style={styles.reminderDetails}>
+                      <Text style={styles.reminderMedication}>
+                        {reminder.name}
+                      </Text>
+                      <Text style={styles.reminderDose}>
+                        {reminder.strength} • {reminder.quantity}
+                      </Text>
+                      <Text style={styles.reminderInstructions}>
+                        {reminder.instructions}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.listItemText}>
-                    <Text style={styles.listItemTitle}>
-                      {reminder.name} {reminder.strength}
+                  <View style={[
+                    styles.timeBadge,
+                    reminder.overdue && styles.overdueBadge,
+                    !reminder.overdue && reminder.status === 'snoozed' && styles.snoozedBadge
+                  ]}>
+                    <Text style={[
+                      styles.timeBadgeText,
+                      reminder.overdue && styles.overdueBadgeText,
+                      !reminder.overdue && reminder.status === 'snoozed' && styles.snoozedBadgeText
+                    ]}>
+                      {reminder.overdue ? 'Overdue' : reminder.status === 'snoozed' ? 'Snoozed' : reminder.time}
                     </Text>
-                    <Text style={styles.listItemSubtitle}>{reminder.time}</Text>
                   </View>
                 </View>
-                {reminder.isUrgent && (
-                  <TouchableOpacity 
-                    style={styles.primaryButton} 
-                    onPress={() => onMarkTaken(reminder.name)}
-                  >
-                    <Text style={styles.primaryButtonText}>Mark Taken</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </Card>
-          ))}
-        </View>
 
-        <TouchableOpacity style={styles.fullWidthButton} onPress={onViewAllReminders}>
-          <Text style={styles.fullWidthButtonText}>View All Reminders</Text>
-        </TouchableOpacity>
-      </View>
+                <View style={styles.reminderActions}>
+                  <TouchableOpacity 
+                    style={styles.primaryAction}
+                    onPress={() => handleMarkTaken(reminder.id)}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    <Text style={styles.primaryActionText}>Mark as Taken</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.secondaryAction}
+                    onPress={() => handleSnooze(reminder.id)}
+                  >
+                    <MaterialCommunityIcons name="clock-outline" size={20} color="#2C2C2C" />
+                    <Text style={styles.secondaryActionText}>Snooze</Text>
+                  </TouchableOpacity>
+                </View>
+              </Card>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Completed Reminders */}
+      {completedReminders.length > 0 && (
+        <View style={[styles.section, styles.lastSection]}>
+          <Text style={styles.subtitle}>Completed Today</Text>
+          <View style={styles.list}>
+            {completedReminders.map((reminder) => (
+              <Card key={reminder.id} style={styles.completedCard}>
+                <View style={styles.completedReminderContent}>
+                  <View style={[styles.pillIconSmall, { backgroundColor: reminder.color }]}>
+                    <MaterialCommunityIcons name="pill" size={24} color="#FFFFFF" />
+                    <View style={styles.completedIndicator}>
+                      <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <View style={styles.completedInfo}>
+                    <Text style={styles.completedMedication}>
+                      {reminder.name}
+                    </Text>
+                    <Text style={styles.completedDetails}>
+                      {reminder.strength} • Taken at {reminder.time}
+                    </Text>
+                  </View>
+                  <View style={styles.completedBadge}>
+                    <Text style={styles.completedBadgeText}>Completed</Text>
+                  </View>
+                </View>
+              </Card>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Empty State */}
+      {pendingReminders.length === 0 && (
+        <View style={styles.emptyState}>
+          <View style={styles.emptyStateIcon}>
+            <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
+          </View>
+          <Text style={styles.emptyStateTitle}>All caught up!</Text>
+          <Text style={styles.emptyStateText}>
+            You've taken all your medications for today.
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -95,7 +200,7 @@ const styles = StyleSheet.create({
   section: { marginTop: 20 },
   lastSection: { marginBottom: 100 },
   row: { flexDirection: "row", gap: 12 },
-  list: { gap: 10 },
+  list: { gap: 16 },
   subtitle: { 
     fontSize: 20, 
     fontWeight: "700", 
@@ -129,78 +234,227 @@ const styles = StyleSheet.create({
     fontWeight: "500" 
   },
 
-  // Reminder Cards
-  urgentCard: { 
-    backgroundColor: "#FFF9E6", 
-    borderLeftWidth: 4, 
-    borderLeftColor: "#F4C03A",
+  // Detailed Reminder Cards
+  reminderCard: {
+    padding: 20,
   },
-  reminderContent: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "space-between" 
+  overdueCard: {
+    backgroundColor: '#FFF5F5',
+    borderWidth: 1,
+    borderColor: '#FFD4D4',
   },
-  reminderLeft: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 12, 
-    flex: 1 
+  snoozedCard: {
+    backgroundColor: '#FFFBF0',
+    borderWidth: 1,
+    borderColor: '#FFE8A0',
   },
-  reminderIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#F5F5F5",
-    alignItems: "center",
-    justifyContent: "center",
+  reminderHeader: {
+    marginBottom: 16,
   },
-  urgentIconCircle: {
-    backgroundColor: "#FFFBF0",
+  reminderInfo: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 12,
   },
-  listItemText: { flex: 1 },
-  listItemTitle: { 
-    fontSize: 16, 
-    fontWeight: "600", 
-    color: "#2C2C2C", 
-    marginBottom: 4,
-    letterSpacing: -0.2,
+  pillIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  listItemSubtitle: { fontSize: 13, color: "#999" },
-
-  // Buttons
-  primaryButton: {
-    backgroundColor: "#E85D5B",
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+  overdueIndicator: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 24,
+    height: 24,
     borderRadius: 12,
-    shadowColor: "#E85D5B",
+    backgroundColor: '#E85D5B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  snoozedIndicator: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F4A124',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reminderDetails: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  reminderMedication: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    marginBottom: 4,
+    letterSpacing: -0.3,
+  },
+  reminderDose: {
+    fontSize: 15,
+    color: '#777',
+    marginBottom: 4,
+  },
+  reminderInstructions: {
+    fontSize: 13,
+    color: '#999',
+  },
+  timeBadge: {
+    backgroundColor: '#EBF5FB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  overdueBadge: {
+    backgroundColor: '#FFE8E8',
+  },
+  snoozedBadge: {
+    backgroundColor: '#FFF4D6',
+  },
+  timeBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#5BA4D6',
+  },
+  overdueBadgeText: {
+    color: '#E85D5B',
+  },
+  snoozedBadgeText: {
+    color: '#F4A124',
+  },
+  reminderActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  primaryAction: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4CAF50',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: '#4CAF50',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
   },
-  primaryButtonText: { 
-    color: "#FFFFFF", 
-    fontSize: 14, 
-    fontWeight: "600",
+  primaryActionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
   },
-  fullWidthButton: {
-    backgroundColor: "#E85D5B",
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 20,
-    shadowColor: "#E85D5B",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+  secondaryAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
+    backgroundColor: '#FFFFFF',
+    gap: 8,
   },
-  fullWidthButtonText: { 
-    color: "#FFFFFF", 
-    fontSize: 16, 
-    fontWeight: "600",
+  secondaryActionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#2C2C2C',
     letterSpacing: -0.2,
+  },
+
+  // Completed Cards
+  completedCard: {
+    padding: 16,
+    backgroundColor: '#F0FFF4',
+    borderWidth: 1,
+    borderColor: '#C6F6D5',
+  },
+  completedReminderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  pillIconSmall: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  completedIndicator: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#4CAF50',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completedInfo: {
+    flex: 1,
+  },
+  completedMedication: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C2C2C',
+    marginBottom: 4,
+    letterSpacing: -0.2,
+  },
+  completedDetails: {
+    fontSize: 13,
+    color: '#777',
+  },
+  completedBadge: {
+    backgroundColor: '#D5F4E6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  completedBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+  emptyStateIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: '#F0FFF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2C2C2C',
+    marginBottom: 8,
+    letterSpacing: -0.3,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: '#777',
+    textAlign: 'center',
   },
 });

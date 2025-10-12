@@ -59,10 +59,16 @@ export default function HomeTab({
       </View>
 
       <View style={styles.section}>
-        <NextReminderCard
+        {/* <NextReminderCard
           name={reminders.upcoming[0]?.name ?? ""}
           strength={reminders.upcoming[0]?.strength ?? ""}
           time={reminders.upcoming[0]?.time ?? ""}
+          onViewPress={onViewReminder}
+        /> */}
+        <NextReminderCard
+          name={reminders.allReminders[0]?.name ?? ""}
+          strength={reminders.allReminders[0]?.strength ?? ""}
+          time={reminders.allReminders[0]?.time ?? ""}
           onViewPress={onViewReminder}
         />
       </View>

@@ -22,11 +22,15 @@ export interface FullMedication {
 }
 
 export interface Reminder {
-  id: string;
+  id: number;
   name: string;
   strength: string;
+  quantity: string;
   time: string;
-  isUrgent: boolean;
+  status: 'pending' | 'taken' | 'overdue' | 'snoozed';
+  color: string;
+  overdue: boolean;
+  instructions: string;
 }
 
 export interface User {
@@ -44,12 +48,7 @@ export interface MedicationData {
 }
 
 export interface ReminderData {
-  summary: {
-    pending: number;
-    completed: number;
-    overdue: number;
-  };
-  upcoming: Reminder[];
+  allReminders: Reminder[];
 }
 
 export interface ProgressData {

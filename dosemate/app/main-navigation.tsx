@@ -110,15 +110,51 @@ export default function NavigationScreen() {
     },
 
     reminders: {
-      summary: {
-        pending: 2,
-        completed: 3,
-        overdue: 1,
-      },
-      upcoming: [
-        { id: "rem1", name: "Metformin", strength: "500mg", time: "2:00 PM", isUrgent: true },
-        { id: "rem2", name: "Lisinopril", strength: "10mg", time: "8:00 PM", isUrgent: false },
-        { id: "rem3", name: "Atorvastatin", strength: "20mg", time: "9:00 PM", isUrgent: false },
+      allReminders: [
+        {
+          id: 1,
+          name: 'Metformin',
+          strength: '500mg',
+          quantity: '1 tablet',
+          time: '2:00 PM',
+          status: 'pending' as const,
+          color: '#2196F3',
+          overdue: false,
+          instructions: 'Take with food'
+        },
+        {
+          id: 2,
+          name: 'Atorvastatin',
+          strength: '20mg',
+          quantity: '1 tablet',
+          time: '9:00 PM',
+          status: 'pending' as const,
+          color: '#9C27B0',
+          overdue: false,
+          instructions: 'Take in the evening'
+        },
+        {
+          id: 3,
+          name: 'Lisinopril',
+          strength: '10mg',
+          quantity: '1 tablet',
+          time: '8:00 AM',
+          status: 'taken' as const,
+          color: '#4CAF50',
+          overdue: false,
+          instructions: 'No food restrictions'
+        },
+        {
+          id: 4,
+          name: 'Aspirin',
+          strength: '81mg',
+          quantity: '1 tablet',
+          time: '8:00 AM',
+          status: 'overdue' as const,
+          color: '#FF9800',
+          overdue: true,
+          instructions: 'Take with fooood'
+        }
       ],
     },
 
@@ -210,9 +246,7 @@ export default function NavigationScreen() {
       case "reminders":
         return (
           <RemindersTab
-            reminders={reminders}
-            onMarkTaken={handlers.handleMarkTaken}
-            onViewAllReminders={handlers.handleViewAllReminders}
+            reminders={reminders.allReminders}
           />
         );
       
@@ -253,9 +287,9 @@ export default function NavigationScreen() {
 
   // ============ HEADER HELPERS ============
   const getHeaderTitle = () => ({
-    home: "Welcome back",
+    home: "Welcome Back",
     medications: "Medications",
-    reminders: "Reminders",
+    reminders: "Today's Reminders",
     progress: "Progress",
     profile: "Profile",
   }[activeTab] || "Home");

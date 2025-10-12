@@ -349,8 +349,8 @@ export default function MedicationDetailsScreen({
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={28} color="#2C2C2C" />
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
             <View style={[styles.medicationIcon, { backgroundColor: `${medication.color}20` }]}>
@@ -419,8 +419,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
-  closeButton: {
-    alignSelf: 'flex-end',
+  backButton: {
     padding: 8,
   },
   headerContent: {
