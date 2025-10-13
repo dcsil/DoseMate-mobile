@@ -4,7 +4,7 @@ import StatsCard from "@/components/main-navigation/StatsCard";
 import NextReminderCard from "@/components/main-navigation/NextReminderCard";
 import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
-import WeeklyOverviewCard from "@/components/main-navigation/WeeklyOverviewCard";
+import OverviewChartCard from "@/components/main-navigation/OverviewChartCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
 
@@ -212,8 +212,9 @@ export default function HomeTab({
       </View>
 
       <View style={styles.section}>
-        <WeeklyOverviewCard 
-          weekData={progress.weeklyData} 
+        <OverviewChartCard
+          data={progress.weeklyData} 
+          timeRange="week"
           onViewDetails={onViewDetails} 
         />
       </View>

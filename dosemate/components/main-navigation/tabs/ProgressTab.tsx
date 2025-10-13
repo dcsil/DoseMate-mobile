@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
+import DetailedProgressScreen from "@/components/main-navigation/DetailedProgressScreen";
+
 
 export default function ProgressTab() {
   
@@ -38,7 +40,7 @@ export default function ProgressTab() {
     },
     recentActivity: [
       { 
-        id: "1",
+        id: "med1",
         name: "Amlodipine", 
         strength: "5mg",
         lastTaken: "Today at 12:00 PM", 
@@ -46,7 +48,7 @@ export default function ProgressTab() {
         status: "taken" as const 
       },
       { 
-        id: "2",
+        id: "med2",
         name: "Levothyroxine", 
         strength: "50mcg",
         lastTaken: "Today at 8:00 AM", 
@@ -54,7 +56,7 @@ export default function ProgressTab() {
         status: "taken" as const 
       },
       { 
-        id: "3",
+        id: "med3",
         name: "Hydrochlorothiazide", 
         strength: "25mg",
         lastTaken: "Today at 8:00 AM", 
@@ -66,10 +68,16 @@ export default function ProgressTab() {
 
   const { progress, recentActivity } = progressData;
 
-  const handleViewDetailedProgress = () => console.log("View detailed progress pressed");
+  const [showDetailedProgress, setShowDetailedProgress] = useState(false);
+
+  const handleViewDetailedProgress = () => {
+    setShowDetailedProgress(true);
+  };
+  
 
   return (
-    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <>
+      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <View style={styles.progressCard}>
           <View style={styles.progressIconContainer}>
@@ -130,6 +138,12 @@ export default function ProgressTab() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+
+    <DetailedProgressScreen
+      visible={showDetailedProgress}
+      onClose={() => setShowDetailedProgress(false)}
+    />
+    </>
   );
 }
 
