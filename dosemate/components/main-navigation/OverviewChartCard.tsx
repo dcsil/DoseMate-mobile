@@ -8,47 +8,62 @@ interface DayData {
   score: number;
 }
 
-interface WeeklyOverviewCardProps {
-  weekData: DayData[];
+interface OverviewChartCardProps {
+  data: DayData[];
+  timeRange: 'week' | 'month';
+  showDetailsButton?: boolean;
+  showIcon?: boolean;
   onViewDetails?: () => void;
 }
 
-export default function WeeklyOverviewCard({ weekData, onViewDetails }: WeeklyOverviewCardProps) {
+export default function OverviewChartCard({ 
+  data, 
+  timeRange, 
+  showDetailsButton = true,
+  showIcon = true,
+  onViewDetails 
+}: OverviewChartCardProps) {
   const getColor = (score: number) => {
     if (score === 100) return "#27AE60";
     if (score >= 50) return "#F39C12";
     return "#E74C3C";
   };
 
+  const getTitle = () => {
+    return timeRange === 'week' ? 'Weekly Overview' : 'Monthly Overview';
+  };
+
   return (
     <Card>
       <View style={styles.header}>
-        <Ionicons name="bar-chart" size={20} color="#3498DB" />
-        <Text style={styles.title}>Weekly Overview</Text>
+        { showIcon && (<Ionicons name="bar-chart" size={20} color="#3498DB" />) }
+        <Text style={styles.title}>{getTitle()}</Text>
       </View>
       <View style={styles.content}>
         <View style={styles.chart}>
-          {weekData.map((day) => (
-            <View key={day.day} style={styles.chartDay}>
-              <Text style={styles.dayLabel}>{day.day}</Text>
+          {data.map((item) => (
+            <View key={item.day} style={styles.chartDay}>
+              <Text style={styles.dayLabel}>{item.day}</Text>
               <View style={styles.barContainer}>
                 <View
                   style={[
                     styles.bar,
                     {
-                      height: `${day.score}%`,
-                      backgroundColor: getColor(day.score),
+                      height: `${item.score}%`,
+                      backgroundColor: getColor(item.score),
                     },
                   ]}
                 />
               </View>
-              <Text style={styles.dayScore}>{day.score}%</Text>
+              <Text style={styles.dayScore}>{item.score}%</Text>
             </View>
           ))}
         </View>
-        <TouchableOpacity style={styles.button} onPress={onViewDetails}>
-          <Text style={styles.buttonText}>View Detailed Analytics</Text>
-        </TouchableOpacity>
+        {showDetailsButton && (
+          <TouchableOpacity style={styles.button} onPress={onViewDetails}>
+            <Text style={styles.buttonText}>View Detailed Analytics</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Card>
   );
@@ -64,7 +79,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: "#2C2C2C",
   },
   content: {
     gap: 16,
