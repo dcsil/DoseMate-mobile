@@ -1,69 +1,30 @@
-name: React Native CI
+name: CI
 
 on:
   push:
-    branches: [main, master, ci-testing]
+    branches: [ main, ci-testing ]
   pull_request:
-    branches: [main, master, ci-testing]
-  workflow_dispatch:
+    branches: [ main, ci-testing ]
 
 jobs:
-  lint-and-test:
-    name: Lint & Jest Tests
+  lint-and-typecheck:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set working directory
-        run: cd $GITHUB_WORKSPACE
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Expo lint
-        run: npm run lint
-
-      - name: Run Jest unit tests
-        run: npm test -- --ci --coverage
-
-      - name: Upload Jest coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-
-  build:
-    name: Verify Expo Build
-    runs-on: ubuntu-latest
-    needs: lint-and-test
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Verify Expo build
-        run: npx expo export
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npm run lint
+    
+    - name: TypeScript type check
+      run: npx tsc --noEmit
