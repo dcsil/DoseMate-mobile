@@ -223,7 +223,7 @@ export default function RemindersTab() {
           </View>
           <Text style={styles.emptyStateTitle}>All caught up!</Text>
           <Text style={styles.emptyStateText}>
-            You've taken all your medications for today.
+            {"You've taken all your medications for today."}
           </Text>
         </View>
       )}

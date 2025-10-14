@@ -12,7 +12,7 @@ import ProfileTab from "@/components/main-navigation/tabs/ProfileTab";
 import BottomNavigation from "@/components/main-navigation/Navbar";
 
 export default function NavigationScreen() {
-  const router = useRouter();
+  // const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
 
 

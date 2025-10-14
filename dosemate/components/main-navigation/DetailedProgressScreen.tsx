@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '@/components/main-navigation/Card';
 import OverviewChartCard from '@/components/main-navigation/OverviewChartCard';
 
-const { width } = Dimensions.get('window');
+// const { width } = Dimensions.get('window');
 
 interface DetailedProgressScreenProps {
   visible: boolean;
@@ -129,7 +129,7 @@ export default function DetailedProgressScreen({
 
           {/* Weekly Progress Ring */}
           <Card style={styles.progressCard}>
-            <Text style={styles.cardTitle}>This Week's Progress</Text>
+            <Text style={styles.cardTitle}>{"This Week's Progress"}</Text>
             <View style={styles.progressRing}>
               <View style={styles.progressCircle}>
                 <Text style={styles.progressPercent}>{weeklyStats.overall}%</Text>
@@ -255,7 +255,7 @@ export default function DetailedProgressScreen({
             <Ionicons name="trophy" size={48} color="#F59E0B" style={styles.motivationalIcon} />
             <Text style={styles.motivationalTitle}>Great job this week!</Text>
             <Text style={styles.motivationalMessage}>
-              You've maintained a {weeklyStats.overall}% adherence rate. Keep up the excellent work!
+              {"You've maintained a {weeklyStats.overall}% adherence rate. Keep up the excellent work!"}
             </Text>
             <View style={styles.motivationalGoal}>
               <Ionicons name="flag-outline" size={16} color="#888" />

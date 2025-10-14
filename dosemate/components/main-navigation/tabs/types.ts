@@ -57,19 +57,19 @@ export interface ProgressData {
       total: number;
       subtitle: string;
     };
-    weeklyData: Array<{
+    weeklyData: {
       day: string;
       score: number;
-    }>;
+    };
   };
-  recentActivity: Array<{
+  recentActivity: {
     id: string;
     name: string;
     strength: string;
     lastTaken: string;
     time: string;
     status: "taken";
-  }>;
+  };
 }
 
 export interface MotivationData {
