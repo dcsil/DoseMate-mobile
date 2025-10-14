@@ -18,7 +18,7 @@ export interface Reminder {
   strength: string;
   quantity: string;
   time: string;
-  status: 'pending' | 'taken' | 'overdue' | 'snoozed';
+  status: "pending" | "taken" | "overdue" | "snoozed";
   color: string;
   overdue: boolean;
   instructions: string;

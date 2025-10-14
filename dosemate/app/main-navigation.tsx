@@ -15,13 +15,17 @@ export default function NavigationScreen() {
   // const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
 
-
   // ============ EVENT HANDLERS ============
   const handlers = {
-    handleViewReminder: () => { console.log("View reminder pressed"); setActiveTab("reminders"); },
-    handleViewDetails: () => { console.log("View detailed analytics pressed"); setActiveTab("progress"); },
+    handleViewReminder: () => {
+      console.log("View reminder pressed");
+      setActiveTab("reminders");
+    },
+    handleViewDetails: () => {
+      console.log("View detailed analytics pressed");
+      setActiveTab("progress");
+    },
   };
-
 
   // ============ RENDER TAB CONTENT ============
   const renderTabContent = () => {
@@ -33,27 +37,19 @@ export default function NavigationScreen() {
             onViewDetails={handlers.handleViewDetails}
           />
         );
-      
+
       case "medications":
-        return (
-          <MedicationsTab />
-        );
-      
+        return <MedicationsTab />;
+
       case "reminders":
-        return (
-          <RemindersTab />
-        );
-      
+        return <RemindersTab />;
+
       case "progress":
-        return (
-          <ProgressTab />
-        );
-      
+        return <ProgressTab />;
+
       case "profile":
-        return (
-          <ProfileTab />
-        );
-      
+        return <ProfileTab />;
+
       default:
         return (
           <HomeTab
@@ -65,21 +61,23 @@ export default function NavigationScreen() {
   };
 
   // ============ HEADER HELPERS ============
-  const getHeaderTitle = () => ({
-    home: "Welcome Back",
-    medications: "Medications",
-    reminders: "Today's Reminders",
-    progress: "Progress",
-    profile: "Profile",
-  }[activeTab] || "Home");
+  const getHeaderTitle = () =>
+    ({
+      home: "Welcome Back",
+      medications: "Medications",
+      reminders: "Today's Reminders",
+      progress: "Progress",
+      profile: "Profile",
+    })[activeTab] || "Home";
 
-  const getHeaderSubtitle = () => ({
-    home: "Ready to stay on track today?",
-    medications: "Manage your medications",
-    reminders: "Stay on top of your schedule",
-    progress: "Track your adherence journey",
-    profile: "Manage your account",
-  }[activeTab] || "");
+  const getHeaderSubtitle = () =>
+    ({
+      home: "Ready to stay on track today?",
+      medications: "Manage your medications",
+      reminders: "Stay on top of your schedule",
+      progress: "Track your adherence journey",
+      profile: "Manage your account",
+    })[activeTab] || "";
 
   return (
     <View style={styles.container}>
@@ -120,15 +118,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  headerTitle: { 
-    fontSize: 28, 
-    fontWeight: "700", 
-    color: "#2C2C2C", 
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 4,
     letterSpacing: -0.5,
   },
-  headerSubtitle: { 
-    fontSize: 15, 
+  headerSubtitle: {
+    fontSize: 15,
     color: "#888",
     fontWeight: "400",
   },

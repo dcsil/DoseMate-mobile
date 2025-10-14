@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -98,10 +93,7 @@ export default function TutorialScreen() {
           {slides.map((_, index) => (
             <View
               key={index}
-              style={[
-                styles.dot,
-                index === currentSlide && styles.dotActive,
-              ]}
+              style={[styles.dot, index === currentSlide && styles.dotActive]}
             />
           ))}
         </View>
@@ -130,9 +122,7 @@ export default function TutorialScreen() {
         {/* Title and Description */}
         <View style={styles.textContainer}>
           <Text style={styles.title}>{currentSlideData.title}</Text>
-          <Text style={styles.description}>
-            {currentSlideData.description}
-          </Text>
+          <Text style={styles.description}>{currentSlideData.description}</Text>
         </View>
 
         {/* Features */}

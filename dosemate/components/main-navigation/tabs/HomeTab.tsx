@@ -17,7 +17,6 @@ export default function HomeTab({
   onViewReminder,
   onViewDetails,
 }: HomeTabProps) {
-  
   // ============ STATIC DATA FOR HOME TAB - Organized for Backend Integration ============
   const homeData = {
     medications: {
@@ -26,29 +25,29 @@ export default function HomeTab({
         total: 4,
       },
       recent: [
-        { 
+        {
           id: "med1",
-          name: "Amlodipine", 
+          name: "Amlodipine",
           strength: "5mg",
-          lastTaken: "Today at 12:00 PM", 
+          lastTaken: "Today at 12:00 PM",
           time: "12:00 PM",
-          status: "taken" as const 
+          status: "taken" as const,
         },
-        { 
+        {
           id: "med2",
-          name: "Levothyroxine", 
+          name: "Levothyroxine",
           strength: "50mcg",
-          lastTaken: "Today at 8:00 AM", 
+          lastTaken: "Today at 8:00 AM",
           time: "8:00 AM",
-          status: "taken" as const 
+          status: "taken" as const,
         },
-        { 
+        {
           id: "med3",
-          name: "Hydrochlorothiazide", 
+          name: "Hydrochlorothiazide",
           strength: "25mg",
-          lastTaken: "Today at 8:00 AM", 
+          lastTaken: "Today at 8:00 AM",
           time: "8:00 AM",
-          status: "taken" as const 
+          status: "taken" as const,
         },
       ],
     },
@@ -57,69 +56,69 @@ export default function HomeTab({
       allReminders: [
         {
           id: 1,
-          name: 'Metformin',
-          strength: '500mg',
-          quantity: '1 tablet',
-          time: '2:00 PM',
-          status: 'pending' as const,
-          color: '#2196F3',
+          name: "Metformin",
+          strength: "500mg",
+          quantity: "1 tablet",
+          time: "2:00 PM",
+          status: "pending" as const,
+          color: "#2196F3",
           overdue: false,
-          instructions: 'Take with food'
+          instructions: "Take with food",
         },
         {
           id: 2,
-          name: 'Atorvastatin',
-          strength: '20mg',
-          quantity: '1 tablet',
-          time: '9:00 PM',
-          status: 'pending' as const,
-          color: '#9C27B0',
+          name: "Atorvastatin",
+          strength: "20mg",
+          quantity: "1 tablet",
+          time: "9:00 PM",
+          status: "pending" as const,
+          color: "#9C27B0",
           overdue: false,
-          instructions: 'Take in the evening'
+          instructions: "Take in the evening",
         },
         {
           id: 3,
-          name: 'Lisinopril',
-          strength: '10mg',
-          quantity: '1 tablet',
-          time: '8:00 AM',
-          status: 'taken' as const,
-          color: '#4CAF50',
+          name: "Lisinopril",
+          strength: "10mg",
+          quantity: "1 tablet",
+          time: "8:00 AM",
+          status: "taken" as const,
+          color: "#4CAF50",
           overdue: false,
-          instructions: 'No food restrictions'
+          instructions: "No food restrictions",
         },
         {
           id: 4,
-          name: 'Aspirin',
-          strength: '81mg',
-          quantity: '1 tablet',
-          time: '8:00 AM',
-          status: 'overdue' as const,
-          color: '#FF9800',
+          name: "Aspirin",
+          strength: "81mg",
+          quantity: "1 tablet",
+          time: "8:00 AM",
+          status: "overdue" as const,
+          color: "#FF9800",
           overdue: true,
-          instructions: 'Take with food'
-        }
+          instructions: "Take with food",
+        },
       ],
     },
 
     progress: {
-      today: { 
-        percentage: 92, 
+      today: {
+        percentage: 92,
         target: 90,
-        subtitle: "Target: 90%" 
+        subtitle: "Target: 90%",
       },
-      week: { 
-        percentage: 88, 
+      week: {
+        percentage: 88,
         taken: 19,
         total: 21,
         currentStreak: 5,
-        subtitle: `19 of 21 doses taken`
+        subtitle: `19 of 21 doses taken`,
       },
-      month: { 
-        percentage: 85, 
+      month: {
+        percentage: 85,
         taken: 85,
         total: 90,
-        subtitle: "85 of 90 doses taken" 
+        subtitle: "85 of 90 doses taken",
       },
       weeklyData: [
         { day: "Mon", score: 100 },
@@ -134,7 +133,8 @@ export default function HomeTab({
 
     motivation: {
       title: "Great job this week!",
-      message: "You've maintained a 88% adherence rate. Keep up the excellent work!",
+      message:
+        "You've maintained a 88% adherence rate. Keep up the excellent work!",
       badgeText: "Above Target",
       type: "positive" as const,
     },
@@ -146,9 +146,11 @@ export default function HomeTab({
   const handleMonthlyReport = () => console.log("Monthly report pressed");
   const handleGenerateShare = () => console.log("Generate & share pressed");
 
-
   return (
-    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.section}>
         <View style={styles.row}>
           <StatsCard
@@ -213,9 +215,9 @@ export default function HomeTab({
 
       <View style={styles.section}>
         <OverviewChartCard
-          data={progress.weeklyData} 
+          data={progress.weeklyData}
           timeRange="week"
-          onViewDetails={onViewDetails} 
+          onViewDetails={onViewDetails}
         />
       </View>
 

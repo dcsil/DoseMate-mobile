@@ -7,7 +7,11 @@ interface ProgressBarProps {
   subtitle: string;
 }
 
-export default function ProgressBar({ label, percentage, subtitle }: ProgressBarProps) {
+export default function ProgressBar({
+  label,
+  percentage,
+  subtitle,
+}: ProgressBarProps) {
   return (
     <View style={styles.progressItem}>
       <View style={styles.progressHeader}>
