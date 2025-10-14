@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+// import { useRouter } from "expo-router";
 
 // Import tab components
 import HomeTab from "@/components/main-navigation/tabs/HomeTab";
