@@ -1,13 +1,14 @@
-name: CI
+name: CI Frontend Checks
 
 on:
   push:
-    branches: [ main, ci-testing ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, ci-testing ]
+    branches: [ main ]
 
 jobs:
-  lint-and-typecheck:
+  frontend-checks:
+    name: Frontend Lint, TypeCheck, and Format Check
     runs-on: ubuntu-latest
 
     defaults:
