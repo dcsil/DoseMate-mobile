@@ -1,16 +1,9 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Modal,
-} from 'react-native';
+import { View, TextInput, FlatList, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Modal } from "react-native";
+import React, { useState, useEffect } from 'react';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-
 import Card from './Card';
+import MedicineOCRScanner from "./OCR";
+import MedicationListScreen from "./MedicationList";
 
 interface AddMedicationScreenProps {
   visible: boolean;
@@ -26,10 +19,25 @@ interface MedicationDetails {
   foodInstructions: string;
 }
 
+type MedicineDetails = {
+  brand_name?: string;
+  purpose?: string;
+  dosage?: string;
+  generic_name?: string;
+  manufacturer?: string;
+  indications?: string;
+};
+
+import { useNavigation } from '@react-navigation/native';
+
 export default function AddMedicationScreen({ visible, onClose }: AddMedicationScreenProps) {
-  const [step, setStep] = useState(1); // 1: Search, 2: Details, 3: Schedule
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMed, setSelectedMed] = useState<any>(null);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedMedicine, setSelectedMedicine] = useState<MedicineDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showList, setShowList] = useState(false);
+
+  const [step, setStep] = useState(1); // 1: Search, 2: Info Display, 3: Details, 4: Schedule
   const [medDetails, setMedDetails] = useState<MedicationDetails>({
     strength: '',
     quantity: '',
@@ -38,6 +46,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     asNeeded: false,
     foodInstructions: ''
   });
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   // Dropdown states
   const [showStrengthPicker, setShowStrengthPicker] = useState(false);
@@ -45,73 +54,51 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
   const [showFoodPicker, setShowFoodPicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
 
-  const mockMedications = [
-    {
-      id: 1,
-      name: 'Metformin',
-      genericName: 'Metformin HCl',
-      form: 'Tablet',
-      purpose: 'Diabetes medication',
-      availableStrengths: ['500mg', '850mg', '1000mg'],
-      availableQuantities: ['1 tablet', '2 tablets']
-    },
-    {
-      id: 2,
-      name: 'Lisinopril',
-      genericName: 'Lisinopril',
-      form: 'Tablet',
-      purpose: 'Blood pressure medication',
-      availableStrengths: ['5mg', '10mg', '20mg', '40mg'],
-      availableQuantities: ['1 tablet', '1/2 tablet']
-    },
-    {
-      id: 3,
-      name: 'Atorvastatin',
-      genericName: 'Atorvastatin Calcium',
-      form: 'Tablet',
-      purpose: 'Cholesterol medication',
-      availableStrengths: ['10mg', '20mg', '40mg', '80mg'],
-      availableQuantities: ['1 tablet']
-    },
-    {
-      id: 4,
-      name: 'Levothyroxine',
-      genericName: 'Levothyroxine Sodium',
-      form: 'Tablet',
-      purpose: 'Thyroid medication',
-      availableStrengths: ['25mcg', '50mcg', '75mcg', '100mcg', '125mcg', '150mcg'],
-      availableQuantities: ['1 tablet']
-    },
-    {
-      id: 5,
-      name: 'Amlodipine',
-      genericName: 'Amlodipine Besylate',
-      form: 'Tablet',
-      purpose: 'Blood pressure medication',
-      availableStrengths: ['2.5mg', '5mg', '10mg'],
-      availableQuantities: ['1 tablet', '1/2 tablet']
-    },
-    {
-      id: 6,
-      name: 'Omeprazole',
-      genericName: 'Omeprazole',
-      form: 'Capsule',
-      purpose: 'Acid reflux medication',
-      availableStrengths: ['10mg', '20mg', '40mg'],
-      availableQuantities: ['1 capsule', '2 capsules']
+  // Fetch autocomplete suggestions
+  const fetchSuggestions = async (text: string) => {
+    if (text.length < 1) {
+      setSuggestions([]);
+      return;
     }
-  ];
+    try {
+      const res = await fetch(`http://localhost:8000/medicines/autocomplete?prefix=${text}`);
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.log("Error fetching suggestions:", err);
+      setSuggestions([]);
+    }
+  };
 
-  const filteredMeds = mockMedications.filter(med =>
-    med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    med.genericName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+  useEffect(() => {
+    const delay = setTimeout(() => fetchSuggestions(query), 300);
+    return () => clearTimeout(delay);
+  }, [query]);
+
+
+  const handleSelect = async (item: string) => {
+    setQuery(item);
+    setSuggestions([]);
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:8000/medicines/search?query=${item}`);
+      const data = await res.json();
+      console.log("Fetched medicine details:", data);
+      setSelectedMedicine(data);
+      setStep(2); 
+    } catch (err) {
+      console.log("Error fetching details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBack = () => {
-    if (step === 1 || step === 3) {
-      setStep(1);
-      setSearchQuery('');
-      setSelectedMed(null);
+    if (step === 1) {
+      setQuery('');
+      setSuggestions([]);
+      setSelectedMedicine(null);
       setMedDetails({
         strength: '',
         quantity: '',
@@ -128,9 +115,35 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
   const handleSave = () => {
     // Handle save logic here
-    console.log('Saving medication:', { selectedMed, medDetails });
-    handleBack(); // Reset and close
+    console.log('Saving medication:', { selectedMedicine, medDetails });
+    // Reset everything
+    setStep(1);
+    setQuery('');
+    setSuggestions([]);
+    setSelectedMedicine(null);
+    setMedDetails({
+      strength: '',
+      quantity: '',
+      frequency: '',
+      times: [],
+      asNeeded: false,
+      foodInstructions: ''
+    });
+    onClose();
+    setShowList(true); //nav to list screen
   };
+
+  // Generate strength options based on dosage info
+  const getStrengthOptions = () => {
+    if (!selectedMedicine?.dosage) return ['Low', 'Medium', 'High'];
+
+    const dosageStr = selectedMedicine.dosage;
+    const matches = dosageStr.match(/\d+\s*(?:mg|mcg|g|ml)/gi);
+    return matches && matches.length > 0 ? matches : ['Standard dosage'];
+  };
+
+  // Quantity options
+  const quantityOptions = ['1 tablet', '2 tablets', '1/2 tablet', '1 capsule', '2 capsules', '5ml', '10ml'];
 
   const renderSearchStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
@@ -145,29 +158,46 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         <TextInput
           style={styles.searchInput}
           placeholder="Search medication name..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
           placeholderTextColor="#999"
+          value={query}
+          onChangeText={(text) => {
+            setQuery(text);
+            setSelectedMedicine(null);
+          }}
         />
       </View>
+    {/* Barcode Scanner */}
+    <TouchableOpacity style={styles.scanButton} onPress={() => setScannerVisible(true)}>
+      <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
+      <Text style={styles.scanButtonText}>Take Photo</Text>
+    </TouchableOpacity>
+    {/* Scanner Modal */}
+    <Modal visible={scannerVisible} animationType="slide" onRequestClose={() => setScannerVisible(false)}>
+      <MedicineOCRScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onMedicineDetected={(detectedName: string) => {
+          setQuery(detectedName);
+          setScannerVisible(false);
+        }}
+      />
+    </Modal>
 
-      {/* Barcode Scanner */}
-      <TouchableOpacity style={styles.scanButton}>
-        <MaterialCommunityIcons name="barcode-scan" size={24} color="#E85D5B" />
-        <Text style={styles.scanButtonText}>Scan Barcode</Text>
-      </TouchableOpacity>
+      {/* Loading spinner */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#E85D5B" />
+        </View>
+      )}
 
-      {/* Results */}
-      {searchQuery && (
+      {/* Autocomplete Suggestions */}
+      {!loading && suggestions.length > 0 && (
         <View style={styles.resultsSection}>
-          <Text style={styles.resultsTitle}>Search Results</Text>
-          {filteredMeds.map((med) => (
+          <Text style={styles.resultsTitle}>Suggestions</Text>
+          {suggestions.map((suggestion, index) => (
             <TouchableOpacity
-              key={med.id}
-              onPress={() => {
-                setSelectedMed(med);
-                setStep(2);
-              }}
+              key={index}
+              onPress={() => handleSelect(suggestion)}
             >
               <Card style={styles.medicationCard}>
                 <View style={styles.medCardContent}>
@@ -175,9 +205,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
                     <MaterialCommunityIcons name="pill" size={24} color="#E85D5B" />
                   </View>
                   <View style={styles.medInfo}>
-                    <Text style={styles.medName}>{med.name}</Text>
-                    <Text style={styles.medGeneric}>{med.genericName} • {med.form}</Text>
-                    <Text style={styles.medPurpose}>{med.purpose}</Text>
+                    <Text style={styles.medName}>{suggestion}</Text>
                   </View>
                   <Ionicons name="add-circle" size={24} color="#E85D5B" />
                 </View>
@@ -189,14 +217,77 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     </ScrollView>
   );
 
+  const renderInfoStep = () => (
+    <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.stepHeader}>
+        <View style={styles.selectedMedIcon}>
+          <MaterialCommunityIcons name="pill" size={32} color="#E85D5B" />
+        </View>
+        <Text style={styles.stepTitle}>{selectedMedicine?.brand_name || 'Medicine Details'}</Text>
+        {selectedMedicine?.generic_name && (
+          <Text style={styles.stepSubtitle}>{selectedMedicine.generic_name}</Text>
+        )}
+      </View>
+
+      <View style={styles.infoSection}>
+        {selectedMedicine?.manufacturer && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoHeader}>
+              <MaterialCommunityIcons name="factory" size={20} color="#E85D5B" />
+              <Text style={styles.infoLabel}>Manufacturer</Text>
+            </View>
+            <Text style={styles.infoValue}>{selectedMedicine.manufacturer}</Text>
+          </View>
+        )}
+
+        {selectedMedicine?.dosage && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoHeader}>
+              <MaterialCommunityIcons name="flask" size={20} color="#E85D5B" />
+              <Text style={styles.infoLabel}>Dosage</Text>
+            </View>
+            <Text style={styles.infoValue}>{selectedMedicine.dosage}</Text>
+          </View>
+        )}
+
+        {selectedMedicine?.purpose && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoHeader}>
+              <MaterialCommunityIcons name="information" size={20} color="#E85D5B" />
+              <Text style={styles.infoLabel}>Purpose</Text>
+            </View>
+            <Text style={styles.infoValue}>{selectedMedicine.purpose}</Text>
+          </View>
+        )}
+
+        {selectedMedicine?.indications && (
+          <View style={styles.infoCard}>
+            <View style={styles.infoHeader}>
+              <MaterialCommunityIcons name="file-document" size={20} color="#E85D5B" />
+              <Text style={styles.infoLabel}>Indications</Text>
+            </View>
+            <Text style={styles.infoValue}>{selectedMedicine.indications}</Text>
+          </View>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={() => setStep(3)}
+      >
+        <Text style={styles.primaryButtonText}>Continue to Details</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
   const renderDetailsStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
       <View style={styles.stepHeader}>
         <View style={styles.selectedMedIcon}>
           <MaterialCommunityIcons name="pill" size={32} color="#E85D5B" />
         </View>
-        <Text style={styles.stepTitle}>{selectedMed?.name}</Text>
-        <Text style={styles.stepSubtitle}>{selectedMed?.genericName}</Text>
+        <Text style={styles.stepTitle}>{selectedMedicine?.brand_name}</Text>
+        <Text style={styles.stepSubtitle}>{selectedMedicine?.generic_name || 'Generic name not available'}</Text>
       </View>
 
       <View style={styles.formSection}>
@@ -214,7 +305,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           </TouchableOpacity>
           {showStrengthPicker && (
             <View style={styles.picker}>
-              {selectedMed?.availableStrengths.map((option: string) => (
+              {getStrengthOptions().map((option: string) => (
                 <TouchableOpacity
                   key={option}
                   style={styles.pickerOption}
@@ -244,7 +335,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           </TouchableOpacity>
           {showQuantityPicker && (
             <View style={styles.picker}>
-              {selectedMed?.availableQuantities.map((option: string) => (
+              {quantityOptions.map((option: string) => (
                 <TouchableOpacity
                   key={option}
                   style={styles.pickerOption}
@@ -293,7 +384,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
       <TouchableOpacity
         style={[styles.primaryButton, (!medDetails.strength || !medDetails.quantity) && styles.primaryButtonDisabled]}
-        onPress={() => setStep(3)}
+        onPress={() => setStep(4)}
         disabled={!medDetails.strength || !medDetails.quantity}
       >
         <Text style={styles.primaryButtonText}>Continue to Schedule</Text>
@@ -448,6 +539,10 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     </ScrollView>
   );
 
+  if (showList) {
+  return <MedicationListScreen onAddNew={() => {}} />;
+}
+
   return (
     <Modal
       visible={visible}
@@ -462,22 +557,23 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {step === 1 ? 'Add Medication' : step === 2 ? 'Medication Details' : 'Set Schedule'}
+            {step === 1 ? 'Add Medication' : step === 2 ? 'Medicine Information' : step === 3 ? 'Medication Details' : 'Set Schedule'}
           </Text>
-          <Text style={styles.stepIndicator}>{step}/3</Text>
+          <Text style={styles.stepIndicator}>{step}/4</Text>
         </View>
 
         {/* Progress Bar */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(step / 3) * 100}%` }]} />
+            <View style={[styles.progressFill, { width: `${(step / 4) * 100}%` }]} />
           </View>
         </View>
 
         {/* Content */}
         {step === 1 && renderSearchStep()}
-        {step === 2 && renderDetailsStep()}
-        {step === 3 && renderScheduleStep()}
+        {step === 2 && renderInfoStep()}
+        {step === 3 && renderDetailsStep()}
+        {step === 4 && renderScheduleStep()}
       </View>
     </Modal>
   );
@@ -605,6 +701,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#E85D5B',
   },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
   resultsSection: {
     marginTop: 8,
   },
@@ -640,14 +740,34 @@ const styles = StyleSheet.create({
     color: '#2C2C2C',
     marginBottom: 4,
   },
-  medGeneric: {
-    fontSize: 13,
-    color: '#777',
-    marginBottom: 2,
+  infoSection: {
+    marginBottom: 24,
   },
-  medPurpose: {
-    fontSize: 12,
-    color: '#E85D5B',
+  infoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#999',
+    marginLeft: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#2C2C2C',
+    lineHeight: 22,
   },
   formSection: {
     marginBottom: 24,
