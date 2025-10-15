@@ -3,7 +3,6 @@ import { render, fireEvent } from '@testing-library/react-native';
 import OnboardingStart from '@/app/index'; 
 import { useRouter } from 'expo-router';
 
-// Mock expo-router
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
@@ -12,7 +11,6 @@ describe('OnboardingStart', () => {
   let mockPush: jest.Mock;
 
   beforeEach(() => {
-    // Create a mock push function
     mockPush = jest.fn();
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,

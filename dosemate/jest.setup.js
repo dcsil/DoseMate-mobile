@@ -1,5 +1,26 @@
 import '@testing-library/jest-native/extend-expect';
 
+jest.mock('expo-linking', () => ({
+  addEventListener: jest.fn(() => ({
+    remove: jest.fn(),
+  })),
+  parse: jest.fn(() => ({ queryParams: {} })),
+  createURL: jest.fn(),
+}));
+
+// Mock expo-web-browser
+jest.mock('expo-web-browser', () => ({
+  openBrowserAsync: jest.fn(),
+  maybeCompleteAuthSession: jest.fn(),
+}));
+
+// Mock expo-secure-store
+jest.mock('expo-secure-store', () => ({
+  setItemAsync: jest.fn(),
+  getItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+
 jest.mock('@expo/vector-icons', () => {
   const { View } = require('react-native');
   return {
