@@ -20,6 +20,8 @@ describe("CreateAccountScreen", () => {
     replace: jest.Mock;
   };
 
+  const originalConsoleLog = console.log;
+
   beforeEach(() => {
     mockRouter = {
       back: jest.fn(),
@@ -39,6 +41,12 @@ describe("CreateAccountScreen", () => {
     (WebBrowser.openBrowserAsync as jest.Mock).mockResolvedValue({});
 
     (SecureStore.setItemAsync as jest.Mock).mockResolvedValue(undefined);
+
+    console.log = jest.fn();
+  });
+
+  afterEach(() => {
+    console.log = originalConsoleLog;
   });
 
   describe("Rendering", () => {
