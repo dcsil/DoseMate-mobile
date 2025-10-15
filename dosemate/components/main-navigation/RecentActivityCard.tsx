@@ -17,7 +17,9 @@ interface RecentActivityCardProps {
   activities: Activity[];
 }
 
-export default function RecentActivityCard({ activities }: RecentActivityCardProps) {
+export default function RecentActivityCard({
+  activities,
+}: RecentActivityCardProps) {
   return (
     <Card>
       <View style={styles.header}>

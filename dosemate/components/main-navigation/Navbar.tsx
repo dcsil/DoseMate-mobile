@@ -7,21 +7,40 @@ interface BottomNavigationProps {
   onTabChange: (tab: string) => void;
 }
 
-export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+export default function BottomNavigation({
+  activeTab,
+  onTabChange,
+}: BottomNavigationProps) {
   const tabs = [
     { id: "home", icon: "home", library: "ionicons", label: "Home" },
-    { id: "medications", icon: "pill-multiple", library: "material", label: "Medications" },
-    { id: "reminders", icon: "notifications", library: "ionicons", label: "Reminders" },
-    { id: "progress", icon: "bar-chart", library: "ionicons", label: "Progress" },
+    {
+      id: "medications",
+      icon: "pill-multiple",
+      library: "material",
+      label: "Medications",
+    },
+    {
+      id: "reminders",
+      icon: "notifications",
+      library: "ionicons",
+      label: "Reminders",
+    },
+    {
+      id: "progress",
+      icon: "bar-chart",
+      library: "ionicons",
+      label: "Progress",
+    },
     { id: "profile", icon: "person", library: "ionicons", label: "Profile" },
   ];
 
   return (
     <View style={styles.bottomNav}>
       {tabs.map((tab) => {
-        const IconComponent = tab.library === "material" ? MaterialCommunityIcons : Ionicons;
+        const IconComponent =
+          tab.library === "material" ? MaterialCommunityIcons : Ionicons;
         const isActive = activeTab === tab.id;
-        
+
         return (
           <TouchableOpacity
             key={tab.id}
@@ -33,12 +52,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
               size={24}
               color={isActive ? "#3498DB" : "#888"}
             />
-            <Text
-              style={[
-                styles.navLabel,
-                isActive && styles.navLabelActive,
-              ]}
-            >
+            <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
