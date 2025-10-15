@@ -1,5 +1,5 @@
 import { View, TextInput, FlatList, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Modal } from "react-native";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Card from './Card';
 import MedicineOCRScanner from "./OCR";
@@ -54,14 +54,17 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
   const [showFoodPicker, setShowFoodPicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
 
+  // Track if we should skip autocomplete (for OCR detection)
+  const skipAutocomplete = useRef(false);
+
   // Fetch autocomplete suggestions
   const fetchSuggestions = async (text: string) => {
-    if (text.length < 1) {
+    if (text.length < 1 || skipAutocomplete.current) {
       setSuggestions([]);
       return;
     }
     try {
-      const res = await fetch(`https://22ba2782645f.ngrok-free.app/medicines/autocomplete?prefix=${text}`);
+      const res = await fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/autocomplete?prefix=${text}`);
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
@@ -81,8 +84,10 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     setQuery(item);
     setSuggestions([]);
     setLoading(true);
+    skipAutocomplete.current = true;
+    
     try {
-      const res = await fetch(`https://22ba2782645f.ngrok-free.app/medicines/search?query=${item}`);
+      const res = await fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${item}`);
       const data = await res.json();
       console.log("Fetched medicine details:", data);
       setSelectedMedicine(data);
@@ -107,6 +112,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         asNeeded: false,
         foodInstructions: ''
       });
+      skipAutocomplete.current = false;
       onClose();
     } else {
       setStep(step - 1);
@@ -129,8 +135,35 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       asNeeded: false,
       foodInstructions: ''
     });
+    skipAutocomplete.current = false;
     onClose();
-    setShowList(false); //nav to list screen
+    setShowList(false);
+  };
+
+  // Handle medicine detection from OCR
+  const handleMedicineDetected = (detectedName: string) => {
+    console.log("Medicine detected from OCR:", detectedName);
+    setScannerVisible(false);
+    setStep(2);
+    
+    // skipAutocomplete.current = true;
+    setQuery(detectedName);
+    setSuggestions([]);
+    // setLoading(true);
+    
+    // Fetch medicine details
+    fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${detectedName}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log("Fetched medicine details:", data);
+        setSelectedMedicine(data);
+        setLoading(false);
+        setStep(2);
+      })
+      .catch(err => {
+        console.log("Error fetching details:", err);
+        setLoading(false);
+      });
   };
 
   // Generate strength options based on dosage info
@@ -163,23 +196,28 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           onChangeText={(text) => {
             setQuery(text);
             setSelectedMedicine(null);
+            skipAutocomplete.current = false;
           }}
         />
       </View>
     {/* Barcode Scanner */}
     <TouchableOpacity style={styles.scanButton} onPress={() => setScannerVisible(true)}>
       <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
-      <Text style={styles.scanButtonText}>Take Photo</Text>
+      <Text style={styles.scanButtonText}>Use Image</Text>
     </TouchableOpacity>
     {/* Scanner Modal */}
-    <Modal visible={scannerVisible} animationType="slide" onRequestClose={() => setScannerVisible(false)}>
+    <Modal 
+      visible={scannerVisible} 
+      animationType="slide" 
+      onRequestClose={() => setScannerVisible(false)}
+    >
       <MedicineOCRScanner
         visible={scannerVisible}
-        onClose={() => setScannerVisible(false)}
-        onMedicineDetected={(detectedName: string) => {
-          setQuery(detectedName);
+        onClose={() => {
+          console.log("Closing scanner from AddMedicationScreen");
           setScannerVisible(false);
         }}
+        onMedicineDetected={handleMedicineDetected}
       />
     </Modal>
 
@@ -540,8 +578,8 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
   );
 
   if (showList) {
-  return <MedicationListScreen onAddNew={() => {}} />;
-}
+    return <MedicationListScreen onAddNew={() => {}} />;
+  }
 
   return (
     <Modal
@@ -920,4 +958,4 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-});
+})

@@ -52,12 +52,6 @@ export default function MedicineOCRScanner({
 
   // Pick image from gallery
   const handlePickImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permission required", "Gallery access is needed to upload images.");
-      return;
-    }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
@@ -99,7 +93,7 @@ export default function MedicineOCRScanner({
       if (Platform.OS !== "web") headers["Content-Type"] = "multipart/form-data";
 
       const response = await fetch(
-        `https://22ba2782645f.ngrok-free.app/medicines/ocr`,
+        `https://8d7d77b902eb.ngrok-free.app/medicines/ocr`,
         {
           method: "POST",
           body: formData,
@@ -126,16 +120,24 @@ export default function MedicineOCRScanner({
   };
 
   const handleSelectMedicine = (medicineName: string) => {
+    console.log("Selected medicine in OCR:", medicineName);
+    
+    // // Clean up OCR state
+    // setSelectedImage(null);
+    // setExtractedText(null);
+    // setDetectedMedicines([]);
+    // setLoading(false);
+    
+    // // First notify parent with the medicine name
     onMedicineDetected(medicineName);
-    handleClose();
   };
 
   const handleClose = () => {
-    setSelectedImage(null);
-    setExtractedText(null);
-    setDetectedMedicines([]);
-    setLoading(false);
-    onClose();
+    // setSelectedImage(null);
+    // setExtractedText(null);
+    // setDetectedMedicines([]);
+    // setLoading(false);
+    // onClose();
   };
 
   return (
@@ -187,7 +189,11 @@ export default function MedicineOCRScanner({
                 <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.retakeButton}
-                  onPress={() => setSelectedImage(null)}
+                  onPress={() => {
+                    setSelectedImage(null);
+                    setExtractedText(null);
+                    setDetectedMedicines([]);
+                  }}
                 >
                   <Ionicons name="camera-reverse" size={20} color="#FFF" />
                   <Text style={styles.retakeButtonText}>Retake</Text>
