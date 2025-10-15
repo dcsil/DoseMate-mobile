@@ -10,11 +10,11 @@ interface MotivationalCardProps {
   type?: "positive" | "negative";
 }
 
-export default function MotivationalCard({ 
-  title, 
-  message, 
-  badgeText, 
-  type = "positive" 
+export default function MotivationalCard({
+  title,
+  message,
+  badgeText,
+  type = "positive",
 }: MotivationalCardProps) {
   const colors = {
     positive: {
@@ -44,16 +44,27 @@ export default function MotivationalCard({
   const theme = colors[type];
 
   return (
-    <Card style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+    <Card
+      style={[
+        styles.card,
+        { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
+      ]}
+    >
       <View style={styles.content}>
         <View style={[styles.icon, { backgroundColor: theme.iconBg }]}>
           <Ionicons name={theme.icon} size={24} color={theme.iconColor} />
         </View>
         <View style={styles.text}>
-          <Text style={[styles.title, { color: theme.titleColor }]}>{title}</Text>
-          <Text style={[styles.message, { color: theme.messageColor }]}>{message}</Text>
+          <Text style={[styles.title, { color: theme.titleColor }]}>
+            {title}
+          </Text>
+          <Text style={[styles.message, { color: theme.messageColor }]}>
+            {message}
+          </Text>
           <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
-            <Text style={[styles.badgeText, { color: theme.badgeText }]}>{badgeText}</Text>
+            <Text style={[styles.badgeText, { color: theme.badgeText }]}>
+              {badgeText}
+            </Text>
           </View>
         </View>
       </View>

@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest"
+    "prettier": "prettier --check ."
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -54,6 +55,8 @@
     "jest-expo": "^54.0.12",
     "typescript": "~5.9.2", 
     "react-test-renderer": "19.1.0"
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.2"
   },
   "private": true
 }

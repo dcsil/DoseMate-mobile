@@ -16,7 +16,11 @@ interface AdherenceProgressCardProps {
   monthData: AdherenceData;
 }
 
-export default function AdherenceProgressCard({ todayData, weekData, monthData }: AdherenceProgressCardProps) {
+export default function AdherenceProgressCard({
+  todayData,
+  weekData,
+  monthData,
+}: AdherenceProgressCardProps) {
   return (
     <Card>
       <View style={styles.header}>

@@ -25,8 +25,9 @@ export default function StatsCard({
   cardBgColor,
   borderColor,
 }: StatsCardProps) {
-  const IconComponent = iconLibrary === "material" ? MaterialCommunityIcons : Ionicons;
-  
+  const IconComponent =
+    iconLibrary === "material" ? MaterialCommunityIcons : Ionicons;
+
   return (
     <View style={[styles.card, { backgroundColor: cardBgColor, borderColor }]}>
       <View style={styles.content}>

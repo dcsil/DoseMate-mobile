@@ -9,7 +9,12 @@ interface NextReminderCardProps {
   onViewPress?: () => void;
 }
 
-export default function NextReminderCard({ name, strength, time, onViewPress }: NextReminderCardProps) {
+export default function NextReminderCard({
+  name,
+  strength,
+  time,
+  onViewPress,
+}: NextReminderCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.content}>
@@ -17,7 +22,11 @@ export default function NextReminderCard({ name, strength, time, onViewPress }: 
           <Ionicons name="notifications" size={24} color="#F39C12" />
           <View style={styles.text}>
             <Text style={styles.label}>Next reminder</Text>
-            <Text style={styles.medication}>{name} {strength}{"\n"}{time}</Text>
+            <Text style={styles.medication}>
+              {name} {strength}
+              {"\n"}
+              {time}
+            </Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={onViewPress}>

@@ -50,7 +50,9 @@ export default function MedicationCard({
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.iconCircle, { backgroundColor: medication.color }]}>
+          <View
+            style={[styles.iconCircle, { backgroundColor: medication.color }]}
+          >
             <MaterialCommunityIcons name="pill" size={24} color="#fff" />
           </View>
           <View style={styles.medicationInfo}>
@@ -121,8 +123,14 @@ export default function MedicationCard({
 
         {/* View Details Button */}
         <TouchableOpacity style={styles.detailsButton} onPress={onViewDetails}>
-          <Ionicons name="information-circle-outline" size={16} color="#3498DB" />
-          <Text style={styles.detailsButtonText}>View Details & Side Effects</Text>
+          <Ionicons
+            name="information-circle-outline"
+            size={16}
+            color="#3498DB"
+          />
+          <Text style={styles.detailsButtonText}>
+            View Details & Side Effects
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

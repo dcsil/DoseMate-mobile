@@ -18,7 +18,7 @@ export interface Reminder {
   strength: string;
   quantity: string;
   time: string;
-  status: 'pending' | 'taken' | 'overdue' | 'snoozed';
+  status: "pending" | "taken" | "overdue" | "snoozed";
   color: string;
   overdue: boolean;
   instructions: string;
@@ -57,19 +57,19 @@ export interface ProgressData {
       total: number;
       subtitle: string;
     };
-    weeklyData: Array<{
+    weeklyData: {
       day: string;
       score: number;
-    }>;
+    };
   };
-  recentActivity: Array<{
+  recentActivity: {
     id: string;
     name: string;
     strength: string;
     lastTaken: string;
     time: string;
     status: "taken";
-  }>;
+  };
 }
 
 export interface MotivationData {
