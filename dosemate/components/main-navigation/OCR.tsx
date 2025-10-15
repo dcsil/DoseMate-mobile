@@ -11,11 +11,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  launchCamera,
-  launchImageLibrary,
-  ImagePickerResponse,
-} from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
 
 interface MedicineOCRScannerProps {
   visible: boolean;
@@ -33,94 +29,101 @@ export default function MedicineOCRScanner({
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [detectedMedicines, setDetectedMedicines] = useState<string[]>([]);
 
-  // Handle image picker response
-  const handleImageResponse = (response: ImagePickerResponse) => {
-    if (response.didCancel) return;
-
-    if (response.errorCode) {
-      console.error("ImagePicker Error:", response.errorMessage);
-      Alert.alert("Error", response.errorMessage || "Failed to pick image");
-      return;
-    }
-
-    const asset = response.assets?.[0];
-    if (!asset || !asset.uri) {
-      Alert.alert("Error", "No image selected");
-      return;
-    }
-
-    
-    let imageUri = asset.uri;
-    if (Platform.OS === "ios" && imageUri.startsWith("file://")) {
-      imageUri = imageUri.replace("file://", "");
-    }
-
-    setSelectedImage(imageUri);
-    processImage(imageUri);
-  };
-
   // Open camera
-  const handleTakePhoto = () => {
-    launchCamera({ mediaType: "photo", quality: 1 }, handleImageResponse);
+  const handleTakePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Permission required", "Camera access is needed to take photos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsEditing: true,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+      processImage(uri);
+    }
   };
 
   // Pick image from gallery
-  const handlePickImage = () => {
-    launchImageLibrary({ mediaType: "photo", quality: 1 }, handleImageResponse);
+  const handlePickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Permission required", "Gallery access is needed to upload images.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsEditing: true,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+      processImage(uri);
+    }
   };
 
   // Process image via OCR endpoint
-const processImage = async (imageUri: string) => {
-  setLoading(true);
-  setExtractedText(null);
-  setDetectedMedicines([]);
+  const processImage = async (imageUri: string) => {
+    setLoading(true);
+    setExtractedText(null);
+    setDetectedMedicines([]);
 
-  try {
-    let formData = new FormData();
+    try {
+      let formData = new FormData();
 
-    if (Platform.OS === "web") {
-      // Convert URI to File for web
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const file = new File([blob], "medicine.jpg", { type: blob.type });
-      formData.append("file", file);
-    } else {
-      // Mobile
-      const uriParts = imageUri.split(".");
-      const fileType = uriParts[uriParts.length - 1] || "jpg";
+      if (Platform.OS === "web") {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        const file = new File([blob], "medicine.jpg", { type: blob.type });
+        formData.append("file", file);
+      } else {
+        const uriParts = imageUri.split(".");
+        const fileType = uriParts[uriParts.length - 1] || "jpg";
+        formData.append("file", {
+          uri: imageUri,
+          name: `medicine.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
 
-      formData.append("file", {
-        uri: imageUri,
-        name: `medicine.${fileType}`,
-        type: `image/${fileType}`,
-      } as any);
+      const headers: any = {};
+      if (Platform.OS !== "web") headers["Content-Type"] = "multipart/form-data";
+
+      const response = await fetch(
+        `https://22ba2782645f.ngrok-free.app/medicines/ocr`,
+        {
+          method: "POST",
+          body: formData,
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      if (data.extracted_text) setExtractedText(data.extracted_text);
+      if (data.detected_medicines?.length > 0)
+        setDetectedMedicines(data.detected_medicines);
+      else Alert.alert("No Medicine Detected", "Try again with a clearer image.");
+    } catch (error: any) {
+      console.error("Error processing image:", error);
+      Alert.alert("Error", error.message || "Failed to process image. Try again.");
+    } finally {
+      setLoading(false);
     }
-
-    const headers: any = {};
-    if (Platform.OS !== "web") headers["Content-Type"] = "multipart/form-data";
-
-    const response = await fetch(`http://localhost:8000/medicines/ocr`, {
-      method: "POST",
-      body: formData,
-      headers,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server returned ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    if (data.extracted_text) setExtractedText(data.extracted_text);
-    if (data.detected_medicines?.length > 0) setDetectedMedicines(data.detected_medicines);
-    else Alert.alert("No Medicine Detected", "Try again with a clearer image.");
-  } catch (error: any) {
-    console.error("Error processing image:", error);
-    Alert.alert("Error", error.message || "Failed to process image. Try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleSelectMedicine = (medicineName: string) => {
     onMedicineDetected(medicineName);
@@ -138,7 +141,7 @@ const processImage = async (imageUri: string) => {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={handleClose}>
       <View style={styles.container}>
-    
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons name="close" size={28} color="#2C2C2C" />
@@ -147,7 +150,7 @@ const processImage = async (imageUri: string) => {
           <View style={{ width: 28 }} />
         </View>
 
-      
+        {/* Content */}
         <View style={styles.content}>
           {!selectedImage ? (
             <View style={styles.optionsContainer}>
@@ -182,7 +185,10 @@ const processImage = async (imageUri: string) => {
             <View style={styles.resultsContainer}>
               <View style={styles.imagePreviewContainer}>
                 <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
-                <TouchableOpacity style={styles.retakeButton} onPress={() => setSelectedImage(null)}>
+                <TouchableOpacity
+                  style={styles.retakeButton}
+                  onPress={() => setSelectedImage(null)}
+                >
                   <Ionicons name="camera-reverse" size={20} color="#FFF" />
                   <Text style={styles.retakeButtonText}>Retake</Text>
                 </TouchableOpacity>
@@ -214,7 +220,7 @@ const processImage = async (imageUri: string) => {
 
                   {extractedText && (
                     <View style={styles.extractedTextContainer}>
-                      <Text style={styles.extractedTextTitle}>Medicine Extracted Text:</Text>
+                      <Text style={styles.extractedTextTitle}>Extracted Text:</Text>
                       <Text style={styles.extractedText}>{extractedText}</Text>
                     </View>
                   )}
@@ -228,7 +234,6 @@ const processImage = async (imageUri: string) => {
   );
 }
 
-// -------------------- STYLES -------------------- //
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9F9F9" },
   header: {

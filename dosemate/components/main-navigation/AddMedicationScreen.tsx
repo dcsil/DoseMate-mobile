@@ -61,7 +61,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8000/medicines/autocomplete?prefix=${text}`);
+      const res = await fetch(`https://22ba2782645f.ngrok-free.app/medicines/autocomplete?prefix=${text}`);
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
@@ -82,7 +82,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     setSuggestions([]);
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/medicines/search?query=${item}`);
+      const res = await fetch(`https://22ba2782645f.ngrok-free.app/medicines/search?query=${item}`);
       const data = await res.json();
       console.log("Fetched medicine details:", data);
       setSelectedMedicine(data);
@@ -130,7 +130,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       foodInstructions: ''
     });
     onClose();
-    setShowList(true); //nav to list screen
+    setShowList(false); //nav to list screen
   };
 
   // Generate strength options based on dosage info
