@@ -1,7 +1,14 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from "react-native";
-import React, { useState } from 'react';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Card from './Card';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import React, { useState } from "react";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import Card from "./Card";
 
 interface SavedMedication {
   id: string;
@@ -20,74 +27,76 @@ interface MedicationListScreenProps {
   onAddNew: () => void;
 }
 
-export default function MedicationListScreen({ onAddNew }: MedicationListScreenProps) {
+export default function MedicationListScreen({
+  onAddNew,
+}: MedicationListScreenProps) {
   // Sample data - replace with actual data from your backend/storage
   const [medications, setMedications] = useState<SavedMedication[]>([
     {
-      id: '1',
-      medicineName: 'Metformin',
-      genericName: 'Metformin HCl',
-      strength: '500mg',
-      quantity: '1 tablet',
-      frequency: 'Twice daily',
-      times: ['8:00 AM', '8:00 PM'],
+      id: "1",
+      medicineName: "Metformin",
+      genericName: "Metformin HCl",
+      strength: "500mg",
+      quantity: "1 tablet",
+      frequency: "Twice daily",
+      times: ["8:00 AM", "8:00 PM"],
       asNeeded: false,
-      foodInstructions: 'Take with food',
-      addedDate: '2024-01-15'
+      foodInstructions: "Take with food",
+      addedDate: "2024-01-15",
     },
     {
-      id: '2',
-      medicineName: 'Lisinopril',
-      genericName: 'Lisinopril',
-      strength: '10mg',
-      quantity: '1 tablet',
-      frequency: 'Once daily',
-      times: ['9:00 AM'],
+      id: "2",
+      medicineName: "Lisinopril",
+      genericName: "Lisinopril",
+      strength: "10mg",
+      quantity: "1 tablet",
+      frequency: "Once daily",
+      times: ["9:00 AM"],
       asNeeded: false,
-      foodInstructions: 'No preference',
-      addedDate: '2024-01-10'
+      foodInstructions: "No preference",
+      addedDate: "2024-01-10",
     },
     {
-      id: '3',
-      medicineName: 'Ibuprofen',
-      genericName: 'Ibuprofen',
-      strength: '200mg',
-      quantity: '1 tablet',
-      frequency: 'As needed',
+      id: "3",
+      medicineName: "Ibuprofen",
+      genericName: "Ibuprofen",
+      strength: "200mg",
+      quantity: "1 tablet",
+      frequency: "As needed",
       times: [],
       asNeeded: true,
-      foodInstructions: 'Take with food',
-      addedDate: '2024-01-05'
-    }
+      foodInstructions: "Take with food",
+      addedDate: "2024-01-05",
+    },
   ]);
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(
-      'Delete Medication',
+      "Delete Medication",
       `Are you sure you want to delete ${name}?`,
       [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: () => {
-            setMedications(medications.filter(med => med.id !== id));
+            setMedications(medications.filter((med) => med.id !== id));
             // Add your API call here to delete from backend
-            console.log('Deleting medication:', id);
-          }
-        }
-      ]
+            console.log("Deleting medication:", id);
+          },
+        },
+      ],
     );
   };
 
   const getFrequencyIcon = (frequency: string) => {
-    if (frequency === 'Once daily') return '1';
-    if (frequency === 'Twice daily') return '2';
-    if (frequency === 'Three times daily') return '3';
-    return '?';
+    if (frequency === "Once daily") return "1";
+    if (frequency === "Twice daily") return "2";
+    if (frequency === "Three times daily") return "3";
+    return "?";
   };
 
   const renderEmptyState = () => (
@@ -97,7 +106,8 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
       </View>
       <Text style={styles.emptyTitle}>No Medications Added</Text>
       <Text style={styles.emptySubtitle}>
-        Start by adding your first medication to keep track of your prescriptions
+        Start by adding your first medication to keep track of your
+        prescriptions
       </Text>
       <TouchableOpacity style={styles.addButton} onPress={onAddNew}>
         <Ionicons name="add" size={24} color="#FFFFFF" />
@@ -112,7 +122,10 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>My Medications</Text>
-          <Text style={styles.headerSubtitle}>{medications.length} active medication{medications.length !== 1 ? 's' : ''}</Text>
+          <Text style={styles.headerSubtitle}>
+            {medications.length} active medication
+            {medications.length !== 1 ? "s" : ""}
+          </Text>
         </View>
         {medications.length > 0 && (
           <TouchableOpacity style={styles.addIconButton} onPress={onAddNew}>
@@ -125,7 +138,10 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
       {medications.length === 0 ? (
         renderEmptyState()
       ) : (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.medicationsList}>
             {medications.map((med) => (
               <Card key={med.id} style={styles.medicationCard}>
@@ -133,7 +149,11 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
                   {/* Left Section - Icon and Info */}
                   <View style={styles.leftSection}>
                     <View style={styles.medIconContainer}>
-                      <MaterialCommunityIcons name="pill" size={28} color="#E85D5B" />
+                      <MaterialCommunityIcons
+                        name="pill"
+                        size={28}
+                        color="#E85D5B"
+                      />
                       {!med.asNeeded && (
                         <View style={styles.frequencyBadge}>
                           <Text style={styles.frequencyBadgeText}>
@@ -142,7 +162,7 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
                         </View>
                       )}
                     </View>
-                    
+
                     <View style={styles.medDetails}>
                       <Text style={styles.medName}>{med.medicineName}</Text>
                       {med.genericName && (
@@ -153,20 +173,28 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
                           {med.strength} • {med.quantity}
                         </Text>
                       </View>
-                      
+
                       {/* Schedule Info */}
                       <View style={styles.scheduleInfo}>
                         <Ionicons name="time-outline" size={14} color="#777" />
                         <Text style={styles.scheduleText}>
-                          {med.asNeeded ? 'As needed' : `${med.frequency} - ${med.times.join(', ')}`}
+                          {med.asNeeded
+                            ? "As needed"
+                            : `${med.frequency} - ${med.times.join(", ")}`}
                         </Text>
                       </View>
-                      
+
                       {/* Food Instructions */}
                       {med.foodInstructions && (
                         <View style={styles.foodInfo}>
-                          <Ionicons name="restaurant-outline" size={14} color="#777" />
-                          <Text style={styles.foodText}>{med.foodInstructions}</Text>
+                          <Ionicons
+                            name="restaurant-outline"
+                            size={14}
+                            color="#777"
+                          />
+                          <Text style={styles.foodText}>
+                            {med.foodInstructions}
+                          </Text>
                         </View>
                       )}
                     </View>
@@ -187,7 +215,9 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
           {/* Add Button at Bottom */}
           <TouchableOpacity style={styles.bottomAddButton} onPress={onAddNew}>
             <Ionicons name="add-circle" size={24} color="#E85D5B" />
-            <Text style={styles.bottomAddButtonText}>Add Another Medication</Text>
+            <Text style={styles.bottomAddButtonText}>
+              Add Another Medication
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -198,37 +228,37 @@ export default function MedicationListScreen({ onAddNew }: MedicationListScreenP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: "#F9F9F9",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
     marginTop: 4,
   },
   addIconButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFF5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF5F5",
+    alignItems: "center",
+    justifyContent: "center",
   },
   scrollView: {
     flex: 1,
@@ -241,54 +271,54 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
   },
   leftSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     flex: 1,
   },
   medIconContainer: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FFF5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF5F5",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
-    position: 'relative',
+    position: "relative",
   },
   frequencyBadge: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -4,
     right: -4,
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#4CAF50",
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
   },
   frequencyBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   medDetails: {
     flex: 1,
   },
   medName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 4,
   },
   medGeneric: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
     marginBottom: 8,
   },
   dosageContainer: {
@@ -296,94 +326,94 @@ const styles = StyleSheet.create({
   },
   dosageText: {
     fontSize: 14,
-    color: '#E85D5B',
-    fontWeight: '500',
+    color: "#E85D5B",
+    fontWeight: "500",
   },
   scheduleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
   },
   scheduleText: {
     fontSize: 13,
-    color: '#777',
+    color: "#777",
     marginLeft: 6,
     flex: 1,
   },
   foodInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   foodText: {
     fontSize: 13,
-    color: '#777',
+    color: "#777",
     marginLeft: 6,
   },
   deleteButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFF5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF5F5",
+    alignItems: "center",
+    justifyContent: "center",
     marginLeft: 8,
   },
   bottomAddButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     height: 56,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#FFD4D4',
-    borderStyle: 'dashed',
+    borderColor: "#FFD4D4",
+    borderStyle: "dashed",
     marginHorizontal: 20,
     marginBottom: 40,
   },
   bottomAddButtonText: {
     marginLeft: 8,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#E85D5B',
+    fontWeight: "600",
+    color: "#E85D5B",
   },
   emptyContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 40,
   },
   emptyIconContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#F5F5F5",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 24,
   },
   emptyTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 15,
-    color: '#777',
-    textAlign: 'center',
+    color: "#777",
+    textAlign: "center",
     lineHeight: 22,
     marginBottom: 32,
   },
   addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     height: 56,
-    backgroundColor: '#E85D5B',
+    backgroundColor: "#E85D5B",
     borderRadius: 14,
     paddingHorizontal: 32,
-    shadowColor: '#E85D5B',
+    shadowColor: "#E85D5B",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -392,7 +422,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     marginLeft: 8,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
 });

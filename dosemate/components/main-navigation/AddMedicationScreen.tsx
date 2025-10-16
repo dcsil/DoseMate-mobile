@@ -1,7 +1,16 @@
-import { View, TextInput, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Modal } from "react-native";
-import React, { useState, useEffect, useRef } from 'react';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Card from './Card';
+import {
+  View,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Modal,
+} from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import Card from "./Card";
 import MedicineOCRScanner from "./OCR";
 import MedicationListScreen from "./MedicationList";
 
@@ -28,10 +37,14 @@ type MedicineDetails = {
   indications?: string;
 };
 
-export default function AddMedicationScreen({ visible, onClose }: AddMedicationScreenProps) {
+export default function AddMedicationScreen({
+  visible,
+  onClose,
+}: AddMedicationScreenProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [selectedMedicine, setSelectedMedicine] = useState<MedicineDetails | null>(null);
+  const [selectedMedicine, setSelectedMedicine] =
+    useState<MedicineDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
 
@@ -62,7 +75,9 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       return;
     }
     try {
-      const res = await fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/autocomplete?prefix=${text}`);
+      const res = await fetch(
+        `https://8d7d77b902eb.ngrok-free.app/medicines/autocomplete?prefix=${text}`,
+      );
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
@@ -71,25 +86,25 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     }
   };
 
-  
   useEffect(() => {
     const delay = setTimeout(() => fetchSuggestions(query), 300);
     return () => clearTimeout(delay);
   }, [query]);
-
 
   const handleSelect = async (item: string) => {
     setQuery(item);
     setSuggestions([]);
     setLoading(true);
     skipAutocomplete.current = true;
-    
+
     try {
-      const res = await fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${item}`);
+      const res = await fetch(
+        `https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${item}`,
+      );
       const data = await res.json();
       console.log("Fetched medicine details:", data);
       setSelectedMedicine(data);
-      setStep(2); 
+      setStep(2);
     } catch (err) {
       console.log("Error fetching details:", err);
     } finally {
@@ -99,7 +114,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
   const handleBack = () => {
     if (step === 1) {
-      setQuery('');
+      setQuery("");
       setSuggestions([]);
       setSelectedMedicine(null);
       setMedDetails({
@@ -119,19 +134,19 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
   const handleSave = () => {
     // Handle save logic here
-    console.log('Saving medication:', { selectedMedicine, medDetails });
+    console.log("Saving medication:", { selectedMedicine, medDetails });
     // Reset everything
     setStep(1);
-    setQuery('');
+    setQuery("");
     setSuggestions([]);
     setSelectedMedicine(null);
     setMedDetails({
-      strength: '',
-      quantity: '',
-      frequency: '',
+      strength: "",
+      quantity: "",
+      frequency: "",
       times: [],
       asNeeded: false,
-      foodInstructions: ''
+      foodInstructions: "",
     });
     skipAutocomplete.current = false;
     onClose();
@@ -143,22 +158,24 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     console.log("Medicine detected from OCR:", detectedName);
     setScannerVisible(false);
     setStep(2);
-    
+
     // skipAutocomplete.current = true;
     setQuery(detectedName);
     setSuggestions([]);
     // setLoading(true);
-    
+
     // Fetch medicine details
-    fetch(`https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${detectedName}`)
-      .then(res => res.json())
-      .then(data => {
+    fetch(
+      `https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${detectedName}`,
+    )
+      .then((res) => res.json())
+      .then((data) => {
         console.log("Fetched medicine details:", data);
         setSelectedMedicine(data);
         setLoading(false);
         setStep(2);
       })
-      .catch(err => {
+      .catch((err) => {
         console.log("Error fetching details:", err);
         setLoading(false);
       });
@@ -166,15 +183,23 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
   // Generate strength options based on dosage info
   const getStrengthOptions = () => {
-    if (!selectedMedicine?.dosage) return ['Low', 'Medium', 'High'];
+    if (!selectedMedicine?.dosage) return ["Low", "Medium", "High"];
 
     const dosageStr = selectedMedicine.dosage;
     const matches = dosageStr.match(/\d+\s*(?:mg|mcg|g|ml)/gi);
-    return matches && matches.length > 0 ? matches : ['Standard dosage'];
+    return matches && matches.length > 0 ? matches : ["Standard dosage"];
   };
 
   // Quantity options
-  const quantityOptions = ['1 tablet', '2 tablets', '1/2 tablet', '1 capsule', '2 capsules', '5ml', '10ml'];
+  const quantityOptions = [
+    "1 tablet",
+    "2 tablets",
+    "1/2 tablet",
+    "1 capsule",
+    "2 capsules",
+    "5ml",
+    "10ml",
+  ];
 
   const renderSearchStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
@@ -205,26 +230,29 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           }}
         />
       </View>
-    {/* Barcode Scanner */}
-    <TouchableOpacity style={styles.scanButton} onPress={() => setScannerVisible(true)}>
-      <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
-      <Text style={styles.scanButtonText}>Use Image</Text>
-    </TouchableOpacity>
-    {/* Scanner Modal */}
-    <Modal 
-      visible={scannerVisible} 
-      animationType="slide" 
-      onRequestClose={() => setScannerVisible(false)}
-    >
-      <MedicineOCRScanner
+      {/* Barcode Scanner */}
+      <TouchableOpacity
+        style={styles.scanButton}
+        onPress={() => setScannerVisible(true)}
+      >
+        <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
+        <Text style={styles.scanButtonText}>Use Image</Text>
+      </TouchableOpacity>
+      {/* Scanner Modal */}
+      <Modal
         visible={scannerVisible}
-        onClose={() => {
-          console.log("Closing scanner from AddMedicationScreen");
-          setScannerVisible(false);
-        }}
-        onMedicineDetected={handleMedicineDetected}
-      />
-    </Modal>
+        animationType="slide"
+        onRequestClose={() => setScannerVisible(false)}
+      >
+        <MedicineOCRScanner
+          visible={scannerVisible}
+          onClose={() => {
+            console.log("Closing scanner from AddMedicationScreen");
+            setScannerVisible(false);
+          }}
+          onMedicineDetected={handleMedicineDetected}
+        />
+      </Modal>
 
       {/* Loading spinner */}
       {loading && (
@@ -270,9 +298,13 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         <View style={styles.selectedMedIcon}>
           <MaterialCommunityIcons name="pill" size={32} color="#E85D5B" />
         </View>
-        <Text style={styles.stepTitle}>{selectedMedicine?.brand_name || 'Medicine Details'}</Text>
+        <Text style={styles.stepTitle}>
+          {selectedMedicine?.brand_name || "Medicine Details"}
+        </Text>
         {selectedMedicine?.generic_name && (
-          <Text style={styles.stepSubtitle}>{selectedMedicine.generic_name}</Text>
+          <Text style={styles.stepSubtitle}>
+            {selectedMedicine.generic_name}
+          </Text>
         )}
       </View>
 
@@ -280,10 +312,16 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         {selectedMedicine?.manufacturer && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
-              <MaterialCommunityIcons name="factory" size={20} color="#E85D5B" />
+              <MaterialCommunityIcons
+                name="factory"
+                size={20}
+                color="#E85D5B"
+              />
               <Text style={styles.infoLabel}>Manufacturer</Text>
             </View>
-            <Text style={styles.infoValue}>{selectedMedicine.manufacturer}</Text>
+            <Text style={styles.infoValue}>
+              {selectedMedicine.manufacturer}
+            </Text>
           </View>
         )}
 
@@ -300,7 +338,11 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         {selectedMedicine?.purpose && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
-              <MaterialCommunityIcons name="information" size={20} color="#E85D5B" />
+              <MaterialCommunityIcons
+                name="information"
+                size={20}
+                color="#E85D5B"
+              />
               <Text style={styles.infoLabel}>Purpose</Text>
             </View>
             <Text style={styles.infoValue}>{selectedMedicine.purpose}</Text>
@@ -310,7 +352,11 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         {selectedMedicine?.indications && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
-              <MaterialCommunityIcons name="file-document" size={20} color="#E85D5B" />
+              <MaterialCommunityIcons
+                name="file-document"
+                size={20}
+                color="#E85D5B"
+              />
               <Text style={styles.infoLabel}>Indications</Text>
             </View>
             <Text style={styles.infoValue}>{selectedMedicine.indications}</Text>
@@ -318,10 +364,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={() => setStep(3)}
-      >
+      <TouchableOpacity style={styles.primaryButton} onPress={() => setStep(3)}>
         <Text style={styles.primaryButtonText}>Continue to Details</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -334,7 +377,9 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           <MaterialCommunityIcons name="pill" size={32} color="#E85D5B" />
         </View>
         <Text style={styles.stepTitle}>{selectedMedicine?.brand_name}</Text>
-        <Text style={styles.stepSubtitle}>{selectedMedicine?.generic_name || 'Generic name not available'}</Text>
+        <Text style={styles.stepSubtitle}>
+          {selectedMedicine?.generic_name || "Generic name not available"}
+        </Text>
       </View>
 
       <View style={styles.formSection}>
@@ -453,7 +498,11 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       </View>
 
       <TouchableOpacity
-        style={[styles.primaryButton, (!medDetails.strength || !medDetails.quantity) && styles.primaryButtonDisabled]}
+        style={[
+          styles.primaryButton,
+          (!medDetails.strength || !medDetails.quantity) &&
+            styles.primaryButtonDisabled,
+        ]}
         onPress={() => setStep(4)}
         disabled={!medDetails.strength || !medDetails.quantity}
       >
@@ -649,7 +698,13 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {step === 1 ? 'Add Medication' : step === 2 ? 'Medicine Information' : step === 3 ? 'Medication Details' : 'Set Schedule'}
+            {step === 1
+              ? "Add Medication"
+              : step === 2
+                ? "Medicine Information"
+                : step === 3
+                  ? "Medication Details"
+                  : "Set Schedule"}
           </Text>
           <Text style={styles.stepIndicator}>{step}/4</Text>
         </View>
@@ -657,7 +712,9 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         {/* Progress Bar */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(step / 4) * 100}%` }]} />
+            <View
+              style={[styles.progressFill, { width: `${(step / 4) * 100}%` }]}
+            />
           </View>
         </View>
 
@@ -795,7 +852,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     paddingVertical: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   resultsSection: {
     marginTop: 8,
@@ -836,29 +893,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
   },
   infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   infoLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
+    fontWeight: "600",
+    color: "#999",
     marginLeft: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   infoValue: {
     fontSize: 16,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
     lineHeight: 22,
   },
   formSection: {
@@ -1012,4 +1069,4 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-})
+});

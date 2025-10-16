@@ -33,7 +33,10 @@ export default function MedicineOCRScanner({
   const handleTakePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert("Permission required", "Camera access is needed to take photos.");
+      Alert.alert(
+        "Permission required",
+        "Camera access is needed to take photos.",
+      );
       return;
     }
 
@@ -90,7 +93,8 @@ export default function MedicineOCRScanner({
       }
 
       const headers: any = {};
-      if (Platform.OS !== "web") headers["Content-Type"] = "multipart/form-data";
+      if (Platform.OS !== "web")
+        headers["Content-Type"] = "multipart/form-data";
 
       const response = await fetch(
         `https://8d7d77b902eb.ngrok-free.app/medicines/ocr`,
@@ -98,7 +102,7 @@ export default function MedicineOCRScanner({
           method: "POST",
           body: formData,
           headers,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -110,10 +114,14 @@ export default function MedicineOCRScanner({
       if (data.extracted_text) setExtractedText(data.extracted_text);
       if (data.detected_medicines?.length > 0)
         setDetectedMedicines(data.detected_medicines);
-      else Alert.alert("No Medicine Detected", "Try again with a clearer image.");
+      else
+        Alert.alert("No Medicine Detected", "Try again with a clearer image.");
     } catch (error: any) {
       console.error("Error processing image:", error);
-      Alert.alert("Error", error.message || "Failed to process image. Try again.");
+      Alert.alert(
+        "Error",
+        error.message || "Failed to process image. Try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -121,13 +129,13 @@ export default function MedicineOCRScanner({
 
   const handleSelectMedicine = (medicineName: string) => {
     console.log("Selected medicine in OCR:", medicineName);
-    
+
     // // Clean up OCR state
     // setSelectedImage(null);
     // setExtractedText(null);
     // setDetectedMedicines([]);
     // setLoading(false);
-    
+
     // // First notify parent with the medicine name
     onMedicineDetected(medicineName);
   };
@@ -157,20 +165,31 @@ export default function MedicineOCRScanner({
           {!selectedImage ? (
             <View style={styles.optionsContainer}>
               <View style={styles.instructionContainer}>
-                <MaterialCommunityIcons name="camera-iris" size={80} color="#E85D5B" />
+                <MaterialCommunityIcons
+                  name="camera-iris"
+                  size={80}
+                  color="#E85D5B"
+                />
                 <Text style={styles.instructionTitle}>Scan Medicine Label</Text>
                 <Text style={styles.instructionText}>
-                  Take a clear photo or upload an existing one to detect the medicine name
+                  Take a clear photo or upload an existing one to detect the
+                  medicine name
                 </Text>
               </View>
 
               <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.optionButton} onPress={handleTakePhoto}>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={handleTakePhoto}
+                >
                   <Ionicons name="camera" size={32} color="#E85D5B" />
                   <Text style={styles.optionTitle}>Take Photo</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.optionButton} onPress={handlePickImage}>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={handlePickImage}
+                >
                   <Ionicons name="images" size={32} color="#4CAF50" />
                   <Text style={styles.optionTitle}>Choose from Gallery</Text>
                 </TouchableOpacity>
@@ -186,7 +205,10 @@ export default function MedicineOCRScanner({
           ) : (
             <View style={styles.resultsContainer}>
               <View style={styles.imagePreviewContainer}>
-                <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.imagePreview}
+                />
                 <TouchableOpacity
                   style={styles.retakeButton}
                   onPress={() => {
@@ -209,16 +231,28 @@ export default function MedicineOCRScanner({
                 <>
                   {detectedMedicines.length > 0 && (
                     <View style={styles.detectedContainer}>
-                      <Text style={styles.detectedTitle}>Detected Medicines:</Text>
+                      <Text style={styles.detectedTitle}>
+                        Detected Medicines:
+                      </Text>
                       {detectedMedicines.map((medicine, i) => (
                         <TouchableOpacity
                           key={i}
                           style={styles.medicineOption}
                           onPress={() => handleSelectMedicine(medicine)}
                         >
-                          <MaterialCommunityIcons name="pill" size={24} color="#E85D5B" />
-                          <Text style={styles.medicineOptionText}>{medicine}</Text>
-                          <Ionicons name="chevron-forward" size={20} color="#999" />
+                          <MaterialCommunityIcons
+                            name="pill"
+                            size={24}
+                            color="#E85D5B"
+                          />
+                          <Text style={styles.medicineOptionText}>
+                            {medicine}
+                          </Text>
+                          <Ionicons
+                            name="chevron-forward"
+                            size={20}
+                            color="#999"
+                          />
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -226,7 +260,9 @@ export default function MedicineOCRScanner({
 
                   {extractedText && (
                     <View style={styles.extractedTextContainer}>
-                      <Text style={styles.extractedTextTitle}>Extracted Text:</Text>
+                      <Text style={styles.extractedTextTitle}>
+                        Extracted Text:
+                      </Text>
                       <Text style={styles.extractedText}>{extractedText}</Text>
                     </View>
                   )}
@@ -258,8 +294,18 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: 20 },
   optionsContainer: { flex: 1, justifyContent: "space-between" },
   instructionContainer: { alignItems: "center", marginTop: 40 },
-  instructionTitle: { fontSize: 24, fontWeight: "700", color: "#2C2C2C", marginTop: 24 },
-  instructionText: { fontSize: 15, color: "#777", textAlign: "center", paddingHorizontal: 20 },
+  instructionTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2C2C2C",
+    marginTop: 24,
+  },
+  instructionText: {
+    fontSize: 15,
+    color: "#777",
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
   buttonsContainer: { gap: 16 },
   optionButton: {
     backgroundColor: "#FFF",
@@ -269,7 +315,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#F0F0F0",
   },
-  optionTitle: { fontSize: 18, fontWeight: "600", color: "#2C2C2C", marginTop: 8 },
+  optionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2C2C2C",
+    marginTop: 8,
+  },
   tipsContainer: {
     backgroundColor: "#FFF5F5",
     borderRadius: 12,
@@ -281,7 +332,12 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 13, color: "#777", marginTop: 4 },
   resultsContainer: { flex: 1 },
   imagePreviewContainer: { marginBottom: 24, position: "relative" },
-  imagePreview: { width: "100%", height: 300, borderRadius: 16, backgroundColor: "#F0F0F0" },
+  imagePreview: {
+    width: "100%",
+    height: 300,
+    borderRadius: 16,
+    backgroundColor: "#F0F0F0",
+  },
   retakeButton: {
     position: "absolute",
     bottom: 16,
@@ -294,10 +350,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   retakeButtonText: { color: "#FFF", fontSize: 14, marginLeft: 6 },
-  loadingContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 40 },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
   loadingText: { fontSize: 16, color: "#777", marginTop: 16 },
   detectedContainer: { marginBottom: 24 },
-  detectedTitle: { fontSize: 18, fontWeight: "600", color: "#2C2C2C", marginBottom: 12 },
+  detectedTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2C2C2C",
+    marginBottom: 12,
+  },
   medicineOption: {
     flexDirection: "row",
     alignItems: "center",
@@ -309,7 +374,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F0F0F0",
   },
-  medicineOptionText: { flex: 1, fontSize: 16, marginLeft: 12, color: "#2C2C2C" },
+  medicineOptionText: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 12,
+    color: "#2C2C2C",
+  },
   extractedTextContainer: {
     backgroundColor: "#FFF",
     borderRadius: 12,
