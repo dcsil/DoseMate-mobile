@@ -1,4 +1,4 @@
-import { View, TextInput, FlatList, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Modal } from "react-native";
+import { View, TextInput, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet, Modal } from "react-native";
 import React, { useState, useEffect, useRef } from 'react';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Card from './Card';
@@ -27,8 +27,6 @@ type MedicineDetails = {
   manufacturer?: string;
   indications?: string;
 };
-
-import { useNavigation } from '@react-navigation/native';
 
 export default function AddMedicationScreen({ visible, onClose }: AddMedicationScreenProps) {
   const [query, setQuery] = useState("");
