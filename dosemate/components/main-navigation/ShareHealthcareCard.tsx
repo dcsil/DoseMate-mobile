@@ -9,10 +9,10 @@ interface ShareHealthcareCardProps {
   onGenerateShare?: () => void;
 }
 
-export default function ShareHealthcareCard({ 
-  onWeeklyReport, 
-  onMonthlyReport, 
-  onGenerateShare 
+export default function ShareHealthcareCard({
+  onWeeklyReport,
+  onMonthlyReport,
+  onGenerateShare,
 }: ShareHealthcareCardProps) {
   return (
     <Card>
@@ -22,19 +22,29 @@ export default function ShareHealthcareCard({
       </View>
       <View style={styles.content}>
         <Text style={styles.description}>
-          Share your adherence report with your doctor or caregiver to help with your treatment plan.
+          Share your adherence report with your doctor or caregiver to help with
+          your treatment plan.
         </Text>
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.outlineButton} onPress={onWeeklyReport}>
+          <TouchableOpacity
+            style={styles.outlineButton}
+            onPress={onWeeklyReport}
+          >
             <Ionicons name="calendar-outline" size={16} color="#333" />
             <Text style={styles.outlineButtonText}>Weekly Report</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.outlineButton} onPress={onMonthlyReport}>
+          <TouchableOpacity
+            style={styles.outlineButton}
+            onPress={onMonthlyReport}
+          >
             <Ionicons name="bar-chart-outline" size={16} color="#333" />
             <Text style={styles.outlineButtonText}>Monthly Report</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.primaryButton} onPress={onGenerateShare}>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={onGenerateShare}
+        >
           <Text style={styles.primaryButtonText}>Generate & Share Report</Text>
         </TouchableOpacity>
       </View>

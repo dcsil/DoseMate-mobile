@@ -10,18 +10,18 @@ interface DayData {
 
 interface OverviewChartCardProps {
   data: DayData[];
-  timeRange: 'week' | 'month';
+  timeRange: "week" | "month";
   showDetailsButton?: boolean;
   showIcon?: boolean;
   onViewDetails?: () => void;
 }
 
-export default function OverviewChartCard({ 
-  data, 
-  timeRange, 
+export default function OverviewChartCard({
+  data,
+  timeRange,
   showDetailsButton = true,
   showIcon = true,
-  onViewDetails 
+  onViewDetails,
 }: OverviewChartCardProps) {
   const getColor = (score: number) => {
     if (score === 100) return "#27AE60";
@@ -30,13 +30,13 @@ export default function OverviewChartCard({
   };
 
   const getTitle = () => {
-    return timeRange === 'week' ? 'Weekly Overview' : 'Monthly Overview';
+    return timeRange === "week" ? "Weekly Overview" : "Monthly Overview";
   };
 
   return (
     <Card>
       <View style={styles.header}>
-        { showIcon && (<Ionicons name="bar-chart" size={20} color="#3498DB" />) }
+        {showIcon && <Ionicons name="bar-chart" size={20} color="#3498DB" />}
         <Text style={styles.title}>{getTitle()}</Text>
       </View>
       <View style={styles.content}>

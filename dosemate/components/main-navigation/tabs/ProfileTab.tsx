@@ -1,38 +1,42 @@
-
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
 
 const profileOptions = [
-  { 
-    icon: "person-outline", 
-    title: "Personal Information", 
-    subtitle: "Update your profile details", 
-    action: "personal-info" 
+  {
+    icon: "person-outline",
+    title: "Personal Information",
+    subtitle: "Update your profile details",
+    action: "personal-info",
   },
-  { 
-    icon: "notifications-outline", 
-    title: "Notification Settings", 
-    subtitle: "Customize your reminders", 
-    action: "notifications" 
+  {
+    icon: "notifications-outline",
+    title: "Notification Settings",
+    subtitle: "Customize your reminders",
+    action: "notifications",
   },
-  { 
-    icon: "calendar-outline", 
-    title: "Schedule Preferences", 
-    subtitle: "Set your daily routine", 
-    action: "schedule" 
+  {
+    icon: "calendar-outline",
+    title: "Schedule Preferences",
+    subtitle: "Set your daily routine",
+    action: "schedule",
   },
-  { 
-    icon: "bar-chart-outline", 
-    title: "Health Goals", 
-    subtitle: "Set adherence targets", 
-    action: "health-goals" 
+  {
+    icon: "bar-chart-outline",
+    title: "Health Goals",
+    subtitle: "Set adherence targets",
+    action: "health-goals",
   },
 ];
 
 export default function ProfileTab() {
-  
   // ============ STATIC DATA FOR PROFILE TAB - Organized for Backend Integration ============
   const profileData = {
     user: {
@@ -43,11 +47,16 @@ export default function ProfileTab() {
 
   const { user } = profileData;
 
-  const handleProfileOption = (option: string) => console.log("Profile option pressed:", option);
-  const handleLearnMorePremium = () => console.log("Learn more about premium pressed");
+  const handleProfileOption = (option: string) =>
+    console.log("Profile option pressed:", option);
+  const handleLearnMorePremium = () =>
+    console.log("Learn more about premium pressed");
 
   return (
-    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.profileHeader}>
         <View style={styles.profileIconContainer}>
           <Ionicons name="person" size={48} color="#E85D5B" />
@@ -57,17 +66,17 @@ export default function ProfileTab() {
 
       <View style={styles.section}>
         {profileOptions.map((option, index) => (
-          <TouchableOpacity 
-            key={index} 
+          <TouchableOpacity
+            key={index}
             onPress={() => handleProfileOption(option.action)}
           >
             <Card style={styles.listItem}>
               <View style={styles.listItemContent}>
                 <View style={styles.profileOptionIcon}>
-                  <Ionicons 
-                    name={option.icon as any} 
-                    size={22} 
-                    color="#E85D5B" 
+                  <Ionicons
+                    name={option.icon as any}
+                    size={22}
+                    color="#E85D5B"
                   />
                 </View>
                 <View style={styles.listItemText}>
@@ -90,7 +99,10 @@ export default function ProfileTab() {
           <Text style={styles.premiumSubtitle}>
             Get advanced analytics and family sharing
           </Text>
-          <TouchableOpacity style={styles.premiumButton} onPress={handleLearnMorePremium}>
+          <TouchableOpacity
+            style={styles.premiumButton}
+            onPress={handleLearnMorePremium}
+          >
             <Text style={styles.primaryButtonText}>Learn More</Text>
           </TouchableOpacity>
         </Card>
@@ -105,8 +117,8 @@ const styles = StyleSheet.create({
   lastSection: { marginBottom: 100 },
 
   // Profile Header
-  profileHeader: { 
-    alignItems: "center", 
+  profileHeader: {
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 12,
   },
@@ -138,8 +150,8 @@ const styles = StyleSheet.create({
   },
 
   // List Items
-  listItem: { 
-    padding: 16, 
+  listItem: {
+    padding: 16,
     marginBottom: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -147,10 +159,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  listItemContent: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 14 
+  listItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
   },
   profileOptionIcon: {
     width: 44,
@@ -161,16 +173,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   listItemText: { flex: 1 },
-  listItemTitle: { 
-    fontSize: 16, 
-    fontWeight: "600", 
-    color: "#2C2C2C", 
+  listItemTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 4,
     letterSpacing: -0.2,
   },
-  listItemSubtitle: { 
-    fontSize: 13, 
-    color: "#999" 
+  listItemSubtitle: {
+    fontSize: 13,
+    color: "#999",
   },
 
   // Premium Card
@@ -199,24 +211,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  premiumTitle: { 
-    fontSize: 20, 
-    fontWeight: "700", 
-    color: "#2C2C2C", 
+  premiumTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 8,
     letterSpacing: -0.3,
   },
-  premiumSubtitle: { 
-    fontSize: 14, 
-    color: "#888", 
-    textAlign: "center", 
+  premiumSubtitle: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
     marginBottom: 20,
     lineHeight: 20,
   },
-  premiumButton: { 
-    backgroundColor: "#E85D5B", 
-    paddingHorizontal: 32, 
-    paddingVertical: 14, 
+  premiumButton: {
+    backgroundColor: "#E85D5B",
+    paddingHorizontal: 32,
+    paddingVertical: 14,
     borderRadius: 12,
     shadowColor: "#E85D5B",
     shadowOffset: { width: 0, height: 2 },
@@ -224,9 +236,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  primaryButtonText: { 
-    color: "#FFFFFF", 
-    fontSize: 14, 
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "600",
     letterSpacing: -0.2,
   },

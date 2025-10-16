@@ -39,12 +39,12 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 
   const [step, setStep] = useState(1); // 1: Search, 2: Info Display, 3: Details, 4: Schedule
   const [medDetails, setMedDetails] = useState<MedicationDetails>({
-    strength: '',
-    quantity: '',
-    frequency: '',
+    strength: "",
+    quantity: "",
+    frequency: "",
     times: [],
     asNeeded: false,
-    foodInstructions: ''
+    foodInstructions: "",
   });
   const [scannerVisible, setScannerVisible] = useState(false);
 
@@ -105,12 +105,12 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
       setSuggestions([]);
       setSelectedMedicine(null);
       setMedDetails({
-        strength: '',
-        quantity: '',
-        frequency: '',
+        strength: "",
+        quantity: "",
+        frequency: "",
         times: [],
         asNeeded: false,
-        foodInstructions: ''
+        foodInstructions: "",
       });
       skipAutocomplete.current = false;
       onClose();
@@ -182,12 +182,19 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
       <View style={styles.stepHeader}>
         <Text style={styles.stepTitle}>Add Medication</Text>
-        <Text style={styles.stepSubtitle}>Search for your medication or scan the barcode</Text>
+        <Text style={styles.stepSubtitle}>
+          Search for your medication or scan the barcode
+        </Text>
       </View>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+        <Ionicons
+          name="search"
+          size={20}
+          color="#999"
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder="Search medication name..."
@@ -240,7 +247,11 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
               <Card style={styles.medicationCard}>
                 <View style={styles.medCardContent}>
                   <View style={styles.medIcon}>
-                    <MaterialCommunityIcons name="pill" size={24} color="#E85D5B" />
+                    <MaterialCommunityIcons
+                      name="pill"
+                      size={24}
+                      color="#E85D5B"
+                    />
                   </View>
                   <View style={styles.medInfo}>
                     <Text style={styles.medName}>{suggestion}</Text>
@@ -336,8 +347,14 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             style={styles.selectButton}
             onPress={() => setShowStrengthPicker(!showStrengthPicker)}
           >
-            <Text style={medDetails.strength ? styles.selectButtonTextActive : styles.selectButtonText}>
-              {medDetails.strength || 'Select strength'}
+            <Text
+              style={
+                medDetails.strength
+                  ? styles.selectButtonTextActive
+                  : styles.selectButtonText
+              }
+            >
+              {medDetails.strength || "Select strength"}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#999" />
           </TouchableOpacity>
@@ -348,7 +365,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
                   key={option}
                   style={styles.pickerOption}
                   onPress={() => {
-                    setMedDetails(prev => ({ ...prev, strength: option }));
+                    setMedDetails((prev) => ({ ...prev, strength: option }));
                     setShowStrengthPicker(false);
                   }}
                 >
@@ -366,8 +383,14 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             style={styles.selectButton}
             onPress={() => setShowQuantityPicker(!showQuantityPicker)}
           >
-            <Text style={medDetails.quantity ? styles.selectButtonTextActive : styles.selectButtonText}>
-              {medDetails.quantity || 'How many pills?'}
+            <Text
+              style={
+                medDetails.quantity
+                  ? styles.selectButtonTextActive
+                  : styles.selectButtonText
+              }
+            >
+              {medDetails.quantity || "How many pills?"}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#999" />
           </TouchableOpacity>
@@ -378,7 +401,7 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
                   key={option}
                   style={styles.pickerOption}
                   onPress={() => {
-                    setMedDetails(prev => ({ ...prev, quantity: option }));
+                    setMedDetails((prev) => ({ ...prev, quantity: option }));
                     setShowQuantityPicker(false);
                   }}
                 >
@@ -396,25 +419,36 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             style={styles.selectButton}
             onPress={() => setShowFoodPicker(!showFoodPicker)}
           >
-            <Text style={medDetails.foodInstructions ? styles.selectButtonTextActive : styles.selectButtonText}>
-              {medDetails.foodInstructions || 'With or without food?'}
+            <Text
+              style={
+                medDetails.foodInstructions
+                  ? styles.selectButtonTextActive
+                  : styles.selectButtonText
+              }
+            >
+              {medDetails.foodInstructions || "With or without food?"}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#999" />
           </TouchableOpacity>
           {showFoodPicker && (
             <View style={styles.picker}>
-              {['Take with food', 'Take without food', 'No preference'].map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={styles.pickerOption}
-                  onPress={() => {
-                    setMedDetails(prev => ({ ...prev, foodInstructions: option }));
-                    setShowFoodPicker(false);
-                  }}
-                >
-                  <Text style={styles.pickerOptionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
+              {["Take with food", "Take without food", "No preference"].map(
+                (option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={styles.pickerOption}
+                    onPress={() => {
+                      setMedDetails((prev) => ({
+                        ...prev,
+                        foodInstructions: option,
+                      }));
+                      setShowFoodPicker(false);
+                    }}
+                  >
+                    <Text style={styles.pickerOptionText}>{option}</Text>
+                  </TouchableOpacity>
+                ),
+              )}
             </View>
           )}
         </View>
@@ -437,7 +471,9 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
           <Ionicons name="time" size={32} color="#4CAF50" />
         </View>
         <Text style={styles.stepTitle}>Set Reminder Schedule</Text>
-        <Text style={styles.stepSubtitle}>When should you take this medication?</Text>
+        <Text style={styles.stepSubtitle}>
+          When should you take this medication?
+        </Text>
       </View>
 
       <View style={styles.formSection}>
@@ -448,19 +484,30 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
             style={styles.selectButton}
             onPress={() => setShowFrequencyPicker(!showFrequencyPicker)}
           >
-            <Text style={medDetails.frequency ? styles.selectButtonTextActive : styles.selectButtonText}>
-              {medDetails.frequency || 'Select frequency'}
+            <Text
+              style={
+                medDetails.frequency
+                  ? styles.selectButtonTextActive
+                  : styles.selectButtonText
+              }
+            >
+              {medDetails.frequency || "Select frequency"}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#999" />
           </TouchableOpacity>
           {showFrequencyPicker && (
             <View style={styles.picker}>
-              {['Once daily', 'Twice daily', 'Three times daily', 'As needed'].map((option) => (
+              {[
+                "Once daily",
+                "Twice daily",
+                "Three times daily",
+                "As needed",
+              ].map((option) => (
                 <TouchableOpacity
                   key={option}
                   style={styles.pickerOption}
                   onPress={() => {
-                    setMedDetails(prev => ({ ...prev, frequency: option }));
+                    setMedDetails((prev) => ({ ...prev, frequency: option }));
                     setShowFrequencyPicker(false);
                   }}
                 >
@@ -472,82 +519,82 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         </View>
 
         {/* Time Inputs */}
-        {medDetails.frequency && medDetails.frequency !== 'As needed' && (
+        {medDetails.frequency && medDetails.frequency !== "As needed" && (
           <View style={styles.formGroup}>
             <Text style={styles.label}>Reminder times</Text>
             <View style={styles.timeInputsContainer}>
-              {medDetails.frequency === 'Once daily' && (
+              {medDetails.frequency === "Once daily" && (
                 <TextInput
                   style={styles.timeInput}
                   placeholder="8:00 AM"
                   placeholderTextColor="#999"
-                  value={medDetails.times[0] || ''}
+                  value={medDetails.times[0] || ""}
                   onChangeText={(text) => {
                     const newTimes = [...medDetails.times];
                     newTimes[0] = text;
-                    setMedDetails(prev => ({ ...prev, times: newTimes }));
+                    setMedDetails((prev) => ({ ...prev, times: newTimes }));
                   }}
                 />
               )}
-              {medDetails.frequency === 'Twice daily' && (
+              {medDetails.frequency === "Twice daily" && (
                 <>
                   <TextInput
                     style={styles.timeInput}
                     placeholder="8:00 AM"
                     placeholderTextColor="#999"
-                    value={medDetails.times[0] || ''}
+                    value={medDetails.times[0] || ""}
                     onChangeText={(text) => {
                       const newTimes = [...medDetails.times];
                       newTimes[0] = text;
-                      setMedDetails(prev => ({ ...prev, times: newTimes }));
+                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
                     }}
                   />
                   <TextInput
                     style={styles.timeInput}
                     placeholder="8:00 PM"
                     placeholderTextColor="#999"
-                    value={medDetails.times[1] || ''}
+                    value={medDetails.times[1] || ""}
                     onChangeText={(text) => {
                       const newTimes = [...medDetails.times];
                       newTimes[1] = text;
-                      setMedDetails(prev => ({ ...prev, times: newTimes }));
+                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
                     }}
                   />
                 </>
               )}
-              {medDetails.frequency === 'Three times daily' && (
+              {medDetails.frequency === "Three times daily" && (
                 <>
                   <TextInput
                     style={styles.timeInput}
                     placeholder="8:00 AM"
                     placeholderTextColor="#999"
-                    value={medDetails.times[0] || ''}
+                    value={medDetails.times[0] || ""}
                     onChangeText={(text) => {
                       const newTimes = [...medDetails.times];
                       newTimes[0] = text;
-                      setMedDetails(prev => ({ ...prev, times: newTimes }));
+                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
                     }}
                   />
                   <TextInput
                     style={styles.timeInput}
                     placeholder="2:00 PM"
                     placeholderTextColor="#999"
-                    value={medDetails.times[1] || ''}
+                    value={medDetails.times[1] || ""}
                     onChangeText={(text) => {
                       const newTimes = [...medDetails.times];
                       newTimes[1] = text;
-                      setMedDetails(prev => ({ ...prev, times: newTimes }));
+                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
                     }}
                   />
                   <TextInput
                     style={styles.timeInput}
                     placeholder="8:00 PM"
                     placeholderTextColor="#999"
-                    value={medDetails.times[2] || ''}
+                    value={medDetails.times[2] || ""}
                     onChangeText={(text) => {
                       const newTimes = [...medDetails.times];
                       newTimes[2] = text;
-                      setMedDetails(prev => ({ ...prev, times: newTimes }));
+                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
                     }}
                   />
                 </>
@@ -559,14 +606,23 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
         {/* As Needed Toggle */}
         <TouchableOpacity
           style={styles.toggleContainer}
-          onPress={() => setMedDetails(prev => ({ ...prev, asNeeded: !prev.asNeeded }))}
+          onPress={() =>
+            setMedDetails((prev) => ({ ...prev, asNeeded: !prev.asNeeded }))
+          }
         >
           <View style={styles.toggleInfo}>
             <Text style={styles.toggleTitle}>Take as needed only</Text>
             <Text style={styles.toggleSubtitle}>No regular schedule</Text>
           </View>
-          <View style={[styles.switch, medDetails.asNeeded && styles.switchActive]}>
-            <View style={[styles.switchThumb, medDetails.asNeeded && styles.switchThumbActive]} />
+          <View
+            style={[styles.switch, medDetails.asNeeded && styles.switchActive]}
+          >
+            <View
+              style={[
+                styles.switchThumb,
+                medDetails.asNeeded && styles.switchThumbActive,
+              ]}
+            />
           </View>
         </TouchableOpacity>
       </View>
@@ -620,32 +676,32 @@ export default function AddMedicationScreen({ visible, onClose }: AddMedicationS
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: "#F9F9F9",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     flex: 1,
     marginLeft: 12,
   },
   stepIndicator: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
   },
   progressContainer: {
     paddingHorizontal: 20,
@@ -653,13 +709,13 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
-    backgroundColor: '#4CAF50',
+    height: "100%",
+    backgroundColor: "#4CAF50",
     borderRadius: 2,
   },
   stepContent: {
@@ -667,77 +723,77 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   stepHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
     marginTop: 16,
   },
   stepTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 8,
     letterSpacing: -0.3,
   },
   stepSubtitle: {
     fontSize: 15,
-    color: '#777',
-    textAlign: 'center',
+    color: "#777",
+    textAlign: "center",
   },
   selectedMedIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#FFF5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF5F5",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   scheduleIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F0FFF4',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#F0FFF4",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   searchContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 16,
   },
   searchIcon: {
-    position: 'absolute',
+    position: "absolute",
     left: 16,
     top: 18,
     zIndex: 1,
   },
   searchInput: {
     height: 56,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     paddingLeft: 48,
     paddingRight: 16,
     fontSize: 16,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
   },
   scanButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     height: 56,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#FFD4D4',
-    borderStyle: 'dashed',
+    borderColor: "#FFD4D4",
+    borderStyle: "dashed",
     marginBottom: 24,
   },
   scanButtonText: {
     marginLeft: 12,
     fontSize: 16,
-    fontWeight: '600',
-    color: '#E85D5B',
+    fontWeight: "600",
+    color: "#E85D5B",
   },
   loadingContainer: {
     paddingVertical: 40,
@@ -748,8 +804,8 @@ const styles = StyleSheet.create({
   },
   resultsTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 12,
   },
   medicationCard: {
@@ -757,16 +813,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   medCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   medIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFF5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FFF5F5",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   medInfo: {
@@ -774,8 +830,8 @@ const styles = StyleSheet.create({
   },
   medName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 4,
   },
   infoSection: {
@@ -815,36 +871,36 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 12,
   },
   selectButton: {
     height: 56,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
     paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   selectButtonText: {
     fontSize: 16,
-    color: '#999',
+    color: "#999",
   },
   selectButtonTextActive: {
     fontSize: 16,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
   },
   picker: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
-    shadowColor: '#000',
+    borderColor: "#F0F0F0",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -854,33 +910,33 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: "#F5F5F5",
   },
   pickerOptionText: {
     fontSize: 16,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
   },
   timeInputsContainer: {
     gap: 12,
   },
   timeInput: {
     height: 56,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
     paddingHorizontal: 16,
     fontSize: 16,
   },
   toggleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: "#F0F0F0",
     marginTop: 8,
   },
   toggleInfo: {
@@ -888,31 +944,31 @@ const styles = StyleSheet.create({
   },
   toggleTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2C2C2C',
+    fontWeight: "600",
+    color: "#2C2C2C",
     marginBottom: 4,
   },
   toggleSubtitle: {
     fontSize: 13,
-    color: '#777',
+    color: "#777",
   },
   switch: {
     width: 51,
     height: 31,
     borderRadius: 16,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: "#E0E0E0",
     padding: 2,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   switchActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
   },
   switchThumb: {
     width: 27,
     height: 27,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
@@ -923,36 +979,36 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 56,
-    backgroundColor: '#E85D5B',
+    backgroundColor: "#E85D5B",
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 100,
-    shadowColor: '#E85D5B',
+    shadowColor: "#E85D5B",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 3,
   },
   primaryButtonDisabled: {
-    backgroundColor: '#CCC',
+    backgroundColor: "#CCC",
     shadowOpacity: 0,
     elevation: 0,
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
     letterSpacing: -0.2,
   },
   saveButton: {
     height: 56,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 100,
-    shadowColor: '#4CAF50',
+    shadowColor: "#4CAF50",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

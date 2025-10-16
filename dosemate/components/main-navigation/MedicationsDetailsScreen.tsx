@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-} from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Card from './Card';
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import Card from "./Card";
 
 interface MedicationDetailsScreenProps {
   visible: boolean;
@@ -31,125 +31,157 @@ interface MedicationDetailsScreenProps {
 export default function MedicationDetailsScreen({
   visible,
   onClose,
-  medication
+  medication,
 }: MedicationDetailsScreenProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'sideEffects' | 'interactions'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "sideEffects" | "interactions"
+  >("overview");
 
   if (!medication) return null;
 
   // Mock data - In real app, fetch from database/API
 
-// const fetchMedicationDetails = async (medicationId: number) => {
-// const response = await fetch(`/api/medications/${medicationId}/details`);
-// return response.json();
-// };
+  // const fetchMedicationDetails = async (medicationId: number) => {
+  // const response = await fetch(`/api/medications/${medicationId}/details`);
+  // return response.json();
+  // };
 
   const medicationDetails = {
-    genericName: medication.name === 'Metformin' ? 'Metformin HCl' : 
-                 medication.name === 'Lisinopril' ? 'Lisinopril' :
-                 medication.name === 'Atorvastatin' ? 'Atorvastatin Calcium' : medication.name,
-    drugClass: medication.name === 'Metformin' ? 'Antidiabetic' :
-               medication.name === 'Lisinopril' ? 'ACE Inhibitor' :
-               medication.name === 'Atorvastatin' ? 'Statin' : 'Medication',
-    manufacturer: 'Generic Pharmaceutical',
+    genericName:
+      medication.name === "Metformin"
+        ? "Metformin HCl"
+        : medication.name === "Lisinopril"
+          ? "Lisinopril"
+          : medication.name === "Atorvastatin"
+            ? "Atorvastatin Calcium"
+            : medication.name,
+    drugClass:
+      medication.name === "Metformin"
+        ? "Antidiabetic"
+        : medication.name === "Lisinopril"
+          ? "ACE Inhibitor"
+          : medication.name === "Atorvastatin"
+            ? "Statin"
+            : "Medication",
+    manufacturer: "Generic Pharmaceutical",
     description: medication.purpose,
-    
+
     usage: {
       instructions: [
         medication.foodInstructions,
         `Take ${medication.quantity}`,
         `${medication.frequency}`,
-        'Swallow whole with water',
-        'Do not crush or chew'
+        "Swallow whole with water",
+        "Do not crush or chew",
       ],
-      missedDose: 'Take as soon as you remember. If it\'s almost time for your next dose, skip the missed dose. Do not double doses.',
-      storage: 'Store at room temperature away from moisture and heat. Keep out of reach of children.'
+      missedDose:
+        "Take as soon as you remember. If it's almost time for your next dose, skip the missed dose. Do not double doses.",
+      storage:
+        "Store at room temperature away from moisture and heat. Keep out of reach of children.",
     },
 
     sideEffects: {
-      common: medication.name === 'Metformin' ? [
-        'Nausea or vomiting',
-        'Diarrhea',
-        'Stomach upset',
-        'Gas or bloating',
-        'Loss of appetite',
-        'Metallic taste in mouth'
-      ] : medication.name === 'Lisinopril' ? [
-        'Dizziness or lightheadedness',
-        'Dry cough',
-        'Headache',
-        'Fatigue',
-        'Nausea'
-      ] : [
-        'Muscle pain or weakness',
-        'Headache',
-        'Nausea',
-        'Diarrhea',
-        'Joint pain'
-      ],
-      serious: medication.name === 'Metformin' ? [
-        'Lactic acidosis (rare but serious)',
-        'Severe allergic reaction',
-        'Low blood sugar (hypoglycemia)',
-        'Vitamin B12 deficiency'
-      ] : medication.name === 'Lisinopril' ? [
-        'Swelling of face, lips, or throat',
-        'Difficulty breathing',
-        'Severe dizziness',
-        'Fainting',
-        'Signs of kidney problems'
-      ] : [
-        'Unexplained muscle pain',
-        'Dark-colored urine',
-        'Yellowing of skin or eyes',
-        'Severe allergic reaction'
-      ],
-      whenToCall: 'Contact your doctor immediately if you experience any serious side effects or if common side effects persist or worsen.'
+      common:
+        medication.name === "Metformin"
+          ? [
+              "Nausea or vomiting",
+              "Diarrhea",
+              "Stomach upset",
+              "Gas or bloating",
+              "Loss of appetite",
+              "Metallic taste in mouth",
+            ]
+          : medication.name === "Lisinopril"
+            ? [
+                "Dizziness or lightheadedness",
+                "Dry cough",
+                "Headache",
+                "Fatigue",
+                "Nausea",
+              ]
+            : [
+                "Muscle pain or weakness",
+                "Headache",
+                "Nausea",
+                "Diarrhea",
+                "Joint pain",
+              ],
+      serious:
+        medication.name === "Metformin"
+          ? [
+              "Lactic acidosis (rare but serious)",
+              "Severe allergic reaction",
+              "Low blood sugar (hypoglycemia)",
+              "Vitamin B12 deficiency",
+            ]
+          : medication.name === "Lisinopril"
+            ? [
+                "Swelling of face, lips, or throat",
+                "Difficulty breathing",
+                "Severe dizziness",
+                "Fainting",
+                "Signs of kidney problems",
+              ]
+            : [
+                "Unexplained muscle pain",
+                "Dark-colored urine",
+                "Yellowing of skin or eyes",
+                "Severe allergic reaction",
+              ],
+      whenToCall:
+        "Contact your doctor immediately if you experience any serious side effects or if common side effects persist or worsen.",
     },
 
     interactions: {
-      drugs: medication.name === 'Metformin' ? [
-        'Insulin or other diabetes medications',
-        'Blood pressure medications',
-        'Corticosteroids',
-        'Diuretics (water pills)',
-        'Heart or blood pressure medications'
-      ] : medication.name === 'Lisinopril' ? [
-        'Other blood pressure medications',
-        'NSAIDs (ibuprofen, naproxen)',
-        'Potassium supplements',
-        'Diuretics',
-        'Diabetes medications'
-      ] : [
-        'Other cholesterol medications',
-        'Blood thinners',
-        'Antibiotics',
-        'Antifungal medications',
-        'HIV medications'
-      ],
-      food: medication.name === 'Atorvastatin' ? [
-        'Grapefruit and grapefruit juice',
-        'Large amounts of alcohol'
-      ] : [
-        'Alcohol (limit intake)',
-        medication.foodInstructions.includes('with food') ? 'Best taken with meals' : 'Can be taken with or without food'
-      ],
+      drugs:
+        medication.name === "Metformin"
+          ? [
+              "Insulin or other diabetes medications",
+              "Blood pressure medications",
+              "Corticosteroids",
+              "Diuretics (water pills)",
+              "Heart or blood pressure medications",
+            ]
+          : medication.name === "Lisinopril"
+            ? [
+                "Other blood pressure medications",
+                "NSAIDs (ibuprofen, naproxen)",
+                "Potassium supplements",
+                "Diuretics",
+                "Diabetes medications",
+              ]
+            : [
+                "Other cholesterol medications",
+                "Blood thinners",
+                "Antibiotics",
+                "Antifungal medications",
+                "HIV medications",
+              ],
+      food:
+        medication.name === "Atorvastatin"
+          ? ["Grapefruit and grapefruit juice", "Large amounts of alcohol"]
+          : [
+              "Alcohol (limit intake)",
+              medication.foodInstructions.includes("with food")
+                ? "Best taken with meals"
+                : "Can be taken with or without food",
+            ],
       conditions: [
-        'Kidney disease',
-        'Liver disease',
-        'Heart problems',
-        'Pregnancy or breastfeeding',
-        'Allergies to medications'
-      ]
+        "Kidney disease",
+        "Liver disease",
+        "Heart problems",
+        "Pregnancy or breastfeeding",
+        "Allergies to medications",
+      ],
     },
 
     warnings: [
-      'Do not stop taking this medication without consulting your doctor',
-      'Inform your doctor of all medications you are taking',
-      'Regular blood tests may be required',
-      'Notify your doctor if you become pregnant',
-      'Avoid alcohol or limit consumption while taking this medication'
-    ]
+      "Do not stop taking this medication without consulting your doctor",
+      "Inform your doctor of all medications you are taking",
+      "Regular blood tests may be required",
+      "Notify your doctor if you become pregnant",
+      "Avoid alcohol or limit consumption while taking this medication",
+    ],
   };
 
   const renderOverviewTab = () => (
@@ -185,7 +217,9 @@ export default function MedicationDetailsScreen({
           </View>
           <View style={styles.scheduleRow}>
             <Ionicons name="time-outline" size={20} color="#E85D5B" />
-            <Text style={styles.scheduleText}>{medication.times.join(', ')}</Text>
+            <Text style={styles.scheduleText}>
+              {medication.times.join(", ")}
+            </Text>
           </View>
           <View style={styles.scheduleRow}>
             <MaterialCommunityIcons name="pill" size={20} color="#E85D5B" />
@@ -193,7 +227,9 @@ export default function MedicationDetailsScreen({
           </View>
           <View style={styles.scheduleRow}>
             <Ionicons name="restaurant-outline" size={20} color="#E85D5B" />
-            <Text style={styles.scheduleText}>{medication.foodInstructions}</Text>
+            <Text style={styles.scheduleText}>
+              {medication.foodInstructions}
+            </Text>
           </View>
         </View>
       </Card>
@@ -215,7 +251,9 @@ export default function MedicationDetailsScreen({
           <Ionicons name="alert-circle" size={20} color="#F4C03A" />
           <Text style={styles.sectionTitle}>Missed Dose</Text>
         </View>
-        <Text style={styles.bodyText}>{medicationDetails.usage.missedDose}</Text>
+        <Text style={styles.bodyText}>
+          {medicationDetails.usage.missedDose}
+        </Text>
       </Card>
 
       {/* Storage */}
@@ -249,11 +287,12 @@ export default function MedicationDetailsScreen({
           <Text style={styles.sectionTitle}>Common Side Effects</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
-          These side effects are usually mild and may go away as your body adjusts to the medication.
+          These side effects are usually mild and may go away as your body
+          adjusts to the medication.
         </Text>
         {medicationDetails.sideEffects.common.map((effect, index) => (
           <View key={index} style={styles.sideEffectItem}>
-            <View style={[styles.bullet, { backgroundColor: '#5BA4D6' }]} />
+            <View style={[styles.bullet, { backgroundColor: "#5BA4D6" }]} />
             <Text style={styles.bulletText}>{effect}</Text>
           </View>
         ))}
@@ -266,11 +305,12 @@ export default function MedicationDetailsScreen({
           <Text style={styles.sectionTitle}>Serious Side Effects</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
-          Seek immediate medical attention if you experience any of these symptoms.
+          Seek immediate medical attention if you experience any of these
+          symptoms.
         </Text>
         {medicationDetails.sideEffects.serious.map((effect, index) => (
           <View key={index} style={styles.sideEffectItem}>
-            <View style={[styles.bullet, { backgroundColor: '#E85D5B' }]} />
+            <View style={[styles.bullet, { backgroundColor: "#E85D5B" }]} />
             <Text style={styles.bulletText}>{effect}</Text>
           </View>
         ))}
@@ -282,7 +322,9 @@ export default function MedicationDetailsScreen({
           <Ionicons name="call" size={24} color="#FFFFFF" />
           <Text style={styles.emergencyTitle}>When to Contact Your Doctor</Text>
         </View>
-        <Text style={styles.emergencyText}>{medicationDetails.sideEffects.whenToCall}</Text>
+        <Text style={styles.emergencyText}>
+          {medicationDetails.sideEffects.whenToCall}
+        </Text>
       </Card>
     </ScrollView>
   );
@@ -296,7 +338,8 @@ export default function MedicationDetailsScreen({
           <Text style={styles.sectionTitle}>Drug Interactions</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
-          These medications may interact with {medication.name}. Always inform your doctor of all medications you take.
+          These medications may interact with {medication.name}. Always inform
+          your doctor of all medications you take.
         </Text>
         {medicationDetails.interactions.drugs.map((drug, index) => (
           <View key={index} style={styles.bulletPoint}>
@@ -314,7 +357,7 @@ export default function MedicationDetailsScreen({
         </View>
         {medicationDetails.interactions.food.map((food, index) => (
           <View key={index} style={styles.bulletPoint}>
-            <View style={[styles.bullet, { backgroundColor: '#F4C03A' }]} />
+            <View style={[styles.bullet, { backgroundColor: "#F4C03A" }]} />
             <Text style={styles.bulletText}>{food}</Text>
           </View>
         ))}
@@ -331,7 +374,7 @@ export default function MedicationDetailsScreen({
         </Text>
         {medicationDetails.interactions.conditions.map((condition, index) => (
           <View key={index} style={styles.bulletPoint}>
-            <View style={[styles.bullet, { backgroundColor: '#5BA4D6' }]} />
+            <View style={[styles.bullet, { backgroundColor: "#5BA4D6" }]} />
             <Text style={styles.bulletText}>{condition}</Text>
           </View>
         ))}
@@ -353,8 +396,17 @@ export default function MedicationDetailsScreen({
             <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
-            <View style={[styles.medicationIcon, { backgroundColor: `${medication.color}20` }]}>
-              <MaterialCommunityIcons name="pill" size={32} color={medication.color} />
+            <View
+              style={[
+                styles.medicationIcon,
+                { backgroundColor: `${medication.color}20` },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="pill"
+                size={32}
+                color={medication.color}
+              />
             </View>
             <Text style={styles.medicationName}>{medication.name}</Text>
             <Text style={styles.medicationStrength}>{medication.strength}</Text>
@@ -364,41 +416,66 @@ export default function MedicationDetailsScreen({
         {/* Tab Navigation */}
         <View style={styles.tabNavigation}>
           <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'overview' && styles.tabButtonActive]}
-            onPress={() => setActiveTab('overview')}
+            style={[
+              styles.tabButton,
+              activeTab === "overview" && styles.tabButtonActive,
+            ]}
+            onPress={() => setActiveTab("overview")}
           >
-            <Text style={[styles.tabButtonText, activeTab === 'overview' && styles.tabButtonTextActive]}>
+            <Text
+              style={[
+                styles.tabButtonText,
+                activeTab === "overview" && styles.tabButtonTextActive,
+              ]}
+            >
               Overview
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'sideEffects' && styles.tabButtonActive]}
-            onPress={() => setActiveTab('sideEffects')}
+            style={[
+              styles.tabButton,
+              activeTab === "sideEffects" && styles.tabButtonActive,
+            ]}
+            onPress={() => setActiveTab("sideEffects")}
           >
-            <Text style={[styles.tabButtonText, activeTab === 'sideEffects' && styles.tabButtonTextActive]}>
+            <Text
+              style={[
+                styles.tabButtonText,
+                activeTab === "sideEffects" && styles.tabButtonTextActive,
+              ]}
+            >
               Side Effects
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tabButton, activeTab === 'interactions' && styles.tabButtonActive]}
-            onPress={() => setActiveTab('interactions')}
+            style={[
+              styles.tabButton,
+              activeTab === "interactions" && styles.tabButtonActive,
+            ]}
+            onPress={() => setActiveTab("interactions")}
           >
-            <Text style={[styles.tabButtonText, activeTab === 'interactions' && styles.tabButtonTextActive]}>
+            <Text
+              style={[
+                styles.tabButtonText,
+                activeTab === "interactions" && styles.tabButtonTextActive,
+              ]}
+            >
               Interactions
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Tab Content */}
-        {activeTab === 'overview' && renderOverviewTab()}
-        {activeTab === 'sideEffects' && renderSideEffectsTab()}
-        {activeTab === 'interactions' && renderInteractionsTab()}
+        {activeTab === "overview" && renderOverviewTab()}
+        {activeTab === "sideEffects" && renderSideEffectsTab()}
+        {activeTab === "interactions" && renderInteractionsTab()}
 
         {/* Disclaimer */}
         <View style={styles.disclaimer}>
           <Ionicons name="information-circle-outline" size={16} color="#999" />
           <Text style={styles.disclaimerText}>
-            This information is for educational purposes only. Always consult your healthcare provider.
+            This information is for educational purposes only. Always consult
+            your healthcare provider.
           </Text>
         </View>
       </View>
@@ -409,68 +486,68 @@ export default function MedicationDetailsScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: "#F9F9F9",
   },
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   backButton: {
     padding: 8,
   },
   headerContent: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 8,
   },
   medicationIcon: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   medicationName: {
     fontSize: 26,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 4,
     letterSpacing: -0.5,
   },
   medicationStrength: {
     fontSize: 16,
-    color: '#777',
-    fontWeight: '500',
+    color: "#777",
+    fontWeight: "500",
   },
   tabNavigation: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
     paddingTop: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
   tabButton: {
     flex: 1,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   tabButtonActive: {
-    borderBottomColor: '#E85D5B',
+    borderBottomColor: "#E85D5B",
   },
   tabButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
+    fontWeight: "600",
+    color: "#999",
   },
   tabButtonTextActive: {
-    color: '#E85D5B',
+    color: "#E85D5B",
   },
   tabContent: {
     flex: 1,
@@ -486,135 +563,135 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: "#F5F5F5",
   },
   infoLabel: {
     fontSize: 15,
-    color: '#777',
-    fontWeight: '500',
+    color: "#777",
+    fontWeight: "500",
   },
   infoValue: {
     fontSize: 15,
-    color: '#2C2C2C',
-    fontWeight: '600',
+    color: "#2C2C2C",
+    fontWeight: "600",
   },
   scheduleInfo: {
     gap: 16,
   },
   scheduleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   scheduleText: {
     fontSize: 15,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
     flex: 1,
   },
   bulletPoint: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   bullet: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E85D5B',
+    backgroundColor: "#E85D5B",
     marginTop: 7,
     marginRight: 12,
   },
   warningBullet: {
-    backgroundColor: '#E85D5B',
+    backgroundColor: "#E85D5B",
   },
   bulletText: {
     fontSize: 15,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
     flex: 1,
     lineHeight: 22,
   },
   bodyText: {
     fontSize: 15,
-    color: '#2C2C2C',
+    color: "#2C2C2C",
     lineHeight: 22,
   },
   warningHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 16,
   },
   sideEffectHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     marginBottom: 12,
   },
   sideEffectSubtitle: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
     marginBottom: 16,
     lineHeight: 20,
   },
   sideEffectItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   emergencyCard: {
-    backgroundColor: '#E85D5B',
+    backgroundColor: "#E85D5B",
   },
   emergencyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     marginBottom: 12,
   },
   emergencyTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: "700",
+    color: "#FFFFFF",
     letterSpacing: -0.3,
   },
   emergencyText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     lineHeight: 22,
   },
   interactionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     marginBottom: 12,
   },
   disclaimer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: "#E5E5E5",
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
     flex: 1,
     lineHeight: 16,
   },
