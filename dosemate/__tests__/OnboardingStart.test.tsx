@@ -127,7 +127,7 @@ describe("OnboardingStart", () => {
       const { getByText } = render(<OnboardingStart />);
       const button = getByText("Get Started");
 
-      // Should be able to find and press the button
+      // Should be able to find and press the button 
       expect(button).toBeTruthy();
       fireEvent.press(button);
       expect(mockPush).toHaveBeenCalled();
