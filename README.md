@@ -73,7 +73,12 @@ npm install
 
 ---
 
-## 4. Run the App
+## 4. Update Config
+
+Locate config.tsx and update the BACKEND_BASE_URL to the correct URL (ngrok URL or localhost)
+
+
+## 5. Run the App
 
 ```bash
 npm start
