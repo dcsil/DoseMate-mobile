@@ -12,6 +12,7 @@ import {
 import React, { useState } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { BACKEND_BASE_URL } from "@/config";
 
 interface MedicineOCRScannerProps {
   visible: boolean;
@@ -96,14 +97,11 @@ export default function MedicineOCRScanner({
       if (Platform.OS !== "web")
         headers["Content-Type"] = "multipart/form-data";
 
-      const response = await fetch(
-        `https://8d7d77b902eb.ngrok-free.app/medicines/ocr`,
-        {
-          method: "POST",
-          body: formData,
-          headers,
-        },
-      );
+      const response = await fetch(`${BACKEND_BASE_URL}/ocr/extract`, {
+        method: "POST",
+        body: formData,
+        headers,
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
