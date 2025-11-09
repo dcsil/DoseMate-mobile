@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import * as SecureStore from "expo-secure-store";
+import { BACKEND_BASE_URL } from "@/config";
 
 // Mocks are already set up in jest.setup.js
 jest.mock("expo-router");
@@ -122,7 +123,7 @@ describe("CreateAccountScreen", () => {
 
       await waitFor(() => {
         expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
-          "https://ferulaceous-kenneth-septimal.ngrok-free.dev/auth/google",
+          `${BACKEND_BASE_URL}/auth/google`,
         );
       });
     });
