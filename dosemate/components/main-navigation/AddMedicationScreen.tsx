@@ -13,6 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "./Card";
 import MedicineOCRScanner from "./OCR";
 import MedicationListScreen from "./MedicationList";
+import { BACKEND_BASE_URL } from "../../config";
 
 interface AddMedicationScreenProps {
   visible: boolean;
@@ -76,7 +77,7 @@ export default function AddMedicationScreen({
     }
     try {
       const res = await fetch(
-        `https://8d7d77b902eb.ngrok-free.app/medicines/autocomplete?prefix=${text}`,
+        `${BACKEND_BASE_URL}/medicines/autocomplete?prefix=${text}`,
       );
       const data = await res.json();
       setSuggestions(data);
@@ -99,7 +100,7 @@ export default function AddMedicationScreen({
 
     try {
       const res = await fetch(
-        `https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${item}`,
+        `${BACKEND_BASE_URL}/medicines/search?query=${item}`,
       );
       const data = await res.json();
       console.log("Fetched medicine details:", data);
@@ -165,9 +166,7 @@ export default function AddMedicationScreen({
     // setLoading(true);
 
     // Fetch medicine details
-    fetch(
-      `https://8d7d77b902eb.ngrok-free.app/medicines/search?query=${detectedName}`,
-    )
+    fetch(`${BACKEND_BASE_URL}/medicines/search?query=${detectedName}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched medicine details:", data);

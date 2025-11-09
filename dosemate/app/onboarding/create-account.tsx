@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { BACKEND_BASE_URL } from "@/config";
 
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -30,8 +31,7 @@ export default function CreateAccountScreen() {
   }, [router]);
 
   const handleGoogleLogin = async () => {
-    const authUrl =
-      "https://ferulaceous-kenneth-septimal.ngrok-free.dev/auth/google";
+    const authUrl = `${BACKEND_BASE_URL}/auth/google`;
 
     // open in external browser
     await WebBrowser.openBrowserAsync(authUrl);
