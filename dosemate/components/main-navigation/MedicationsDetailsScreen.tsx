@@ -160,7 +160,9 @@ export default function MedicationDetailsScreen({
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Manufacturer</Text>
-          <Text style={styles.infoValue}>{medicationDetails?.manufacturer}</Text>
+          <Text style={styles.infoValue}>
+            {medicationDetails?.manufacturer}
+          </Text>
         </View>
       </Card>
 
@@ -380,13 +382,18 @@ export default function MedicationDetailsScreen({
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#E85D5B" />
-            <Text style={styles.loadingText}>Loading medication information...</Text>
+            <Text style={styles.loadingText}>
+              Loading medication information...
+            </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle-outline" size={48} color="#E85D5B" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchMedicationDetails}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={fetchMedicationDetails}
+            >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
@@ -451,10 +458,14 @@ export default function MedicationDetailsScreen({
 
             {/* Disclaimer */}
             <View style={styles.disclaimer}>
-              <Ionicons name="information-circle-outline" size={16} color="#999" />
+              <Ionicons
+                name="information-circle-outline"
+                size={16}
+                color="#999"
+              />
               <Text style={styles.disclaimerText}>
-                This information is for educational purposes only. Always consult
-                your healthcare provider.
+                This information is for educational purposes only. Always
+                consult your healthcare provider.
               </Text>
             </View>
           </>
@@ -583,7 +594,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 2,   
+    paddingTop: 2,
   },
   sectionTitleIcon: {
     fontSize: 18,
@@ -592,7 +603,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 14,   
+    paddingTop: 14,
   },
   infoRow: {
     flexDirection: "row",
