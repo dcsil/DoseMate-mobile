@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "./Card";
 
 // API Configuration
-const API_BASE_URL = "http://192.168.2.50:8000";
+const API_BASE_URL = "http://10.0.0.96:8000";
 
 interface MedicationDetailsScreenProps {
   visible: boolean;
@@ -68,13 +68,8 @@ export default function MedicationDetailsScreen({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (visible && medication) {
-      fetchMedicationDetails();
-    }
-  }, [visible, medication, fetchMedicationDetails]);
-
-  const fetchMedicationDetails = async () => {
+  // ✅ Wrap fetchMedicationDetails in useCallback
+  const fetchMedicationDetails = useCallback(async () => {
     if (!medication) return;
 
     setLoading(true);
@@ -82,12 +77,12 @@ export default function MedicationDetailsScreen({
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(medication.name)}&strength=${encodeURIComponent(medication.strength)}`,
+        `${API_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(
+          medication.name,
+        )}&strength=${encodeURIComponent(medication.strength)}`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         },
       );
 
@@ -101,7 +96,7 @@ export default function MedicationDetailsScreen({
       console.error("Failed to fetch medication details:", err);
       setError("Failed to load medication information. Please try again.");
 
-      // Fallback to basic info if API fails
+      // ✅ Fallback
       setMedicationDetails({
         genericName: medication.name,
         drugClass: "Medication",
@@ -135,7 +130,14 @@ export default function MedicationDetailsScreen({
     } finally {
       setLoading(false);
     }
-  };
+  }, [medication]);
+
+  // ✅ Add fetchMedicationDetails to the dependencies
+  useEffect(() => {
+    if (visible && medication) {
+      fetchMedicationDetails();
+    }
+  }, [visible, medication, fetchMedicationDetails]);
 
   if (!medication) return null;
 
@@ -158,9 +160,7 @@ export default function MedicationDetailsScreen({
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Manufacturer</Text>
-          <Text style={styles.infoValue}>
-            {medicationDetails?.manufacturer}
-          </Text>
+          <Text style={styles.infoValue}>{medicationDetails?.manufacturer}</Text>
         </View>
       </Card>
 
@@ -380,18 +380,13 @@ export default function MedicationDetailsScreen({
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#E85D5B" />
-            <Text style={styles.loadingText}>
-              Loading medication information...
-            </Text>
+            <Text style={styles.loadingText}>Loading medication information...</Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle-outline" size={48} color="#E85D5B" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={fetchMedicationDetails}
-            >
+            <TouchableOpacity style={styles.retryButton} onPress={fetchMedicationDetails}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
@@ -456,14 +451,10 @@ export default function MedicationDetailsScreen({
 
             {/* Disclaimer */}
             <View style={styles.disclaimer}>
-              <Ionicons
-                name="information-circle-outline"
-                size={16}
-                color="#999"
-              />
+              <Ionicons name="information-circle-outline" size={16} color="#999" />
               <Text style={styles.disclaimerText}>
-                This information is for educational purposes only. Always
-                consult your healthcare provider.
+                This information is for educational purposes only. Always consult
+                your healthcare provider.
               </Text>
             </View>
           </>
@@ -592,7 +583,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 2,
+    paddingTop: 2,   
   },
   sectionTitleIcon: {
     fontSize: 18,
@@ -601,7 +592,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 14,
+    paddingTop: 14,   
   },
   infoRow: {
     flexDirection: "row",
