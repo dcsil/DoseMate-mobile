@@ -63,7 +63,8 @@ export default function MedicationDetailsScreen({
   const [activeTab, setActiveTab] = useState<
     "overview" | "sideEffects" | "interactions"
   >("overview");
-  const [medicationDetails, setMedicationDetails] = useState<MedicationDetails | null>(null);
+  const [medicationDetails, setMedicationDetails] =
+    useState<MedicationDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +72,7 @@ export default function MedicationDetailsScreen({
     if (visible && medication) {
       fetchMedicationDetails();
     }
-  }, [visible, medication]);
+  }, [visible, medication, fetchMedicationDetails]);
 
   const fetchMedicationDetails = async () => {
     if (!medication) return;
@@ -83,11 +84,11 @@ export default function MedicationDetailsScreen({
       const response = await fetch(
         `${API_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(medication.name)}&strength=${encodeURIComponent(medication.strength)}`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -99,7 +100,7 @@ export default function MedicationDetailsScreen({
     } catch (err) {
       console.error("Failed to fetch medication details:", err);
       setError("Failed to load medication information. Please try again.");
-      
+
       // Fallback to basic info if API fails
       setMedicationDetails({
         genericName: medication.name,
@@ -116,8 +117,12 @@ export default function MedicationDetailsScreen({
           storage: "Store as directed by your pharmacist.",
         },
         sideEffects: {
-          common: ["Consult your healthcare provider for side effect information"],
-          serious: ["Seek immediate medical attention for any concerning symptoms"],
+          common: [
+            "Consult your healthcare provider for side effect information",
+          ],
+          serious: [
+            "Seek immediate medical attention for any concerning symptoms",
+          ],
           whenToCall: "Contact your doctor with any concerns.",
         },
         interactions: {
@@ -153,7 +158,9 @@ export default function MedicationDetailsScreen({
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Manufacturer</Text>
-          <Text style={styles.infoValue}>{medicationDetails?.manufacturer}</Text>
+          <Text style={styles.infoValue}>
+            {medicationDetails?.manufacturer}
+          </Text>
         </View>
       </Card>
 
@@ -373,13 +380,18 @@ export default function MedicationDetailsScreen({
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#E85D5B" />
-            <Text style={styles.loadingText}>Loading medication information...</Text>
+            <Text style={styles.loadingText}>
+              Loading medication information...
+            </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle-outline" size={48} color="#E85D5B" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchMedicationDetails}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={fetchMedicationDetails}
+            >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
@@ -444,10 +456,14 @@ export default function MedicationDetailsScreen({
 
             {/* Disclaimer */}
             <View style={styles.disclaimer}>
-              <Ionicons name="information-circle-outline" size={16} color="#999" />
+              <Ionicons
+                name="information-circle-outline"
+                size={16}
+                color="#999"
+              />
               <Text style={styles.disclaimerText}>
-                This information is for educational purposes only. Always consult
-                your healthcare provider.
+                This information is for educational purposes only. Always
+                consult your healthcare provider.
               </Text>
             </View>
           </>
@@ -576,7 +592,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 2,   
+    paddingTop: 2,
   },
   sectionTitleIcon: {
     fontSize: 18,
@@ -585,7 +601,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
-    paddingTop: 14,   
+    paddingTop: 14,
   },
   infoRow: {
     flexDirection: "row",
