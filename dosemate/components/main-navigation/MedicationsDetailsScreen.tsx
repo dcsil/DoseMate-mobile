@@ -615,6 +615,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 15,
+    marginRight: 50,
     color: "#777",
     fontWeight: "500",
   },
@@ -622,6 +623,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2C2C2C",
     fontWeight: "600",
+    flex: 1,
+    textAlign: "right",
+    marginLeft: 12,
   },
   scheduleInfo: {
     gap: 16,
