@@ -12,6 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "./Card";
 
 // API Configuration
+// need to change since its specific to my computer
 const API_BASE_URL = "http://10.0.0.96:8000";
 
 interface MedicationDetailsScreenProps {
