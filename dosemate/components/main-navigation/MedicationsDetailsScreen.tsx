@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "./Card";
+
+// API Configuration
+const API_BASE_URL = "http://192.168.2.50:8000";
 
 interface MedicationDetailsScreenProps {
   visible: boolean;
@@ -28,6 +32,29 @@ interface MedicationDetailsScreenProps {
   } | null;
 }
 
+interface MedicationDetails {
+  genericName: string;
+  drugClass: string;
+  manufacturer: string;
+  description: string;
+  usage: {
+    instructions: string[];
+    missedDose: string;
+    storage: string;
+  };
+  sideEffects: {
+    common: string[];
+    serious: string[];
+    whenToCall: string;
+  };
+  interactions: {
+    drugs: string[];
+    food: string[];
+    conditions: string[];
+  };
+  warnings: string[];
+}
+
 export default function MedicationDetailsScreen({
   visible,
   onClose,
@@ -36,153 +63,76 @@ export default function MedicationDetailsScreen({
   const [activeTab, setActiveTab] = useState<
     "overview" | "sideEffects" | "interactions"
   >("overview");
+  const [medicationDetails, setMedicationDetails] = useState<MedicationDetails | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (visible && medication) {
+      fetchMedicationDetails();
+    }
+  }, [visible, medication]);
+
+  const fetchMedicationDetails = async () => {
+    if (!medication) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(medication.name)}&strength=${encodeURIComponent(medication.strength)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: MedicationDetails = await response.json();
+      setMedicationDetails(data);
+    } catch (err) {
+      console.error("Failed to fetch medication details:", err);
+      setError("Failed to load medication information. Please try again.");
+      
+      // Fallback to basic info if API fails
+      setMedicationDetails({
+        genericName: medication.name,
+        drugClass: "Medication",
+        manufacturer: "Generic Pharmaceutical",
+        description: medication.purpose,
+        usage: {
+          instructions: [
+            medication.foodInstructions,
+            `Take ${medication.quantity}`,
+            `${medication.frequency}`,
+          ],
+          missedDose: "Consult your healthcare provider.",
+          storage: "Store as directed by your pharmacist.",
+        },
+        sideEffects: {
+          common: ["Consult your healthcare provider for side effect information"],
+          serious: ["Seek immediate medical attention for any concerning symptoms"],
+          whenToCall: "Contact your doctor with any concerns.",
+        },
+        interactions: {
+          drugs: ["Consult your healthcare provider about drug interactions"],
+          food: ["Follow your healthcare provider's instructions"],
+          conditions: ["Inform your doctor of all medical conditions"],
+        },
+        warnings: ["Always follow your healthcare provider's instructions"],
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!medication) return null;
-
-  // Mock data - In real app, fetch from database/API
-
-  // const fetchMedicationDetails = async (medicationId: number) => {
-  // const response = await fetch(`/api/medications/${medicationId}/details`);
-  // return response.json();
-  // };
-
-  const medicationDetails = {
-    genericName:
-      medication.name === "Metformin"
-        ? "Metformin HCl"
-        : medication.name === "Lisinopril"
-          ? "Lisinopril"
-          : medication.name === "Atorvastatin"
-            ? "Atorvastatin Calcium"
-            : medication.name,
-    drugClass:
-      medication.name === "Metformin"
-        ? "Antidiabetic"
-        : medication.name === "Lisinopril"
-          ? "ACE Inhibitor"
-          : medication.name === "Atorvastatin"
-            ? "Statin"
-            : "Medication",
-    manufacturer: "Generic Pharmaceutical",
-    description: medication.purpose,
-
-    usage: {
-      instructions: [
-        medication.foodInstructions,
-        `Take ${medication.quantity}`,
-        `${medication.frequency}`,
-        "Swallow whole with water",
-        "Do not crush or chew",
-      ],
-      missedDose:
-        "Take as soon as you remember. If it's almost time for your next dose, skip the missed dose. Do not double doses.",
-      storage:
-        "Store at room temperature away from moisture and heat. Keep out of reach of children.",
-    },
-
-    sideEffects: {
-      common:
-        medication.name === "Metformin"
-          ? [
-              "Nausea or vomiting",
-              "Diarrhea",
-              "Stomach upset",
-              "Gas or bloating",
-              "Loss of appetite",
-              "Metallic taste in mouth",
-            ]
-          : medication.name === "Lisinopril"
-            ? [
-                "Dizziness or lightheadedness",
-                "Dry cough",
-                "Headache",
-                "Fatigue",
-                "Nausea",
-              ]
-            : [
-                "Muscle pain or weakness",
-                "Headache",
-                "Nausea",
-                "Diarrhea",
-                "Joint pain",
-              ],
-      serious:
-        medication.name === "Metformin"
-          ? [
-              "Lactic acidosis (rare but serious)",
-              "Severe allergic reaction",
-              "Low blood sugar (hypoglycemia)",
-              "Vitamin B12 deficiency",
-            ]
-          : medication.name === "Lisinopril"
-            ? [
-                "Swelling of face, lips, or throat",
-                "Difficulty breathing",
-                "Severe dizziness",
-                "Fainting",
-                "Signs of kidney problems",
-              ]
-            : [
-                "Unexplained muscle pain",
-                "Dark-colored urine",
-                "Yellowing of skin or eyes",
-                "Severe allergic reaction",
-              ],
-      whenToCall:
-        "Contact your doctor immediately if you experience any serious side effects or if common side effects persist or worsen.",
-    },
-
-    interactions: {
-      drugs:
-        medication.name === "Metformin"
-          ? [
-              "Insulin or other diabetes medications",
-              "Blood pressure medications",
-              "Corticosteroids",
-              "Diuretics (water pills)",
-              "Heart or blood pressure medications",
-            ]
-          : medication.name === "Lisinopril"
-            ? [
-                "Other blood pressure medications",
-                "NSAIDs (ibuprofen, naproxen)",
-                "Potassium supplements",
-                "Diuretics",
-                "Diabetes medications",
-              ]
-            : [
-                "Other cholesterol medications",
-                "Blood thinners",
-                "Antibiotics",
-                "Antifungal medications",
-                "HIV medications",
-              ],
-      food:
-        medication.name === "Atorvastatin"
-          ? ["Grapefruit and grapefruit juice", "Large amounts of alcohol"]
-          : [
-              "Alcohol (limit intake)",
-              medication.foodInstructions.includes("with food")
-                ? "Best taken with meals"
-                : "Can be taken with or without food",
-            ],
-      conditions: [
-        "Kidney disease",
-        "Liver disease",
-        "Heart problems",
-        "Pregnancy or breastfeeding",
-        "Allergies to medications",
-      ],
-    },
-
-    warnings: [
-      "Do not stop taking this medication without consulting your doctor",
-      "Inform your doctor of all medications you are taking",
-      "Regular blood tests may be required",
-      "Notify your doctor if you become pregnant",
-      "Avoid alcohol or limit consumption while taking this medication",
-    ],
-  };
 
   const renderOverviewTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
@@ -191,11 +141,11 @@ export default function MedicationDetailsScreen({
         <Text style={styles.sectionTitle}>Basic Information</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Generic Name</Text>
-          <Text style={styles.infoValue}>{medicationDetails.genericName}</Text>
+          <Text style={styles.infoValue}>{medicationDetails?.genericName}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Drug Class</Text>
-          <Text style={styles.infoValue}>{medicationDetails.drugClass}</Text>
+          <Text style={styles.infoValue}>{medicationDetails?.drugClass}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Strength</Text>
@@ -203,8 +153,14 @@ export default function MedicationDetailsScreen({
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Manufacturer</Text>
-          <Text style={styles.infoValue}>{medicationDetails.manufacturer}</Text>
+          <Text style={styles.infoValue}>{medicationDetails?.manufacturer}</Text>
         </View>
+      </Card>
+
+      {/* Description */}
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>Purpose</Text>
+        <Text style={styles.bodyText}>{medicationDetails?.description}</Text>
       </Card>
 
       {/* Current Schedule */}
@@ -237,7 +193,7 @@ export default function MedicationDetailsScreen({
       {/* Usage Instructions */}
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>How to Use</Text>
-        {medicationDetails.usage.instructions.map((instruction, index) => (
+        {medicationDetails?.usage.instructions.map((instruction, index) => (
           <View key={index} style={styles.bulletPoint}>
             <View style={styles.bullet} />
             <Text style={styles.bulletText}>{instruction}</Text>
@@ -249,26 +205,26 @@ export default function MedicationDetailsScreen({
       <Card style={styles.section}>
         <View style={styles.warningHeader}>
           <Ionicons name="alert-circle" size={20} color="#F4C03A" />
-          <Text style={styles.sectionTitle}>Missed Dose</Text>
+          <Text style={styles.sectionTitleIcon}>Missed Dose</Text>
         </View>
         <Text style={styles.bodyText}>
-          {medicationDetails.usage.missedDose}
+          {medicationDetails?.usage.missedDose}
         </Text>
       </Card>
 
       {/* Storage */}
       <Card style={styles.section}>
         <Text style={styles.sectionTitle}>Storage</Text>
-        <Text style={styles.bodyText}>{medicationDetails.usage.storage}</Text>
+        <Text style={styles.bodyText}>{medicationDetails?.usage.storage}</Text>
       </Card>
 
       {/* Warnings */}
       <Card style={[styles.section, styles.lastSection]}>
         <View style={styles.warningHeader}>
           <Ionicons name="warning" size={20} color="#E85D5B" />
-          <Text style={styles.sectionTitle}>Important Warnings</Text>
+          <Text style={styles.sectionTitleIcon}>Important Warnings</Text>
         </View>
-        {medicationDetails.warnings.map((warning, index) => (
+        {medicationDetails?.warnings.map((warning, index) => (
           <View key={index} style={styles.bulletPoint}>
             <View style={[styles.bullet, styles.warningBullet]} />
             <Text style={styles.bulletText}>{warning}</Text>
@@ -284,13 +240,13 @@ export default function MedicationDetailsScreen({
       <Card style={styles.section}>
         <View style={styles.sideEffectHeader}>
           <Ionicons name="information-circle" size={24} color="#5BA4D6" />
-          <Text style={styles.sectionTitle}>Common Side Effects</Text>
+          <Text style={styles.sectionTitleIcon}>Common Side Effects</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
           These side effects are usually mild and may go away as your body
           adjusts to the medication.
         </Text>
-        {medicationDetails.sideEffects.common.map((effect, index) => (
+        {medicationDetails?.sideEffects.common.map((effect, index) => (
           <View key={index} style={styles.sideEffectItem}>
             <View style={[styles.bullet, { backgroundColor: "#5BA4D6" }]} />
             <Text style={styles.bulletText}>{effect}</Text>
@@ -302,13 +258,13 @@ export default function MedicationDetailsScreen({
       <Card style={styles.section}>
         <View style={styles.sideEffectHeader}>
           <Ionicons name="alert-circle" size={24} color="#E85D5B" />
-          <Text style={styles.sectionTitle}>Serious Side Effects</Text>
+          <Text style={styles.sectionTitleIcon}>Serious Side Effects</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
           Seek immediate medical attention if you experience any of these
           symptoms.
         </Text>
-        {medicationDetails.sideEffects.serious.map((effect, index) => (
+        {medicationDetails?.sideEffects.serious.map((effect, index) => (
           <View key={index} style={styles.sideEffectItem}>
             <View style={[styles.bullet, { backgroundColor: "#E85D5B" }]} />
             <Text style={styles.bulletText}>{effect}</Text>
@@ -323,7 +279,7 @@ export default function MedicationDetailsScreen({
           <Text style={styles.emergencyTitle}>When to Contact Your Doctor</Text>
         </View>
         <Text style={styles.emergencyText}>
-          {medicationDetails.sideEffects.whenToCall}
+          {medicationDetails?.sideEffects.whenToCall}
         </Text>
       </Card>
     </ScrollView>
@@ -335,13 +291,13 @@ export default function MedicationDetailsScreen({
       <Card style={styles.section}>
         <View style={styles.interactionHeader}>
           <MaterialCommunityIcons name="pill" size={24} color="#E85D5B" />
-          <Text style={styles.sectionTitle}>Drug Interactions</Text>
+          <Text style={styles.sectionTitleIcon}>Drug Interactions</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
           These medications may interact with {medication.name}. Always inform
           your doctor of all medications you take.
         </Text>
-        {medicationDetails.interactions.drugs.map((drug, index) => (
+        {medicationDetails?.interactions.drugs.map((drug, index) => (
           <View key={index} style={styles.bulletPoint}>
             <View style={styles.bullet} />
             <Text style={styles.bulletText}>{drug}</Text>
@@ -353,9 +309,9 @@ export default function MedicationDetailsScreen({
       <Card style={styles.section}>
         <View style={styles.interactionHeader}>
           <Ionicons name="restaurant" size={24} color="#F4C03A" />
-          <Text style={styles.sectionTitle}>Food & Drink Interactions</Text>
+          <Text style={styles.sectionTitleIcon}>Food & Drink Interactions</Text>
         </View>
-        {medicationDetails.interactions.food.map((food, index) => (
+        {medicationDetails?.interactions.food.map((food, index) => (
           <View key={index} style={styles.bulletPoint}>
             <View style={[styles.bullet, { backgroundColor: "#F4C03A" }]} />
             <Text style={styles.bulletText}>{food}</Text>
@@ -367,12 +323,12 @@ export default function MedicationDetailsScreen({
       <Card style={[styles.section, styles.lastSection]}>
         <View style={styles.interactionHeader}>
           <Ionicons name="medical" size={24} color="#5BA4D6" />
-          <Text style={styles.sectionTitle}>Medical Conditions</Text>
+          <Text style={styles.sectionTitleIcon}>Medical Conditions</Text>
         </View>
         <Text style={styles.sideEffectSubtitle}>
           Inform your doctor if you have any of these conditions:
         </Text>
-        {medicationDetails.interactions.conditions.map((condition, index) => (
+        {medicationDetails?.interactions.conditions.map((condition, index) => (
           <View key={index} style={styles.bulletPoint}>
             <View style={[styles.bullet, { backgroundColor: "#5BA4D6" }]} />
             <Text style={styles.bulletText}>{condition}</Text>
@@ -413,71 +369,89 @@ export default function MedicationDetailsScreen({
           </View>
         </View>
 
-        {/* Tab Navigation */}
-        <View style={styles.tabNavigation}>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "overview" && styles.tabButtonActive,
-            ]}
-            onPress={() => setActiveTab("overview")}
-          >
-            <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === "overview" && styles.tabButtonTextActive,
-              ]}
-            >
-              Overview
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "sideEffects" && styles.tabButtonActive,
-            ]}
-            onPress={() => setActiveTab("sideEffects")}
-          >
-            <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === "sideEffects" && styles.tabButtonTextActive,
-              ]}
-            >
-              Side Effects
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              activeTab === "interactions" && styles.tabButtonActive,
-            ]}
-            onPress={() => setActiveTab("interactions")}
-          >
-            <Text
-              style={[
-                styles.tabButtonText,
-                activeTab === "interactions" && styles.tabButtonTextActive,
-              ]}
-            >
-              Interactions
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Loading State */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#E85D5B" />
+            <Text style={styles.loadingText}>Loading medication information...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle-outline" size={48} color="#E85D5B" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchMedicationDetails}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : medicationDetails ? (
+          <>
+            {/* Tab Navigation */}
+            <View style={styles.tabNavigation}>
+              <TouchableOpacity
+                style={[
+                  styles.tabButton,
+                  activeTab === "overview" && styles.tabButtonActive,
+                ]}
+                onPress={() => setActiveTab("overview")}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonText,
+                    activeTab === "overview" && styles.tabButtonTextActive,
+                  ]}
+                >
+                  Overview
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.tabButton,
+                  activeTab === "sideEffects" && styles.tabButtonActive,
+                ]}
+                onPress={() => setActiveTab("sideEffects")}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonText,
+                    activeTab === "sideEffects" && styles.tabButtonTextActive,
+                  ]}
+                >
+                  Side Effects
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.tabButton,
+                  activeTab === "interactions" && styles.tabButtonActive,
+                ]}
+                onPress={() => setActiveTab("interactions")}
+              >
+                <Text
+                  style={[
+                    styles.tabButtonText,
+                    activeTab === "interactions" && styles.tabButtonTextActive,
+                  ]}
+                >
+                  Interactions
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        {/* Tab Content */}
-        {activeTab === "overview" && renderOverviewTab()}
-        {activeTab === "sideEffects" && renderSideEffectsTab()}
-        {activeTab === "interactions" && renderInteractionsTab()}
+            {/* Tab Content */}
+            {activeTab === "overview" && renderOverviewTab()}
+            {activeTab === "sideEffects" && renderSideEffectsTab()}
+            {activeTab === "interactions" && renderInteractionsTab()}
 
-        {/* Disclaimer */}
-        <View style={styles.disclaimer}>
-          <Ionicons name="information-circle-outline" size={16} color="#999" />
-          <Text style={styles.disclaimerText}>
-            This information is for educational purposes only. Always consult
-            your healthcare provider.
-          </Text>
-        </View>
+            {/* Disclaimer */}
+            <View style={styles.disclaimer}>
+              <Ionicons name="information-circle-outline" size={16} color="#999" />
+              <Text style={styles.disclaimerText}>
+                This information is for educational purposes only. Always consult
+                your healthcare provider.
+              </Text>
+            </View>
+          </>
+        ) : null}
       </View>
     </Modal>
   );
@@ -487,6 +461,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9F9F9",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#777",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+    gap: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#777",
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#E85D5B",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   header: {
     backgroundColor: "#FFFFFF",
@@ -568,6 +576,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: -0.3,
     marginLeft: 8,
+    paddingTop: 2,   
+  },
+  sectionTitleIcon: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2C2C2C",
+    marginBottom: 16,
+    letterSpacing: -0.3,
+    marginLeft: 8,
+    paddingTop: 14,   
   },
   infoRow: {
     flexDirection: "row",
@@ -629,14 +647,16 @@ const styles = StyleSheet.create({
   warningHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
+    gap: 4,
+    marginBottom: 4,
+    marginTop: -8,
   },
   sideEffectHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 4,
     marginBottom: 12,
+    marginTop: -8,
   },
   sideEffectSubtitle: {
     fontSize: 14,
@@ -672,8 +692,9 @@ const styles = StyleSheet.create({
   interactionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 4,
     marginBottom: 12,
+    marginTop: -8,
   },
   disclaimer: {
     position: "absolute",
