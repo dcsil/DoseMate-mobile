@@ -10,10 +10,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "./Card";
-
-// API Configuration
-// need to change since its specific to my computer
-const API_BASE_URL = "http://10.0.0.96:8000";
+import { BACKEND_BASE_URL } from "@/config";
 
 interface MedicationDetailsScreenProps {
   visible: boolean;
@@ -78,7 +75,7 @@ export default function MedicationDetailsScreen({
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(
+        `${BACKEND_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(
           medication.name,
         )}&strength=${encodeURIComponent(medication.strength)}`,
         {
