@@ -29,22 +29,25 @@ interface ScheduledDose {
 
 const DAYS_OF_WEEK = [
   "Monday",
-  "Tuesday", 
+  "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
   "Saturday",
-  "Sunday"
+  "Sunday",
 ];
 
 export default function MedicationsTab() {
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [selectedMedication, setSelectedMedication] =
+    useState<Medication | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [editingMedication, setEditingMedication] = useState<Medication | null>(
+    null,
+  );
   const [editedTimes, setEditedTimes] = useState<string[]>([]);
   const [editedDays, setEditedDays] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -59,7 +62,15 @@ export default function MedicationsTab() {
       quantity: "1 tablet",
       frequency: "Twice daily",
       times: ["8:00 AM", "8:00 PM"],
-      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      days: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
       color: "#2196F3",
       nextDose: "8:00 PM",
       adherence: 95,
@@ -73,7 +84,15 @@ export default function MedicationsTab() {
       quantity: "1 tablet",
       frequency: "Once daily",
       times: ["8:00 AM"],
-      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      days: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
       color: "#4CAF50",
       nextDose: "Tomorrow 8:00 AM",
       adherence: 88,
@@ -87,7 +106,15 @@ export default function MedicationsTab() {
       quantity: "1 tablet",
       frequency: "Once daily",
       times: ["9:00 PM"],
-      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      days: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
       color: "#9C27B0",
       nextDose: "9:00 PM",
       adherence: 92,
@@ -121,21 +148,21 @@ export default function MedicationsTab() {
 
     if (hasPermission) {
       await scheduleAllMedications();
-      
+
       const cleanup = notificationService.setupNotificationListeners(
         (notification) => {
           console.log("✅ Notification received:", notification);
         },
         (response) => {
           console.log("✅ Notification tapped - navigating to Reminders tab");
-        }
+        },
       );
 
       return cleanup;
     } else {
       Alert.alert(
         "Notifications Disabled",
-        "Please enable notifications in your device settings."
+        "Please enable notifications in your device settings.",
       );
     }
   };
@@ -153,7 +180,7 @@ export default function MedicationsTab() {
           med.quantity,
           med.times,
           med.days,
-          med.foodInstructions
+          med.foodInstructions,
         );
       }
 
@@ -171,27 +198,33 @@ export default function MedicationsTab() {
 
   const scheduleSpecificDateDose = async (dose: ScheduledDose) => {
     try {
-      const med = medications.find(m => m.id === dose.medicationId);
+      const med = medications.find((m) => m.id === dose.medicationId);
       if (!med) return;
 
       // Parse date and time
-      const [year, month, day] = dose.date.split('-').map(Number);
-      const [timeStr, period] = dose.time.split(' ');
-      let [hour, minute] = timeStr.split(':').map(Number);
+      const [year, month, day] = dose.date.split("-").map(Number);
+      const [timeStr, period] = dose.time.split(" ");
+      let [hour, minute] = timeStr.split(":").map(Number);
 
-      if (period === 'PM' && hour !== 12) hour += 12;
-      if (period === 'AM' && hour === 12) hour = 0;
+      if (period === "PM" && hour !== 12) hour += 12;
+      if (period === "AM" && hour === 12) hour = 0;
 
       const scheduleDate = new Date(year, month - 1, day, hour, minute);
       const now = new Date();
 
       if (scheduleDate <= now) {
-        console.log("⚠️ Scheduling for past/current time:", dose.date, dose.time);
+        console.log(
+          "⚠️ Scheduling for past/current time:",
+          dose.date,
+          dose.time,
+        );
         // Still allow it - user might want to schedule for later today
       }
 
-      const secondsUntil = Math.floor((scheduleDate.getTime() - now.getTime()) / 1000);
-      
+      const secondsUntil = Math.floor(
+        (scheduleDate.getTime() - now.getTime()) / 1000,
+      );
+
       // If time is in the past, don't schedule notification
       if (secondsUntil <= 0) {
         console.log("⚠️ Time already passed, notification not scheduled");
@@ -205,9 +238,9 @@ export default function MedicationsTab() {
           data: {
             medicationId: med.id,
             doseId: dose.id,
-            type: 'specific-date-dose',
+            type: "specific-date-dose",
           },
-          sound: 'default',
+          sound: "default",
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -224,7 +257,7 @@ export default function MedicationsTab() {
 
   // ============ CALENDAR HANDLERS ============
   const handleScheduleForDate = (medicationId: number) => {
-    const medication = medications.find(m => m.id === medicationId);
+    const medication = medications.find((m) => m.id === medicationId);
     if (medication) {
       setEditingMedication(medication);
       setShowCalendarModal(true);
@@ -255,7 +288,7 @@ export default function MedicationsTab() {
           onPress: () => showCustomTimePicker(date),
         },
         { text: "Cancel", style: "cancel" },
-      ]
+      ],
     );
   };
 
@@ -267,13 +300,13 @@ export default function MedicationsTab() {
         { text: "Cancel", style: "cancel" },
         {
           text: "Schedule",
-          onPress: (time:any) => {
+          onPress: (time: any) => {
             if (time) addDoseForDate(date, time);
           },
         },
       ],
       "plain-text",
-      "8:00 AM"
+      "8:00 AM",
     );
   };
 
@@ -290,42 +323,38 @@ export default function MedicationsTab() {
 
     setScheduledDoses([...scheduledDoses, newDose]);
     await scheduleSpecificDateDose(newDose);
-    
+
     Alert.alert(
       "✅ Scheduled!",
-      `${editingMedication.name} scheduled for ${date} at ${time}`
+      `${editingMedication.name} scheduled for ${date} at ${time}`,
     );
-    
+
     setShowCalendarModal(false);
     setEditingMedication(null);
   };
 
   const removeDoseForDate = (doseId: string) => {
-    Alert.alert(
-      "Remove Dose",
-      "Remove this scheduled dose?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => {
-            setScheduledDoses(scheduledDoses.filter(d => d.id !== doseId));
-            Alert.alert("Removed", "Dose removed from schedule");
-          },
+    Alert.alert("Remove Dose", "Remove this scheduled dose?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: () => {
+          setScheduledDoses(scheduledDoses.filter((d) => d.id !== doseId));
+          Alert.alert("Removed", "Dose removed from schedule");
         },
-      ]
-    );
+      },
+    ]);
   };
 
   // Get marked dates for calendar
   const getMarkedDates = () => {
     const marked: any = {};
-    scheduledDoses.forEach(dose => {
+    scheduledDoses.forEach((dose) => {
       if (!marked[dose.date]) {
         marked[dose.date] = {
           marked: true,
-          dotColor: '#E85D5B',
+          dotColor: "#E85D5B",
           doses: [],
         };
       }
@@ -370,7 +399,7 @@ export default function MedicationsTab() {
         Alert.alert("Error", "You must select at least one day");
         return;
       }
-      setEditedDays(editedDays.filter(d => d !== day));
+      setEditedDays(editedDays.filter((d) => d !== day));
     } else {
       setEditedDays([...editedDays, day]);
     }
@@ -382,7 +411,7 @@ export default function MedicationsTab() {
     const updatedMedications = medications.map((med) =>
       med.id === editingMedication.id
         ? { ...med, times: editedTimes, days: editedDays }
-        : med
+        : med,
     );
 
     setMedications(updatedMedications);
@@ -401,7 +430,7 @@ export default function MedicationsTab() {
 
   const handleViewScheduled = async () => {
     const scheduled = await notificationService.getScheduledNotifications();
-    
+
     Alert.alert(
       "📅 Scheduled Notifications",
       `Total: ${scheduled.length} recurring reminders\n\nSpecific Dates: ${scheduledDoses.length} doses`,
@@ -410,13 +439,16 @@ export default function MedicationsTab() {
           text: "View Dates",
           onPress: () => {
             const details = scheduledDoses
-              .map(d => `• ${d.medicationName}: ${d.date} at ${d.time}`)
-              .join('\n');
-            Alert.alert("Scheduled Dates", details || "No specific dates scheduled");
+              .map((d) => `• ${d.medicationName}: ${d.date} at ${d.time}`)
+              .join("\n");
+            Alert.alert(
+              "Scheduled Dates",
+              details || "No specific dates scheduled",
+            );
           },
         },
         { text: "OK" },
-      ]
+      ],
     );
   };
 
@@ -432,11 +464,13 @@ export default function MedicationsTab() {
           onPress: async () => {
             await notificationService.cancelMedicationNotifications(id);
             setMedications(medications.filter((med) => med.id !== id));
-            setScheduledDoses(scheduledDoses.filter(d => d.medicationId !== id));
+            setScheduledDoses(
+              scheduledDoses.filter((d) => d.medicationId !== id),
+            );
             Alert.alert("Deleted", "Medication removed");
           },
         },
-      ]
+      ],
     );
   };
 
@@ -450,7 +484,10 @@ export default function MedicationsTab() {
 
   return (
     <>
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {!notificationsEnabled && (
           <View style={styles.warningBanner}>
             <Ionicons name="notifications-off" size={20} color="#FF9800" />
@@ -462,14 +499,20 @@ export default function MedicationsTab() {
 
         <View style={styles.section}>
           <View style={styles.row}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleTestNotification}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleTestNotification}
+            >
               <View style={styles.actionIconCircle}>
                 <Ionicons name="notifications" size={26} color="#2196F3" />
               </View>
               <Text style={styles.actionButtonText}>Test Alert</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={handleViewScheduled}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleViewScheduled}
+            >
               <View style={styles.actionIconCircle}>
                 <Ionicons name="calendar" size={26} color="#4CAF50" />
               </View>
@@ -481,10 +524,7 @@ export default function MedicationsTab() {
         <View style={[styles.section, styles.lastSection]}>
           <Text style={styles.subtitle}>All Medications</Text>
           {medications.map((med) => (
-            <TouchableOpacity
-              key={med.id}
-              activeOpacity={0.9}
-            >
+            <TouchableOpacity key={med.id} activeOpacity={0.9}>
               <MedicationCard
                 medication={med}
                 onEdit={() => handleScheduleForDate(med.id)}
@@ -538,9 +578,9 @@ export default function MedicationsTab() {
               onDayPress={(day) => handleDateSelect(day.dateString)}
               markedDates={getMarkedDates()}
               theme={{
-                selectedDayBackgroundColor: '#E85D5B',
-                todayTextColor: '#E85D5B',
-                arrowColor: '#E85D5B',
+                selectedDayBackgroundColor: "#E85D5B",
+                todayTextColor: "#E85D5B",
+                arrowColor: "#E85D5B",
               }}
             />
 
@@ -591,26 +631,33 @@ export default function MedicationsTab() {
                 </View>
               ))}
 
-              <TouchableOpacity style={styles.addTimeButton} onPress={handleAddTime}>
+              <TouchableOpacity
+                style={styles.addTimeButton}
+                onPress={handleAddTime}
+              >
                 <Ionicons name="add-circle" size={24} color="#4CAF50" />
                 <Text style={styles.addTimeText}>Add Time</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>Days:</Text>
+              <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>
+                Days:
+              </Text>
               <View style={styles.daysContainer}>
                 {DAYS_OF_WEEK.map((day) => (
                   <TouchableOpacity
                     key={day}
                     style={[
                       styles.dayButton,
-                      editedDays.includes(day) && styles.dayButtonActive
+                      editedDays.includes(day) && styles.dayButtonActive,
                     ]}
                     onPress={() => toggleDay(day)}
                   >
-                    <Text style={[
-                      styles.dayButtonText,
-                      editedDays.includes(day) && styles.dayButtonTextActive
-                    ]}>
+                    <Text
+                      style={[
+                        styles.dayButtonText,
+                        editedDays.includes(day) && styles.dayButtonTextActive,
+                      ]}
+                    >
                       {day.slice(0, 3)}
                     </Text>
                   </TouchableOpacity>

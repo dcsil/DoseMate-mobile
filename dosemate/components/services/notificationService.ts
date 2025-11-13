@@ -1,5 +1,5 @@
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -17,33 +17,33 @@ export interface MedicationNotification {
   strength: string;
   quantity: string;
   time: string;
-  days?: string[]; 
+  days?: string[];
   instructions?: string;
 }
 
 class NotificationService {
   // Request notification permissions
   async requestPermissions(): Promise<boolean> {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
-    if (finalStatus !== 'granted') {
-      console.log('Notification permissions not granted');
+    if (finalStatus !== "granted") {
+      console.log("Notification permissions not granted");
       return false;
     }
 
-    
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('medication-reminders', {
-        name: 'Medication Reminders',
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("medication-reminders", {
+        name: "Medication Reminders",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        sound: 'default',
+        sound: "default",
         enableVibrate: true,
       });
     }
@@ -51,37 +51,35 @@ class NotificationService {
     return true;
   }
 
-
   parseTime(timeStr: string): { hour: number; minute: number } {
-    const [time, period] = timeStr.split(' ');
-    let [hour, minute] = time.split(':').map(Number);
+    const [time, period] = timeStr.split(" ");
+    let [hour, minute] = time.split(":").map(Number);
 
-    if (period === 'PM' && hour !== 12) {
+    if (period === "PM" && hour !== 12) {
       hour += 12;
-    } else if (period === 'AM' && hour === 12) {
+    } else if (period === "AM" && hour === 12) {
       hour = 0;
     }
 
     return { hour, minute };
   }
 
-
   dayToNumber(day: string): number {
     const days = {
-      'Sunday': 1,
-      'Monday': 2,
-      'Tuesday': 3,
-      'Wednesday': 4,
-      'Thursday': 5,
-      'Friday': 6,
-      'Saturday': 7,
+      Sunday: 1,
+      Monday: 2,
+      Tuesday: 3,
+      Wednesday: 4,
+      Thursday: 5,
+      Friday: 6,
+      Saturday: 7,
     };
     return days[day as keyof typeof days] ?? 2;
   }
 
   // Schedule a single medication reminder
   async scheduleMedicationReminder(
-    medication: MedicationNotification
+    medication: MedicationNotification,
   ): Promise<string[]> {
     const { hour, minute } = this.parseTime(medication.time);
     const notificationIds: string[] = [];
@@ -100,15 +98,15 @@ class NotificationService {
           content: {
             title: `Time for ${medication.name}`,
             body: `Take ${medication.quantity} (${medication.strength})${
-              medication.instructions ? `\n${medication.instructions}` : ''
+              medication.instructions ? `\n${medication.instructions}` : ""
             }`,
             data: {
               medicationId: medication.medicationId,
-              type: 'medication-reminder',
+              type: "medication-reminder",
             },
-            sound: 'default',
+            sound: "default",
             priority: Notifications.AndroidNotificationPriority.HIGH,
-            categoryIdentifier: 'medication-reminder',
+            categoryIdentifier: "medication-reminder",
           },
           trigger,
         });
@@ -116,7 +114,6 @@ class NotificationService {
         notificationIds.push(id);
       }
     } else {
-      
       const trigger: Notifications.DailyTriggerInput = {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour,
@@ -127,15 +124,15 @@ class NotificationService {
         content: {
           title: `Time for ${medication.name}`,
           body: `Take ${medication.quantity} (${medication.strength})${
-            medication.instructions ? `\n${medication.instructions}` : ''
+            medication.instructions ? `\n${medication.instructions}` : ""
           }`,
           data: {
             medicationId: medication.medicationId,
-            type: 'medication-reminder',
+            type: "medication-reminder",
           },
-          sound: 'default',
+          sound: "default",
           priority: Notifications.AndroidNotificationPriority.HIGH,
-          categoryIdentifier: 'medication-reminder',
+          categoryIdentifier: "medication-reminder",
         },
         trigger,
       });
@@ -146,7 +143,6 @@ class NotificationService {
     return notificationIds;
   }
 
-  
   async scheduleMedicationWithMultipleTimes(
     medicationId: number,
     name: string,
@@ -154,7 +150,7 @@ class NotificationService {
     quantity: string,
     times: string[],
     days?: string[],
-    instructions?: string
+    instructions?: string,
   ): Promise<string[]> {
     const allNotificationIds: string[] = [];
 
@@ -174,17 +170,16 @@ class NotificationService {
     return allNotificationIds;
   }
 
-  
   async cancelNotifications(notificationIds: string[]): Promise<void> {
     for (const id of notificationIds) {
       await Notifications.cancelScheduledNotificationAsync(id);
     }
   }
 
-
   async cancelMedicationNotifications(medicationId: number): Promise<void> {
-    const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
-    
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+
     const notificationIds = scheduledNotifications
       .filter((notif) => notif.content.data?.medicationId === medicationId)
       .map((notif) => notif.identifier);
@@ -192,62 +187,62 @@ class NotificationService {
     await this.cancelNotifications(notificationIds);
   }
 
-
   async cancelAllNotifications(): Promise<void> {
     await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
-  async getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+  async getScheduledNotifications(): Promise<
+    Notifications.NotificationRequest[]
+  > {
     return await Notifications.getAllScheduledNotificationsAsync();
   }
 
   async getMedicationNotifications(
-    medicationId: number
+    medicationId: number,
   ): Promise<Notifications.NotificationRequest[]> {
     const allNotifications = await this.getScheduledNotifications();
     return allNotifications.filter(
-      (notif) => notif.content.data?.medicationId === medicationId
+      (notif) => notif.content.data?.medicationId === medicationId,
     );
   }
 
-
   setupNotificationListeners(
     onNotificationReceived?: (notification: Notifications.Notification) => void,
-    onNotificationResponse?: (response: Notifications.NotificationResponse) => void
+    onNotificationResponse?: (
+      response: Notifications.NotificationResponse,
+    ) => void,
   ) {
-    
     const receivedListener = Notifications.addNotificationReceivedListener(
       (notification) => {
-        console.log('Notification received:', notification);
+        console.log("Notification received:", notification);
         onNotificationReceived?.(notification);
-      }
+      },
     );
 
-   
-    const responseListener = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        console.log('Notification response:', response);
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("Notification response:", response);
         onNotificationResponse?.(response);
-      }
-    );
+      });
 
-    
     return () => {
       receivedListener.remove();
       responseListener.remove();
     };
   }
 
- 
   async sendTestNotification(medicationName: string): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `Test: Time for ${medicationName}`,
-        body: 'This is a test notification',
-        data: { type: 'test' },
-        sound: 'default',
+        body: "This is a test notification",
+        data: { type: "test" },
+        sound: "default",
       },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 1 },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 1,
+      },
     });
   }
 }

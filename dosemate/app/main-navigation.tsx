@@ -24,7 +24,7 @@ export default function NavigationScreen() {
         console.log("🔔 Notification tapped! Navigating to Reminders tab...");
         // Navigate to Reminders tab when notification is tapped
         setActiveTab("reminders");
-      }
+      },
     );
 
     return () => subscription.remove();
