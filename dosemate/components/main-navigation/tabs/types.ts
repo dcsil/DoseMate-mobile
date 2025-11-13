@@ -10,6 +10,7 @@ export interface Medication {
   adherence: number;
   foodInstructions: string;
   purpose: string;
+  days?: string[];
 }
 
 export interface Reminder {

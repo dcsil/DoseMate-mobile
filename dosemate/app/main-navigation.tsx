@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 // import { useRouter } from "expo-router";
 
 // Import tab components
@@ -14,6 +15,20 @@ import BottomNavigation from "@/components/main-navigation/Navbar";
 export default function NavigationScreen() {
   // const router = useRouter();
   const [activeTab, setActiveTab] = useState("home");
+
+  // ============ NOTIFICATION LISTENER ============
+  useEffect(() => {
+    // Listen for notification taps
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log("🔔 Notification tapped! Navigating to Reminders tab...");
+        // Navigate to Reminders tab when notification is tapped
+        setActiveTab("reminders");
+      },
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   // ============ EVENT HANDLERS ============
   const handlers = {
