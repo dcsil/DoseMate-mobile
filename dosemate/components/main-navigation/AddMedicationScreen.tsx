@@ -14,12 +14,14 @@ import Card from "./Card";
 import MedicineOCRScanner from "./OCR";
 import MedicationListScreen from "./MedicationList";
 import { BACKEND_BASE_URL } from "../../config";
+import * as SecureStore from "expo-secure-store";
 
 interface AddMedicationScreenProps {
   visible: boolean;
   onClose: () => void;
 }
 
+// User-entered details
 interface MedicationDetails {
   strength: string;
   quantity: string;
@@ -29,7 +31,9 @@ interface MedicationDetails {
   foodInstructions: string;
 }
 
+// Backend medicine info
 type MedicineDetails = {
+  id?: string;
   brand_name?: string;
   purpose?: string;
   dosage?: string;
@@ -48,8 +52,7 @@ export default function AddMedicationScreen({
     useState<MedicineDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
-
-  const [step, setStep] = useState(1); // 1: Search, 2: Info Display, 3: Details, 4: Schedule
+  const [step, setStep] = useState(1); // 1: Search, 2: Info, 3: Details, 4: Schedule
   const [medDetails, setMedDetails] = useState<MedicationDetails>({
     strength: "",
     quantity: "",
@@ -66,10 +69,9 @@ export default function AddMedicationScreen({
   const [showFoodPicker, setShowFoodPicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
 
-  // Track if we should skip autocomplete (for OCR detection)
   const skipAutocomplete = useRef(false);
 
-  // Fetch autocomplete suggestions
+  // --- Fetch suggestions ---
   const fetchSuggestions = async (text: string) => {
     if (text.length < 1 || skipAutocomplete.current) {
       setSuggestions([]);
@@ -92,6 +94,7 @@ export default function AddMedicationScreen({
     return () => clearTimeout(delay);
   }, [query]);
 
+  // --- Select medicine ---
   const handleSelect = async (item: string) => {
     setQuery(item);
     setSuggestions([]);
@@ -102,8 +105,7 @@ export default function AddMedicationScreen({
       const res = await fetch(
         `${BACKEND_BASE_URL}/medicines/search?query=${item}`,
       );
-      const data = await res.json();
-      console.log("Fetched medicine details:", data);
+      const data: MedicineDetails = await res.json();
       setSelectedMedicine(data);
       setStep(2);
     } catch (err) {
@@ -113,6 +115,7 @@ export default function AddMedicationScreen({
     }
   };
 
+  // --- Back navigation ---
   const handleBack = () => {
     if (step === 1) {
       setQuery("");
@@ -133,43 +136,68 @@ export default function AddMedicationScreen({
     }
   };
 
-  const handleSave = () => {
-    // Handle save logic here
+  // --- Save medication ---
+  const handleSave = async () => {
     console.log("Saving medication:", { selectedMedicine, medDetails });
-    // Reset everything
-    setStep(1);
-    setQuery("");
-    setSuggestions([]);
-    setSelectedMedicine(null);
-    setMedDetails({
-      strength: "",
-      quantity: "",
-      frequency: "",
-      times: [],
-      asNeeded: false,
-      foodInstructions: "",
-    });
-    skipAutocomplete.current = false;
-    onClose();
-    setShowList(false);
+
+    try {
+      // Get JWT from SecureStore
+      const token = await SecureStore.getItemAsync("jwt");
+      if (!token) throw new Error("No JWT token found");
+
+      // Prepare payload
+      const payload = {
+        selectedMedicine,
+        medDetails,
+      };
+
+      // Call backend API
+      const response = await fetch(`${BACKEND_BASE_URL}/user/medications/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Failed to save medication");
+      }
+
+      const data = await response.json();
+      console.log("Medication saved:", data);
+
+      // Reset UI state
+      setStep(1);
+      setQuery("");
+      setSuggestions([]);
+      setSelectedMedicine(null);
+      setMedDetails({
+        strength: "",
+        quantity: "",
+        frequency: "",
+        times: [],
+        asNeeded: false,
+        foodInstructions: "",
+      });
+      skipAutocomplete.current = false;
+      onClose();
+      setShowList(false);
+    } catch (err: any) {
+      console.error("Error saving medication:", err.message);
+    }
   };
 
-  // Handle medicine detection from OCR
+  // --- OCR detected ---
   const handleMedicineDetected = (detectedName: string) => {
-    console.log("Medicine detected from OCR:", detectedName);
     setScannerVisible(false);
-    setStep(2);
-
-    // skipAutocomplete.current = true;
     setQuery(detectedName);
     setSuggestions([]);
-    // setLoading(true);
-
-    // Fetch medicine details
     fetch(`${BACKEND_BASE_URL}/medicines/search?query=${detectedName}`)
       .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched medicine details:", data);
+      .then((data: MedicineDetails) => {
         setSelectedMedicine(data);
         setLoading(false);
         setStep(2);
@@ -180,12 +208,10 @@ export default function AddMedicationScreen({
       });
   };
 
-  // Generate strength options based on dosage info
+  // --- Strength options based on backend dosage ---
   const getStrengthOptions = () => {
     if (!selectedMedicine?.dosage) return ["Low", "Medium", "High"];
-
-    const dosageStr = selectedMedicine.dosage;
-    const matches = dosageStr.match(/\d+\s*(?:mg|mcg|g|ml)/gi);
+    const matches = selectedMedicine.dosage.match(/\d+\s*(?:mg|mcg|g|ml)/gi);
     return matches && matches.length > 0 ? matches : ["Standard dosage"];
   };
 
@@ -323,17 +349,15 @@ export default function AddMedicationScreen({
             </Text>
           </View>
         )}
-
         {selectedMedicine?.dosage && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
               <MaterialCommunityIcons name="flask" size={20} color="#E85D5B" />
-              <Text style={styles.infoLabel}>Dosage</Text>
+              <Text style={styles.infoLabel}>Dosage Instructions</Text>
             </View>
             <Text style={styles.infoValue}>{selectedMedicine.dosage}</Text>
           </View>
         )}
-
         {selectedMedicine?.purpose && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
@@ -347,7 +371,6 @@ export default function AddMedicationScreen({
             <Text style={styles.infoValue}>{selectedMedicine.purpose}</Text>
           </View>
         )}
-
         {selectedMedicine?.indications && (
           <View style={styles.infoCard}>
             <View style={styles.infoHeader}>
