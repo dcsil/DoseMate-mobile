@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,18 +10,20 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { BACKEND_BASE_URL } from "@/config";
 
 export default function PrivacyScreen() {
   const router = useRouter();
   const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const scrollY = contentOffset.y;
     const isEnd = layoutMeasurement.height + scrollY >= contentSize.height - 20;
 
-    // Hide hint as soon as user scrolls down even a bit
     if (scrollY > 10 && showHint) {
       setShowHint(false);
     }
@@ -30,6 +32,45 @@ export default function PrivacyScreen() {
       setHasScrolledToEnd(true);
     }
   };
+
+  // Fetch profile on mount
+  useEffect(() => {
+    const checkProfile = async () => {
+      try {
+        const jwt = await SecureStore.getItemAsync("jwt");
+        if (!jwt) {
+          setLoadingProfile(false);
+          return;
+        }
+
+        const res = await fetch(`${BACKEND_BASE_URL}/profile`, {
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+        const profileData = await res.json();
+
+        if (Array.isArray(profileData) && profileData.length > 0) {
+          // User has profile, go to main navigation
+          router.replace("/main-navigation");
+        } else {
+          setLoadingProfile(false); // Show Privacy screen
+        }
+      } catch (err) {
+        console.log("Error fetching profile:", err);
+        setLoadingProfile(false);
+      }
+    };
+
+    checkProfile();
+  }, [router]);
+
+  // If profile is loading, you could show a simple loader
+  if (loadingProfile) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: "center", marginTop: 50 }}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -127,12 +168,10 @@ export default function PrivacyScreen() {
         </Text>
       </ScrollView>
 
-      {/* Scroll Hint (now outside ScrollView) */}
       {showHint && !hasScrolledToEnd && (
         <Text style={styles.scrollHint}>↓ Scroll to continue ↓</Text>
       )}
 
-      {/* Bottom Button */}
       <TouchableOpacity
         style={[
           styles.button,
