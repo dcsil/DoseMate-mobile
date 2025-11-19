@@ -61,7 +61,7 @@ export interface ApiMed {
 }
 
 export default function MedicationsTab() {
-  const [showAddMedication, setShowAddMedication] = useState(true);
+  const [showAddMedication, setShowAddMedication] = useState(false);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
