@@ -385,7 +385,7 @@ describe("ProfileSetupScreen", () => {
       const completeButton = screen.getByText("Complete Setup");
       fireEvent.press(completeButton.parent!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/tutorial");
+      expect(mockRouter.replace).toHaveBeenCalledWith("/onboarding/tutorial");
     });
 
     it("allows selecting different sleep schedules", () => {
