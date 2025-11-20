@@ -4,6 +4,11 @@ import { TouchableOpacity } from "react-native";
 import ProfileSetupScreen from "@/app/onboarding/profile-setup";
 import { useRouter } from "expo-router";
 
+// Mock SecureStore so saveProfile has a token to use
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn().mockResolvedValue("test-jwt-token"),
+}));
+
 // Mock child components
 jest.mock("@/components/profile-header", () => {
   const React = require("react");
@@ -130,13 +135,21 @@ describe("ProfileSetupScreen", () => {
   };
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     mockRouter = {
       back: jest.fn(),
       push: jest.fn(),
       replace: jest.fn(),
     };
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    jest.clearAllMocks();
+
+    // Mock fetch so saveProfile() succeeds
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
+      text: jest.fn().mockResolvedValue(""),
+    });
   });
 
   describe("Initial Rendering", () => {
@@ -263,7 +276,8 @@ describe("ProfileSetupScreen", () => {
       fireEvent.press(screen.getByText("Continue").parent!);
 
       const diabetesButton = screen.getByTestId("condition-Diabetes");
-      const hypertensionButton = screen.getByTestId("condition-Hypertension");
+      const hypertensionButton =
+        screen.getByTestId("condition-Hypertension");
 
       fireEvent.press(diabetesButton);
       fireEvent.press(hypertensionButton);
@@ -347,7 +361,6 @@ describe("ProfileSetupScreen", () => {
       const sleepButton = screen.getByTestId("sleep-normal");
       fireEvent.press(sleepButton);
 
-      // Still disabled because activity not selected
       const touchables = screen.UNSAFE_getAllByType(TouchableOpacity);
       const continueButton = touchables[touchables.length - 1];
       expect(continueButton.props.disabled).toBe(true);
@@ -375,7 +388,8 @@ describe("ProfileSetupScreen", () => {
       expect(screen.getByText("Complete Setup")).toBeTruthy();
     });
 
-    it("navigates to tutorial when Complete Setup is pressed", () => {
+    // async test + waitFor, now that saveProfile is async
+    it("navigates to tutorial when Complete Setup is pressed", async () => {
       const screen = render(<ProfileSetupScreen />);
       navigateToStep3(screen);
 
@@ -385,7 +399,9 @@ describe("ProfileSetupScreen", () => {
       const completeButton = screen.getByText("Complete Setup");
       fireEvent.press(completeButton.parent!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/tutorial");
+      await waitFor(() => {
+        expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/tutorial");
+      });
     });
 
     it("allows selecting different sleep schedules", () => {
@@ -453,17 +469,13 @@ describe("ProfileSetupScreen", () => {
     it("preserves data when navigating back and forward", () => {
       const screen = render(<ProfileSetupScreen />);
 
-      // Step 1: Enter age
       fireEvent.changeText(screen.getByTestId("age-input"), "35");
       fireEvent.press(screen.getByText("Continue").parent!);
 
-      // Step 2: Go back
       fireEvent.press(screen.getByText("Back"));
 
-      // Age should still be there
       expect(screen.getByTestId("age-input").props.value).toBe("35");
 
-      // Go forward again
       fireEvent.press(screen.getByText("Continue").parent!);
       expect(screen.getByText("Step 2")).toBeTruthy();
     });
@@ -486,16 +498,15 @@ describe("ProfileSetupScreen", () => {
       fireEvent.press(screen.getByTestId("sleep-normal"));
       fireEvent.press(screen.getByTestId("activity-moderate"));
 
-      // Go back to step 2
+      // Back to step 2
       fireEvent.press(screen.getByText("Back"));
 
-      // Data should be preserved
       expect(screen.getByText("Diabetes ✓")).toBeTruthy();
       expect(screen.getByTestId("allergies-input").props.value).toBe(
         "Penicillin",
       );
 
-      // Go back to step 1
+      // Back to step 1
       fireEvent.press(screen.getByText("Back"));
 
       expect(screen.getByTestId("age-input").props.value).toBe("28");
@@ -525,7 +536,6 @@ describe("ProfileSetupScreen", () => {
       const touchables = screen.UNSAFE_getAllByType(TouchableOpacity);
       const continueButton = touchables[touchables.length - 1];
 
-      // Should be enabled even with no conditions selected
       expect(continueButton.props.disabled).toBe(false);
     });
 
@@ -539,13 +549,11 @@ describe("ProfileSetupScreen", () => {
       let continueButton = touchables[touchables.length - 1];
       expect(continueButton.props.disabled).toBe(true);
 
-      // Select only sleep
       fireEvent.press(screen.getByTestId("sleep-normal"));
       touchables = screen.UNSAFE_getAllByType(TouchableOpacity);
       continueButton = touchables[touchables.length - 1];
       expect(continueButton.props.disabled).toBe(true);
 
-      // Select activity too
       fireEvent.press(screen.getByTestId("activity-moderate"));
       touchables = screen.UNSAFE_getAllByType(TouchableOpacity);
       continueButton = touchables[touchables.length - 1];
