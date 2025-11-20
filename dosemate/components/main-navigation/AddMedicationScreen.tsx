@@ -7,12 +7,14 @@ import {
   ScrollView,
   StyleSheet,
   Modal,
+  Platform,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Calendar } from "react-native-calendars";
 import Card from "./Card";
 import MedicineOCRScanner from "./OCR";
-import MedicationListScreen from "./MedicationList";
 import { BACKEND_BASE_URL } from "../../config";
 import * as SecureStore from "expo-secure-store";
 
@@ -27,6 +29,10 @@ interface MedicationDetails {
   quantity: string;
   frequency: string;
   times: string[];
+  days: string[]; // Selected days of the week
+  startDate?: string; // Optional start date
+  endDate?: string; // Optional end date
+  timesPerDay: number; // How many times per day
   asNeeded: boolean;
   foodInstructions: string;
 }
@@ -42,6 +48,16 @@ type MedicineDetails = {
   indications?: string;
 };
 
+const DAYS_OF_WEEK = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
 export default function AddMedicationScreen({
   visible,
   onClose,
@@ -51,13 +67,14 @@ export default function AddMedicationScreen({
   const [selectedMedicine, setSelectedMedicine] =
     useState<MedicineDetails | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showList, setShowList] = useState(false);
   const [step, setStep] = useState(1); // 1: Search, 2: Info, 3: Details, 4: Schedule
   const [medDetails, setMedDetails] = useState<MedicationDetails>({
     strength: "",
     quantity: "",
-    frequency: "",
+    frequency: "Daily",
     times: [],
+    days: [],
+    timesPerDay: 1,
     asNeeded: false,
     foodInstructions: "",
   });
@@ -68,6 +85,14 @@ export default function AddMedicationScreen({
   const [showQuantityPicker, setShowQuantityPicker] = useState(false);
   const [showFoodPicker, setShowFoodPicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
+  const [showTimesPerDayPicker, setShowTimesPerDayPicker] = useState(false);
+
+  // Date/Time Picker States
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarMode, setCalendarMode] = useState<"start" | "end">("start");
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [currentTimeIndex, setCurrentTimeIndex] = useState(0);
+  const [tempTime, setTempTime] = useState(new Date());
 
   const skipAutocomplete = useRef(false);
 
@@ -124,8 +149,10 @@ export default function AddMedicationScreen({
       setMedDetails({
         strength: "",
         quantity: "",
-        frequency: "",
+        frequency: "Daily",
         times: [],
+        days: [],
+        timesPerDay: 1,
         asNeeded: false,
         foodInstructions: "",
       });
@@ -177,14 +204,15 @@ export default function AddMedicationScreen({
       setMedDetails({
         strength: "",
         quantity: "",
-        frequency: "",
+        frequency: "Daily",
         times: [],
+        days: [],
+        timesPerDay: 1,
         asNeeded: false,
         foodInstructions: "",
       });
       skipAutocomplete.current = false;
       onClose();
-      setShowList(false);
     } catch (err: any) {
       console.error("Error saving medication:", err.message);
     }
@@ -192,19 +220,25 @@ export default function AddMedicationScreen({
 
   // --- OCR detected ---
   const handleMedicineDetected = (detectedName: string) => {
+    console.log("Medicine detected from OCR:", detectedName);
+
     setScannerVisible(false);
     setQuery(detectedName);
     setSuggestions([]);
+    setLoading(true); // Show loading while fetching
+
     fetch(`${BACKEND_BASE_URL}/medicines/search?query=${detectedName}`)
       .then((res) => res.json())
       .then((data: MedicineDetails) => {
+        console.log("Medicine data fetched:", data);
         setSelectedMedicine(data);
         setLoading(false);
-        setStep(2);
+        setStep(2); // Move to info step
       })
       .catch((err) => {
-        console.log("Error fetching details:", err);
+        console.error("Error fetching medicine details:", err);
         setLoading(false);
+        //Alert.alert("Error", "Failed to fetch medicine details. Please try again.");
       });
   };
 
@@ -212,7 +246,12 @@ export default function AddMedicationScreen({
   const getStrengthOptions = () => {
     if (!selectedMedicine?.dosage) return ["Low", "Medium", "High"];
     const matches = selectedMedicine.dosage.match(/\d+\s*(?:mg|mcg|g|ml)/gi);
-    return matches && matches.length > 0 ? matches : ["Standard dosage"];
+    if (matches && matches.length > 0) {
+      // Remove duplicates by converting to Set and back to array
+      const uniqueMatches = Array.from(new Set(matches));
+      return uniqueMatches;
+    }
+    return ["Standard dosage"];
   };
 
   // Quantity options
@@ -225,6 +264,133 @@ export default function AddMedicationScreen({
     "5ml",
     "10ml",
   ];
+
+  // Frequency options
+  const frequencyOptions = [
+    "Daily",
+    "Specific Days",
+    "Every Other Day",
+    "As Needed",
+  ];
+
+  // Times per day options
+  const timesPerDayOptions = [1, 2, 3, 4, 5, 6];
+
+  // Toggle day selection
+  const toggleDay = (day: string) => {
+    if (medDetails.days.includes(day)) {
+      setMedDetails((prev) => ({
+        ...prev,
+        days: prev.days.filter((d) => d !== day),
+      }));
+    } else {
+      setMedDetails((prev) => ({
+        ...prev,
+        days: [...prev.days, day],
+      }));
+    }
+  };
+
+  // Handle time selection
+  const handleTimeChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowTimePicker(false);
+    }
+
+    if (selectedDate) {
+      const timeString = selectedDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      const newTimes = [...medDetails.times];
+      newTimes[currentTimeIndex] = timeString;
+      setMedDetails((prev) => ({ ...prev, times: newTimes }));
+
+      if (Platform.OS === "ios") {
+        setShowTimePicker(false);
+      }
+    }
+  };
+
+  // Handle date selection from calendar
+  const handleCalendarDateSelect = (date: string) => {
+    if (calendarMode === "start") {
+      setMedDetails((prev) => ({
+        ...prev,
+        startDate: date,
+      }));
+    } else {
+      setMedDetails((prev) => ({
+        ...prev,
+        endDate: date,
+      }));
+    }
+    setShowCalendarModal(false);
+  };
+
+  // Get marked dates for calendar
+  const getMarkedDates = () => {
+    const marked: any = {};
+
+    if (medDetails.startDate) {
+      marked[medDetails.startDate] = {
+        startingDay: true,
+        color: "#4CAF50",
+        textColor: "#FFFFFF",
+      };
+    }
+
+    if (medDetails.endDate) {
+      marked[medDetails.endDate] = {
+        endingDay: true,
+        color: "#FF9800",
+        textColor: "#FFFFFF",
+      };
+    }
+
+    // Mark dates in between if both start and end are selected
+    if (medDetails.startDate && medDetails.endDate) {
+      const start = new Date(medDetails.startDate);
+      const end = new Date(medDetails.endDate);
+      const current = new Date(start);
+      current.setDate(current.getDate() + 1);
+
+      while (current < end) {
+        const dateString = current.toISOString().split("T")[0];
+        marked[dateString] = {
+          color: "#E8F5E9",
+          textColor: "#2C2C2C",
+        };
+        current.setDate(current.getDate() + 1);
+      }
+
+      // Update start and end to show connected range
+      if (medDetails.startDate && medDetails.endDate !== medDetails.startDate) {
+        marked[medDetails.startDate] = {
+          startingDay: true,
+          color: "#4CAF50",
+          textColor: "#FFFFFF",
+        };
+        marked[medDetails.endDate] = {
+          endingDay: true,
+          color: "#FF9800",
+          textColor: "#FFFFFF",
+        };
+      }
+    }
+
+    return marked;
+  };
+
+  // Initialize times array when timesPerDay changes
+  useEffect(() => {
+    if (medDetails.timesPerDay !== medDetails.times.length) {
+      const newTimes = Array(medDetails.timesPerDay).fill("");
+      setMedDetails((prev) => ({ ...prev, times: newTimes }));
+    }
+  }, [medDetails.timesPerDay, medDetails.times.length]);
 
   const renderSearchStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
@@ -263,21 +429,16 @@ export default function AddMedicationScreen({
         <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
         <Text style={styles.scanButtonText}>Use Image</Text>
       </TouchableOpacity>
+
       {/* Scanner Modal */}
-      <Modal
+      <MedicineOCRScanner
         visible={scannerVisible}
-        animationType="slide"
-        onRequestClose={() => setScannerVisible(false)}
-      >
-        <MedicineOCRScanner
-          visible={scannerVisible}
-          onClose={() => {
-            console.log("Closing scanner from AddMedicationScreen");
-            setScannerVisible(false);
-          }}
-          onMedicineDetected={handleMedicineDetected}
-        />
-      </Modal>
+        onClose={() => {
+          console.log("Closing scanner from AddMedicationScreen");
+          setScannerVisible(false);
+        }}
+        onMedicineDetected={handleMedicineDetected}
+      />
 
       {/* Loading spinner */}
       {loading && (
@@ -425,9 +586,9 @@ export default function AddMedicationScreen({
           </TouchableOpacity>
           {showStrengthPicker && (
             <View style={styles.picker}>
-              {getStrengthOptions().map((option: string) => (
+              {getStrengthOptions().map((option: string, index: number) => (
                 <TouchableOpacity
-                  key={option}
+                  key={`strength-${index}-${option}`}
                   style={styles.pickerOption}
                   onPress={() => {
                     setMedDetails((prev) => ({ ...prev, strength: option }));
@@ -541,42 +702,35 @@ export default function AddMedicationScreen({
         </View>
         <Text style={styles.stepTitle}>Set Reminder Schedule</Text>
         <Text style={styles.stepSubtitle}>
-          When should you take this medication?
+          Customize when you take this medication
         </Text>
       </View>
 
       <View style={styles.formSection}>
-        {/* Frequency */}
+        {/* Frequency Type */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>How often?</Text>
+          <Text style={styles.label}>Frequency</Text>
           <TouchableOpacity
             style={styles.selectButton}
             onPress={() => setShowFrequencyPicker(!showFrequencyPicker)}
           >
-            <Text
-              style={
-                medDetails.frequency
-                  ? styles.selectButtonTextActive
-                  : styles.selectButtonText
-              }
-            >
-              {medDetails.frequency || "Select frequency"}
+            <Text style={styles.selectButtonTextActive}>
+              {medDetails.frequency}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#999" />
           </TouchableOpacity>
           {showFrequencyPicker && (
             <View style={styles.picker}>
-              {[
-                "Once daily",
-                "Twice daily",
-                "Three times daily",
-                "As needed",
-              ].map((option) => (
+              {frequencyOptions.map((option) => (
                 <TouchableOpacity
                   key={option}
                   style={styles.pickerOption}
                   onPress={() => {
-                    setMedDetails((prev) => ({ ...prev, frequency: option }));
+                    setMedDetails((prev) => ({
+                      ...prev,
+                      frequency: option,
+                      days: option === "Daily" ? DAYS_OF_WEEK : [],
+                    }));
                     setShowFrequencyPicker(false);
                   }}
                 >
@@ -587,124 +741,187 @@ export default function AddMedicationScreen({
           )}
         </View>
 
-        {/* Time Inputs */}
-        {medDetails.frequency && medDetails.frequency !== "As needed" && (
+        {/* Day Selection for Specific Days or Every Other Day */}
+        {(medDetails.frequency === "Specific Days" ||
+          medDetails.frequency === "Daily") && (
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Reminder times</Text>
+            <Text style={styles.label}>
+              {medDetails.frequency === "Daily"
+                ? "Active Days (Select all for daily)"
+                : "Select Days"}
+            </Text>
+            <View style={styles.daysContainer}>
+              {DAYS_OF_WEEK.map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayChip,
+                    medDetails.days.includes(day) && styles.dayChipActive,
+                  ]}
+                  onPress={() => toggleDay(day)}
+                >
+                  <Text
+                    style={[
+                      styles.dayChipText,
+                      medDetails.days.includes(day) && styles.dayChipTextActive,
+                    ]}
+                  >
+                    {day.substring(0, 3)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Times Per Day */}
+        {medDetails.frequency !== "As Needed" && (
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>How many times per day?</Text>
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => setShowTimesPerDayPicker(!showTimesPerDayPicker)}
+            >
+              <Text style={styles.selectButtonTextActive}>
+                {medDetails.timesPerDay}{" "}
+                {medDetails.timesPerDay === 1 ? "time" : "times"}
+              </Text>
+              <Ionicons name="chevron-down" size={20} color="#999" />
+            </TouchableOpacity>
+            {showTimesPerDayPicker && (
+              <View style={styles.picker}>
+                {timesPerDayOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={styles.pickerOption}
+                    onPress={() => {
+                      setMedDetails((prev) => ({
+                        ...prev,
+                        timesPerDay: option,
+                      }));
+                      setShowTimesPerDayPicker(false);
+                    }}
+                  >
+                    <Text style={styles.pickerOptionText}>
+                      {option} {option === 1 ? "time" : "times"} per day
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Time Inputs */}
+        {medDetails.frequency !== "As Needed" && (
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Set reminder times</Text>
             <View style={styles.timeInputsContainer}>
-              {medDetails.frequency === "Once daily" && (
-                <TextInput
-                  style={styles.timeInput}
-                  placeholder="8:00 AM"
-                  placeholderTextColor="#999"
-                  value={medDetails.times[0] || ""}
-                  onChangeText={(text) => {
-                    const newTimes = [...medDetails.times];
-                    newTimes[0] = text;
-                    setMedDetails((prev) => ({ ...prev, times: newTimes }));
-                  }}
-                />
-              )}
-              {medDetails.frequency === "Twice daily" && (
-                <>
-                  <TextInput
-                    style={styles.timeInput}
-                    placeholder="8:00 AM"
-                    placeholderTextColor="#999"
-                    value={medDetails.times[0] || ""}
-                    onChangeText={(text) => {
-                      const newTimes = [...medDetails.times];
-                      newTimes[0] = text;
-                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
+              {Array.from({ length: medDetails.timesPerDay }).map(
+                (_, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.timeInputButton}
+                    onPress={() => {
+                      setCurrentTimeIndex(index);
+                      setTempTime(new Date());
+                      setShowTimePicker(true);
                     }}
-                  />
-                  <TextInput
-                    style={styles.timeInput}
-                    placeholder="8:00 PM"
-                    placeholderTextColor="#999"
-                    value={medDetails.times[1] || ""}
-                    onChangeText={(text) => {
-                      const newTimes = [...medDetails.times];
-                      newTimes[1] = text;
-                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
-                    }}
-                  />
-                </>
-              )}
-              {medDetails.frequency === "Three times daily" && (
-                <>
-                  <TextInput
-                    style={styles.timeInput}
-                    placeholder="8:00 AM"
-                    placeholderTextColor="#999"
-                    value={medDetails.times[0] || ""}
-                    onChangeText={(text) => {
-                      const newTimes = [...medDetails.times];
-                      newTimes[0] = text;
-                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
-                    }}
-                  />
-                  <TextInput
-                    style={styles.timeInput}
-                    placeholder="2:00 PM"
-                    placeholderTextColor="#999"
-                    value={medDetails.times[1] || ""}
-                    onChangeText={(text) => {
-                      const newTimes = [...medDetails.times];
-                      newTimes[1] = text;
-                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
-                    }}
-                  />
-                  <TextInput
-                    style={styles.timeInput}
-                    placeholder="8:00 PM"
-                    placeholderTextColor="#999"
-                    value={medDetails.times[2] || ""}
-                    onChangeText={(text) => {
-                      const newTimes = [...medDetails.times];
-                      newTimes[2] = text;
-                      setMedDetails((prev) => ({ ...prev, times: newTimes }));
-                    }}
-                  />
-                </>
+                  >
+                    <Ionicons name="time-outline" size={20} color="#E85D5B" />
+                    <Text
+                      style={
+                        medDetails.times[index]
+                          ? styles.timeInputTextActive
+                          : styles.timeInputText
+                      }
+                    >
+                      {medDetails.times[index] || `Set time ${index + 1}`}
+                    </Text>
+                  </TouchableOpacity>
+                ),
               )}
             </View>
           </View>
         )}
 
+        {/* Date Range (Optional) */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Duration (Optional)</Text>
+          <View style={styles.dateRangeContainer}>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => {
+                setCalendarMode("start");
+                setShowCalendarModal(true);
+              }}
+            >
+              <Ionicons name="calendar-outline" size={20} color="#4CAF50" />
+              <View style={styles.dateButtonTextContainer}>
+                <Text style={styles.dateButtonLabel}>Start</Text>
+                <Text style={styles.dateButtonText}>
+                  {medDetails.startDate || "Today"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.dateArrow}>
+              <Ionicons name="arrow-forward" size={20} color="#999" />
+            </View>
+
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => {
+                setCalendarMode("end");
+                setShowCalendarModal(true);
+              }}
+            >
+              <Ionicons name="calendar-outline" size={20} color="#FF9800" />
+              <View style={styles.dateButtonTextContainer}>
+                <Text style={styles.dateButtonLabel}>End</Text>
+                <Text style={styles.dateButtonText}>
+                  {medDetails.endDate || "Ongoing"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.helperText}>
+            Leave end date empty for ongoing medication
+          </Text>
+        </View>
+
         {/* As Needed Toggle */}
-        <TouchableOpacity
-          style={styles.toggleContainer}
-          onPress={() =>
-            setMedDetails((prev) => ({ ...prev, asNeeded: !prev.asNeeded }))
-          }
-        >
-          <View style={styles.toggleInfo}>
-            <Text style={styles.toggleTitle}>Take as needed only</Text>
-            <Text style={styles.toggleSubtitle}>No regular schedule</Text>
+        {medDetails.frequency === "As Needed" && (
+          <View style={styles.asNeededCard}>
+            <Ionicons name="alert-circle" size={24} color="#FF9800" />
+            <View style={styles.asNeededTextContainer}>
+              <Text style={styles.asNeededTitle}>As Needed Medication</Text>
+              <Text style={styles.asNeededSubtitle}>
+                No regular schedule. Take only when required.
+              </Text>
+            </View>
           </View>
-          <View
-            style={[styles.switch, medDetails.asNeeded && styles.switchActive]}
-          >
-            <View
-              style={[
-                styles.switchThumb,
-                medDetails.asNeeded && styles.switchThumbActive,
-              ]}
-            />
-          </View>
-        </TouchableOpacity>
+        )}
       </View>
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+      <TouchableOpacity
+        style={[
+          styles.saveButton,
+          medDetails.frequency !== "As Needed" &&
+            (medDetails.days.length === 0 ||
+              medDetails.times.some((t) => !t)) &&
+            styles.primaryButtonDisabled,
+        ]}
+        onPress={handleSave}
+        disabled={
+          medDetails.frequency !== "As Needed" &&
+          (medDetails.days.length === 0 || medDetails.times.some((t) => !t))
+        }
+      >
         <Text style={styles.primaryButtonText}>Save Medication</Text>
       </TouchableOpacity>
     </ScrollView>
   );
-
-  if (showList) {
-    return <MedicationListScreen onAddNew={() => {}} />;
-  }
 
   return (
     <Modal
@@ -745,6 +962,118 @@ export default function AddMedicationScreen({
         {step === 2 && renderInfoStep()}
         {step === 3 && renderDetailsStep()}
         {step === 4 && renderScheduleStep()}
+
+        {/* Date/Time Pickers */}
+        {showTimePicker && (
+          <Modal
+            transparent={true}
+            animationType="fade"
+            visible={showTimePicker}
+            onRequestClose={() => setShowTimePicker(false)}
+          >
+            <View style={styles.pickerModal}>
+              <View style={styles.pickerModalContent}>
+                <View style={styles.pickerModalHeader}>
+                  <Text style={styles.pickerModalTitle}>
+                    Select Time {currentTimeIndex + 1}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                    <Text style={styles.pickerModalDone}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={tempTime}
+                  mode="time"
+                  display="spinner"
+                  onChange={handleTimeChange}
+                  style={styles.dateTimePicker}
+                />
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {/* Calendar Modal */}
+        {showCalendarModal && (
+          <Modal
+            visible={showCalendarModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setShowCalendarModal(false)}
+          >
+            <View style={styles.calendarModalOverlay}>
+              <View style={styles.calendarModalContent}>
+                <View style={styles.calendarModalHeader}>
+                  <Text style={styles.calendarModalTitle}>
+                    {calendarMode === "start"
+                      ? "Select Start Date"
+                      : "Select End Date"}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowCalendarModal(false)}>
+                    <Ionicons name="close" size={28} color="#2C2C2C" />
+                  </TouchableOpacity>
+                </View>
+
+                <Calendar
+                  onDayPress={(day) => handleCalendarDateSelect(day.dateString)}
+                  markedDates={getMarkedDates()}
+                  markingType="period"
+                  minDate={
+                    calendarMode === "end" && medDetails.startDate
+                      ? medDetails.startDate
+                      : new Date().toISOString().split("T")[0]
+                  }
+                  theme={{
+                    todayTextColor: "#E85D5B",
+                    arrowColor: "#E85D5B",
+                    monthTextColor: "#2C2C2C",
+                    textMonthFontWeight: "700",
+                    textDayFontSize: 16,
+                    textMonthFontSize: 18,
+                  }}
+                />
+
+                <View style={styles.calendarLegend}>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#4CAF50" }]}
+                    />
+                    <Text style={styles.legendText}>Start Date</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#FF9800" }]}
+                    />
+                    <Text style={styles.legendText}>End Date</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#E8F5E9" }]}
+                    />
+                    <Text style={styles.legendText}>Duration</Text>
+                  </View>
+                </View>
+
+                {calendarMode === "end" && (
+                  <TouchableOpacity
+                    style={styles.clearEndDateButton}
+                    onPress={() => {
+                      setMedDetails((prev) => ({
+                        ...prev,
+                        endDate: undefined,
+                      }));
+                      setShowCalendarModal(false);
+                    }}
+                  >
+                    <Text style={styles.clearEndDateText}>
+                      Clear End Date (Ongoing)
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          </Modal>
+        )}
       </View>
     </Modal>
   );
@@ -970,6 +1299,7 @@ const styles = StyleSheet.create({
   selectButtonTextActive: {
     fontSize: 16,
     color: "#2C2C2C",
+    fontWeight: "500",
   },
   picker: {
     marginTop: 8,
@@ -982,6 +1312,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+    maxHeight: 250,
   },
   pickerOption: {
     paddingVertical: 16,
@@ -993,66 +1324,211 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#2C2C2C",
   },
+  daysContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  dayChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#FFFFFF",
+  },
+  dayChipActive: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+  dayChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+  },
+  dayChipTextActive: {
+    color: "#FFFFFF",
+  },
   timeInputsContainer: {
     gap: 12,
   },
-  timeInput: {
+  timeInputButton: {
     height: 56,
     backgroundColor: "#FAFAFA",
     borderRadius: 12,
     borderWidth: 2,
     borderColor: "#F0F0F0",
     paddingHorizontal: 16,
-    fontSize: 16,
-  },
-  toggleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
+    gap: 12,
+  },
+  timeInputText: {
+    fontSize: 16,
+    color: "#999",
+  },
+  timeInputTextActive: {
+    fontSize: 16,
+    color: "#2C2C2C",
+    fontWeight: "500",
+  },
+  dateRangeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  dateButton: {
+    flex: 1,
+    height: 72,
     backgroundColor: "#FAFAFA",
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#F0F0F0",
-    marginTop: 8,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  toggleInfo: {
+  dateButtonTextContainer: {
     flex: 1,
   },
-  toggleTitle: {
+  dateButtonLabel: {
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 4,
+    textTransform: "uppercase",
+    fontWeight: "600",
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: "#2C2C2C",
+    fontWeight: "500",
+  },
+  dateArrow: {
+    paddingHorizontal: 4,
+  },
+  helperText: {
+    fontSize: 13,
+    color: "#999",
+    marginTop: 8,
+    fontStyle: "italic",
+  },
+  asNeededCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#FFF9E6",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FFE0B2",
+    gap: 12,
+  },
+  asNeededTextContainer: {
+    flex: 1,
+  },
+  asNeededTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#2C2C2C",
+    color: "#F57C00",
     marginBottom: 4,
   },
-  toggleSubtitle: {
+  asNeededSubtitle: {
+    fontSize: 14,
+    color: "#F57C00",
+  },
+  pickerModal: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  pickerModalContent: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+  },
+  pickerModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  pickerModalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2C2C2C",
+  },
+  pickerModalDone: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4CAF50",
+  },
+  dateTimePicker: {
+    height: 200,
+  },
+  calendarModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  calendarModalContent: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+  },
+  calendarModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  calendarModalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#2C2C2C",
+  },
+  calendarLegend: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  legendText: {
     fontSize: 13,
     color: "#777",
   },
-  switch: {
-    width: 51,
-    height: 31,
-    borderRadius: 16,
-    backgroundColor: "#E0E0E0",
-    padding: 2,
-    justifyContent: "center",
+  clearEndDateButton: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: "#FFF9E6",
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#FFE0B2",
   },
-  switchActive: {
-    backgroundColor: "#4CAF50",
-  },
-  switchThumb: {
-    width: 27,
-    height: 27,
-    borderRadius: 14,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  switchThumbActive: {
-    transform: [{ translateX: 20 }],
+  clearEndDateText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#F57C00",
   },
   primaryButton: {
     height: 56,

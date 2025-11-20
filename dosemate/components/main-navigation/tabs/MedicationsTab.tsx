@@ -25,7 +25,7 @@ interface ScheduledDose {
   id: string;
   medicationId: number;
   medicationName: string;
-  date: string; // YYYY-MM-DD format
+  date: string;
   time: string;
   notificationId?: string;
 }
@@ -40,24 +40,23 @@ const DAYS_OF_WEEK = [
   "Sunday",
 ];
 
-// Backend schedule from API
 export interface Schedule {
   strength: string;
   quantity: string;
   frequency: string;
-  time_of_day: string[]; // e.g. ["8:00 AM", "2:00 PM"]
-  days: string[]; // e.g. ["Monday", "Wednesday"]
+  time_of_day: string[];
+  days: string[];
   food_instructions?: string;
+  start_date?: string;
+  end_date?: string;
+  times_per_day?: number;
 }
 
-// Backend medication format
 export interface ApiMed {
   id: number;
   brand_name: string;
   purpose?: string;
   adherence_score?: number;
-
-  // The backend returns a list of schedules per med
   schedules: Schedule[];
 }
 
@@ -76,8 +75,6 @@ export default function MedicationsTab() {
   const [editedTimes, setEditedTimes] = useState<string[]>([]);
   const [editedDays, setEditedDays] = useState<string[]>([]);
   const [scheduledDoses, setScheduledDoses] = useState<ScheduledDose[]>([]);
-
-  // ============ MEDICATION STATE ============
   const [medications, setMedications] = useState<Medication[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -92,6 +89,7 @@ export default function MedicationsTab() {
   };
 
   const calculateNextDose = (schedule: Schedule) => {
+    console.log("Calculating next dose for schedule:", schedule);
     if (
       !schedule ||
       !schedule.time_of_day ||
@@ -103,13 +101,30 @@ export default function MedicationsTab() {
     const now = new Date();
     const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
 
-    // If schedule has days and today isn't included → tomorrow's first time
-    if (schedule.days && !schedule.days.includes(today)) {
-      return `Tomorrow ${schedule.time_of_day[0]}`;
+    // Check if medication has a start date in the future
+    if (schedule.start_date) {
+      const startDate = new Date(schedule.start_date);
+      startDate.setHours(0, 0, 0, 0); // Set to beginning of day
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+
+      if (startDate > todayDate) {
+        // Start date is in the future
+        const startDay = startDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+        return `Starts ${startDay} at ${schedule.time_of_day[0]}`;
+      }
     }
 
+    // Check if medication is restricted to specific days
+    const hasDaysRestriction = schedule.days && schedule.days.length > 0;
+    const isTodayScheduled =
+      !hasDaysRestriction || schedule.days.includes(today);
+
     // Convert time_of_day entries to actual Date objects for today
-    const upcoming = schedule.time_of_day
+    const upcomingToday = schedule.time_of_day
       .map((t: string) => {
         const [time, modifier] = t.split(" ");
         let [hour, minute] = time.split(":").map(Number);
@@ -124,28 +139,28 @@ export default function MedicationsTab() {
       })
       .filter((d: Date) => d > now);
 
-    // Case 1: there's a remaining dose today
-    if (upcoming.length > 0) {
-      const nextTime = upcoming[0];
+    // Case 1: Today is a scheduled day AND there are upcoming times today
+    if (isTodayScheduled && upcomingToday.length > 0) {
+      const nextTime = upcomingToday[0];
       return nextTime.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
       });
     }
 
-    // Case 2: no times left today → tomorrow's first time
+    // Case 2: No more times today (or today not scheduled)
     return `Tomorrow ${schedule.time_of_day[0]}`;
   };
 
   const transformMedication = useCallback((apiMed: ApiMed): Medication => {
-    const schedule = apiMed.schedules[0]; // assuming 1 per med for now
+    const schedule = apiMed.schedules[0];
 
     return {
       id: apiMed.id,
       name: apiMed.brand_name,
       strength: schedule?.strength || "Standard dosage",
       quantity: schedule?.quantity || "",
-      frequency: schedule?.frequency,
+      frequency: schedule?.frequency || "Daily",
       times: schedule?.time_of_day || [],
       days: schedule?.days || [],
       color: generateColor(apiMed.brand_name),
@@ -153,7 +168,12 @@ export default function MedicationsTab() {
       adherence: apiMed.adherence_score ?? 99,
       foodInstructions: schedule?.food_instructions || "",
       purpose: apiMed.purpose || "General use",
-    };
+      startDate: schedule?.start_date,
+      endDate: schedule?.end_date,
+      timesPerDay:
+        schedule?.times_per_day || schedule?.time_of_day?.length || 1,
+      asNeeded: schedule?.frequency === "As Needed",
+    } as Medication;
   }, []);
 
   const fetchMeds = useCallback(async () => {
@@ -167,7 +187,6 @@ export default function MedicationsTab() {
       }
 
       console.log("Fetching medications with token...");
-      // Add trailing slash to match backend format
       const res = await fetch(`${BACKEND_BASE_URL}/user/medications/`, {
         method: "GET",
         credentials: "include",
@@ -187,7 +206,6 @@ export default function MedicationsTab() {
               text: "OK",
               onPress: async () => {
                 await SecureStore.deleteItemAsync("jwt");
-                // Navigate back to login
                 router.replace("/onboarding/create-account");
               },
             },
@@ -211,18 +229,110 @@ export default function MedicationsTab() {
       console.error("Error fetching meds:", err);
       Alert.alert("Error", "An error occurred while loading medications");
     }
-  }, [transformMedication]);
+  }, [transformMedication, router]);
 
   useEffect(() => {
     fetchMeds();
   }, [refreshKey, fetchMeds]);
 
-  // ============ NOTIFICATION SETUP ============
-  useEffect(() => {
-    initializeNotifications();
-  }, []);
+  const scheduleSpecificDateDose = useCallback(
+    async (dose: ScheduledDose) => {
+      try {
+        const med = medications.find((m) => m.id === dose.medicationId);
+        if (!med) return;
 
-  const initializeNotifications = async () => {
+        const [year, month, day] = dose.date.split("-").map(Number);
+        const [timeStr, period] = dose.time.split(" ");
+        let [hour, minute] = timeStr.split(":").map(Number);
+
+        if (period === "PM" && hour !== 12) hour += 12;
+        if (period === "AM" && hour === 12) hour = 0;
+
+        const scheduleDate = new Date(year, month - 1, day, hour, minute);
+        const now = new Date();
+
+        const secondsUntil = Math.floor(
+          (scheduleDate.getTime() - now.getTime()) / 1000,
+        );
+
+        if (secondsUntil <= 0) {
+          console.log("⚠️ Time already passed, notification not scheduled");
+          return;
+        }
+
+        const notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: `💊 Time for ${med.name}`,
+            body: `Take ${med.quantity} (${med.strength})\n${med.foodInstructions}`,
+            data: {
+              medicationId: med.id,
+              doseId: dose.id,
+              type: "specific-date-dose",
+            },
+            sound: "default",
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+            seconds: secondsUntil,
+          },
+        });
+
+        console.log(
+          `✅ Scheduled ${med.name} for ${dose.date} at ${dose.time}`,
+        );
+        return notificationId;
+      } catch (error) {
+        console.error("❌ Error scheduling specific date dose:", error);
+      }
+    },
+    [medications],
+  );
+
+  const scheduleAllMedications = useCallback(async () => {
+    try {
+      await notificationService.cancelAllNotifications();
+
+      for (const med of medications) {
+        if (!med.times || med.times.length === 0) {
+          console.log(`⚠️ Skipping ${med.name} - no times specified`);
+          continue;
+        }
+
+        console.log(`Scheduling ${med.name}:`, {
+          times: med.times,
+          days: med.days,
+          frequency: med.frequency,
+        });
+
+        await notificationService.scheduleMedicationNotifications({
+          medicationId: med.id,
+          name: med.name,
+          strength: med.strength,
+          quantity: med.quantity,
+          times: med.times,
+          days: med.days || [],
+          frequency: med.frequency || "Daily",
+          startDate: (med as any).startDate,
+          endDate: (med as any).endDate,
+          instructions: med.foodInstructions,
+        });
+      }
+
+      for (const dose of scheduledDoses) {
+        await scheduleSpecificDateDose(dose);
+      }
+
+      const summary = await notificationService.getNotificationsSummary();
+      console.log(
+        `✅ Scheduled ${summary.total} total reminders for ${medications.length} medications`,
+      );
+    } catch (error) {
+      console.error("❌ Error scheduling medications:", error);
+      Alert.alert("Error", "Failed to schedule medication reminders");
+    }
+  }, [medications, scheduledDoses, scheduleSpecificDateDose]);
+
+  const initializeNotifications = useCallback(async () => {
     const hasPermission = await notificationService.requestPermissions();
     setNotificationsEnabled(hasPermission);
 
@@ -245,97 +355,18 @@ export default function MedicationsTab() {
         "Please enable notifications in your device settings.",
       );
     }
-  };
+  }, [scheduleAllMedications]);
 
-  const scheduleAllMedications = async () => {
-    try {
-      await notificationService.cancelAllNotifications();
+  useEffect(() => {
+    initializeNotifications();
+  }, [initializeNotifications]);
 
-      // Schedule recurring medications
-      for (const med of medications) {
-        await notificationService.scheduleMedicationWithMultipleTimes(
-          med.id,
-          med.name,
-          med.strength,
-          med.quantity,
-          med.times,
-          med.days,
-          med.foodInstructions,
-        );
-      }
-
-      // Schedule specific date doses
-      for (const dose of scheduledDoses) {
-        await scheduleSpecificDateDose(dose);
-      }
-
-      console.log("✅ All medication reminders scheduled");
-    } catch (error) {
-      console.error("❌ Error scheduling medications:", error);
-      Alert.alert("Error", "Failed to schedule medication reminders");
+  useEffect(() => {
+    if (medications.length > 0 && notificationsEnabled) {
+      scheduleAllMedications();
     }
-  };
+  }, [medications, notificationsEnabled, scheduleAllMedications]);
 
-  const scheduleSpecificDateDose = async (dose: ScheduledDose) => {
-    try {
-      const med = medications.find((m) => m.id === dose.medicationId);
-      if (!med) return;
-
-      // Parse date and time
-      const [year, month, day] = dose.date.split("-").map(Number);
-      const [timeStr, period] = dose.time.split(" ");
-      let [hour, minute] = timeStr.split(":").map(Number);
-
-      if (period === "PM" && hour !== 12) hour += 12;
-      if (period === "AM" && hour === 12) hour = 0;
-
-      const scheduleDate = new Date(year, month - 1, day, hour, minute);
-      const now = new Date();
-
-      if (scheduleDate <= now) {
-        console.log(
-          "⚠️ Scheduling for past/current time:",
-          dose.date,
-          dose.time,
-        );
-        // Still allow it - user might want to schedule for later today
-      }
-
-      const secondsUntil = Math.floor(
-        (scheduleDate.getTime() - now.getTime()) / 1000,
-      );
-
-      // If time is in the past, don't schedule notification
-      if (secondsUntil <= 0) {
-        console.log("⚠️ Time already passed, notification not scheduled");
-        return;
-      }
-
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `💊 Time for ${med.name}`,
-          body: `Take ${med.quantity} (${med.strength})\n${med.foodInstructions}`,
-          data: {
-            medicationId: med.id,
-            doseId: dose.id,
-            type: "specific-date-dose",
-          },
-          sound: "default",
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: secondsUntil,
-        },
-      });
-
-      console.log(`✅ Scheduled ${med.name} for ${dose.date} at ${dose.time}`);
-      return notificationId;
-    } catch (error) {
-      console.error("❌ Error scheduling specific date dose:", error);
-    }
-  };
-
-  // ============ CALENDAR HANDLERS ============
   const handleScheduleForDate = (medicationId: number) => {
     const medication = medications.find((m) => m.id === medicationId);
     if (medication) {
@@ -345,7 +376,6 @@ export default function MedicationsTab() {
   };
 
   const handleDateSelect = (date: string) => {
-    // Show time selection for this date
     Alert.alert(
       "Select Time",
       `Schedule ${editingMedication?.name} for ${date}`,
@@ -426,7 +456,6 @@ export default function MedicationsTab() {
     ]);
   };
 
-  // Get marked dates for calendar
   const getMarkedDates = () => {
     const marked: any = {};
     scheduledDoses.forEach((dose) => {
@@ -440,17 +469,6 @@ export default function MedicationsTab() {
       marked[dose.date].doses.push(dose);
     });
     return marked;
-  };
-
-  // ============ EDIT RECURRING DOSES ============
-  const handleEditMedication = (id: number) => {
-    const medication = medications.find((med) => med.id === id);
-    if (medication) {
-      setEditingMedication(medication);
-      setEditedTimes([...medication.times]);
-      setEditedDays([...(medication.days || [])]);
-      setShowEditModal(true);
-    }
   };
 
   const handleUpdateTime = (index: number, newTime: string) => {
@@ -487,11 +505,27 @@ export default function MedicationsTab() {
   const handleSaveDose = async () => {
     if (!editingMedication) return;
 
-    const updatedMedications = medications.map((med) =>
-      med.id === editingMedication.id
-        ? { ...med, times: editedTimes, days: editedDays }
-        : med,
-    );
+    const updatedMedications = medications.map((med) => {
+      if (med.id === editingMedication.id) {
+        // Recalculate the next dose with updated times and days
+        const updatedSchedule: Schedule = {
+          strength: med.strength,
+          quantity: med.quantity,
+          frequency: med.frequency,
+          time_of_day: editedTimes,
+          days: editedDays,
+          food_instructions: med.foodInstructions,
+        };
+
+        return {
+          ...med,
+          times: editedTimes,
+          days: editedDays,
+          nextDose: calculateNextDose(updatedSchedule),
+        };
+      }
+      return med;
+    });
 
     setMedications(updatedMedications);
     await scheduleAllMedications();
@@ -501,7 +535,6 @@ export default function MedicationsTab() {
     setEditingMedication(null);
   };
 
-  // ============ OTHER HANDLERS ============
   const handleDeleteMedication = async (id: number) => {
     Alert.alert(
       "Delete Medication",
@@ -512,12 +545,53 @@ export default function MedicationsTab() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await notificationService.cancelMedicationNotifications(id);
-            setMedications(medications.filter((med) => med.id !== id));
-            setScheduledDoses(
-              scheduledDoses.filter((d) => d.medicationId !== id),
-            );
-            Alert.alert("Deleted", "Medication removed");
+            try {
+              const token = await SecureStore.getItemAsync("jwt");
+              if (!token) {
+                Alert.alert("Error", "Authentication token not found");
+                return;
+              }
+
+              await notificationService.cancelMedicationNotifications(id);
+
+              console.log(`Deleting medication ${id} from backend...`);
+              const res = await fetch(
+                `${BACKEND_BASE_URL}/user/medications/${id}`,
+                {
+                  method: "DELETE",
+                  credentials: "include",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                },
+              );
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error(
+                  "Failed to delete medication from backend:",
+                  errorText,
+                );
+                Alert.alert("Error", "Failed to delete medication from server");
+                return;
+              }
+
+              console.log(`✅ Medication ${id} deleted from backend`);
+
+              setMedications(medications.filter((med) => med.id !== id));
+              setScheduledDoses(
+                scheduledDoses.filter((d) => d.medicationId !== id),
+              );
+
+              Alert.alert("Success", "Medication deleted successfully");
+            } catch (error) {
+              console.error("Error deleting medication:", error);
+              Alert.alert(
+                "Error",
+                "An error occurred while deleting medication",
+              );
+            }
           },
         },
       ],
@@ -581,7 +655,6 @@ export default function MedicationsTab() {
           )}
         </View>
 
-        {/* Show Scheduled Specific Dates */}
         {scheduledDoses.length > 0 && (
           <View style={[styles.section, styles.lastSection]}>
             <Text style={styles.subtitle}>Scheduled Specific Dates</Text>
@@ -602,7 +675,6 @@ export default function MedicationsTab() {
         )}
       </ScrollView>
 
-      {/* CALENDAR MODAL */}
       <Modal
         visible={showCalendarModal}
         animationType="slide"
@@ -640,7 +712,6 @@ export default function MedicationsTab() {
         </View>
       </Modal>
 
-      {/* EDIT RECURRING DOSES MODAL */}
       <Modal
         visible={showEditModal}
         animationType="slide"
@@ -733,7 +804,6 @@ export default function MedicationsTab() {
         visible={showAddMedication}
         onClose={() => {
           setShowAddMedication(false);
-          // Refresh medications list when modal closes
           setRefreshKey((prev) => prev + 1);
         }}
       />

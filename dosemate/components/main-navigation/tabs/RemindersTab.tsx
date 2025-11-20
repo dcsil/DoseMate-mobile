@@ -14,54 +14,6 @@ import * as SecureStore from "expo-secure-store";
 
 export default function RemindersTab() {
   // ============ STATIC DATA FOR REMINDERS TAB - Organized for Backend Integration ============
-  const remindersData = {
-    allReminders: [
-      {
-        id: 1,
-        name: "Metformin",
-        strength: "500mg",
-        quantity: "1 tablet",
-        time: "2:00 PM",
-        status: "pending" as const,
-        color: "#2196F3",
-        overdue: false,
-        instructions: "Take with food",
-      },
-      {
-        id: 2,
-        name: "Atorvastatin",
-        strength: "20mg",
-        quantity: "1 tablet",
-        time: "9:00 PM",
-        status: "pending" as const,
-        color: "#9C27B0",
-        overdue: false,
-        instructions: "Take in the evening",
-      },
-      {
-        id: 3,
-        name: "Lisinopril",
-        strength: "10mg",
-        quantity: "1 tablet",
-        time: "8:00 AM",
-        status: "taken" as const,
-        color: "#4CAF50",
-        overdue: false,
-        instructions: "No food restrictions",
-      },
-      {
-        id: 4,
-        name: "Aspirin",
-        strength: "81mg",
-        quantity: "1 tablet",
-        time: "8:00 AM",
-        status: "overdue" as const,
-        color: "#FF9800",
-        overdue: true,
-        instructions: "Take with food",
-      },
-    ],
-  };
 
   const generateColor = (name: string) => {
     const COLORS = ["#2196F3", "#4CAF50", "#9C27B0", "#FF9800"];
