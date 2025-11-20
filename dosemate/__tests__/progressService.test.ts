@@ -1,7 +1,8 @@
 import { listProgress, createProgress } from '../components/services/progressService';
 
-// Preserve original fetch
-const originalFetch = global.fetch;
+// Ensure global test declarations (for TS) without relying on implicit 'global'
+declare const globalThis: any;
+const originalFetch = globalThis.fetch;
 
 // A minimal Response-like helper
 function makeResponse(ok: boolean, body: any): Response {
@@ -14,7 +15,7 @@ function makeResponse(ok: boolean, body: any): Response {
 }
 
 beforeEach(() => {
-    global.fetch = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === 'string' ? input : input.toString();
         if (url.includes('/progress') && init?.method === 'POST') {
             return Promise.resolve(
@@ -47,7 +48,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
 });
 
 test('createProgress returns created entry', async () => {
