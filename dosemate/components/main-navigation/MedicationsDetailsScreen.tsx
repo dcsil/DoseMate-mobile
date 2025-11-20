@@ -66,7 +66,7 @@ export default function MedicationDetailsScreen({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ Wrap fetchMedicationDetails in useCallback
+  //  Wrap fetchMedicationDetails in useCallback
   const fetchMedicationDetails = useCallback(async () => {
     if (!medication) return;
 
@@ -74,10 +74,11 @@ export default function MedicationDetailsScreen({
     setError(null);
 
     try {
+      const normalizedStrength = medication.strength.replace(/\s+/g, "");
       const response = await fetch(
-        `${BACKEND_BASE_URL}/medication-requests/medications/${medication.id}/details?name=${encodeURIComponent(
+        `${BACKEND_BASE_URL}/medication-requests/${medication.id}/details?name=${encodeURIComponent(
           medication.name,
-        )}&strength=${encodeURIComponent(medication.strength)}`,
+        )}&strength=${encodeURIComponent(normalizedStrength)}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -94,7 +95,7 @@ export default function MedicationDetailsScreen({
       console.error("Failed to fetch medication details:", err);
       setError("Failed to load medication information. Please try again.");
 
-      // ✅ Fallback
+      // Fallback
       setMedicationDetails({
         genericName: medication.name,
         drugClass: "Medication",
@@ -130,7 +131,7 @@ export default function MedicationDetailsScreen({
     }
   }, [medication]);
 
-  // ✅ Add fetchMedicationDetails to the dependencies
+  //  Add fetchMedicationDetails to the dependencies
   useEffect(() => {
     if (visible && medication) {
       fetchMedicationDetails();
