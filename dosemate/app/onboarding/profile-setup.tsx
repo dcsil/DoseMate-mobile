@@ -19,7 +19,6 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { BACKEND_BASE_URL } from "@/config";
 
-
 export default function ProfileSetupScreen() {
   const router = useRouter();
   const [step, setStep] = useState(1);
