@@ -1,13 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { LatestMetric } from "../components/LatestMetric";
+
+// TEMP: hard-coded demo user id (UUID format) until auth flow sets it dynamically
+const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 export default function OnboardingStart() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Heart Icon */}
       <Ionicons name="heart" size={72} color="#E74C3C" style={styles.icon} />
 
@@ -36,6 +40,12 @@ export default function OnboardingStart() {
         </View>
       </View>
 
+      {/* Live Progress Demo (example metric: steps) */}
+      <View style={styles.progressBlock}>
+        <Text style={styles.sectionHeader}>Latest Progress</Text>
+        <LatestMetric userId={DEMO_USER_ID} metricName="steps" pollMs={15000} />
+      </View>
+
       {/* Get Started Button */}
       <TouchableOpacity
         style={styles.button}
@@ -43,7 +53,7 @@ export default function OnboardingStart() {
       >
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -100,5 +110,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
+  },
+  progressBlock: {
+    width: "100%",
+    marginBottom: 32,
+    padding: 16,
+    backgroundColor: "#FAFAFA",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+    gap: 12,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#2C3E50",
+    textAlign: "center",
   },
 });
