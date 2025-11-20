@@ -39,6 +39,27 @@ const DAYS_OF_WEEK = [
   "Sunday",
 ];
 
+// Backend schedule from API
+export interface Schedule {
+  strength: string;
+  quantity: string;
+  frequency: string;
+  time_of_day: string[]; // e.g. ["8:00 AM", "2:00 PM"]
+  days: string[]; // e.g. ["Monday", "Wednesday"]
+  food_instructions?: string;
+}
+
+// Backend medication format
+export interface ApiMed {
+  id: number;
+  brand_name: string;
+  purpose?: string;
+  adherence_score?: number;
+
+  // The backend returns a list of schedules per med
+  schedules: Schedule[];
+}
+
 export default function MedicationsTab() {
   const [showAddMedication, setShowAddMedication] = useState(true);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
@@ -67,7 +88,7 @@ export default function MedicationsTab() {
     return COLORS[index];
   };
 
-  const calculateNextDose = (schedule) => {
+  const calculateNextDose = (schedule: Schedule) => {
     if (
       !schedule ||
       !schedule.time_of_day ||
@@ -86,7 +107,7 @@ export default function MedicationsTab() {
 
     // Convert time_of_day entries to actual Date objects for today
     const upcoming = schedule.time_of_day
-      .map((t) => {
+      .map((t: string) => {
         const [time, modifier] = t.split(" ");
         let [hour, minute] = time.split(":").map(Number);
 
@@ -98,7 +119,7 @@ export default function MedicationsTab() {
 
         return d;
       })
-      .filter((d) => d > now);
+      .filter((d: Date) => d > now);
 
     // Case 1: there's a remaining dose today
     if (upcoming.length > 0) {
@@ -114,7 +135,7 @@ export default function MedicationsTab() {
   };
 
   useEffect(() => {
-    const transformMedication = (apiMed): Medication => {
+    const transformMedication = (apiMed: ApiMed): Medication => {
       const schedule = apiMed.schedules[0]; // assuming 1 per med for now
 
       return {
