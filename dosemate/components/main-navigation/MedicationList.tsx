@@ -387,7 +387,7 @@ export default function AddMedicationScreen({
       const newTimes = Array(medDetails.timesPerDay).fill("");
       setMedDetails((prev) => ({ ...prev, times: newTimes }));
     }
-  }, [medDetails.timesPerDay]);
+  }, [medDetails.timesPerDay, medDetails.times.length]);
 
   const renderSearchStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>

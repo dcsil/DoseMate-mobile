@@ -15,7 +15,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar } from "react-native-calendars";
 import Card from "./Card";
 import MedicineOCRScanner from "./OCR";
-import MedicationListScreen from "./MedicationList";
 import { BACKEND_BASE_URL } from "../../config";
 import * as SecureStore from "expo-secure-store";
 
@@ -391,7 +390,7 @@ export default function AddMedicationScreen({
       const newTimes = Array(medDetails.timesPerDay).fill("");
       setMedDetails((prev) => ({ ...prev, times: newTimes }));
     }
-  }, [medDetails.timesPerDay]);
+  }, [medDetails.timesPerDay, medDetails.times.length]);
 
   const renderSearchStep = () => (
     <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
