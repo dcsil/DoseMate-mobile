@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
 import { Reminder } from "./types";
+import { BACKEND_BASE_URL } from "@/config";
+import * as SecureStore from "expo-secure-store";
 
 export default function RemindersTab() {
   // ============ STATIC DATA FOR REMINDERS TAB - Organized for Backend Integration ============
@@ -61,28 +63,122 @@ export default function RemindersTab() {
     ],
   };
 
-  const [reminders, setReminders] = useState<Reminder[]>(
-    remindersData.allReminders,
-  );
-
-  const handleMarkTaken = (id: number) => {
-    setReminders(
-      reminders.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, status: "taken" as const, overdue: false }
-          : reminder,
-      ),
-    );
+  const generateColor = (name: string) => {
+    const COLORS = ["#2196F3", "#4CAF50", "#9C27B0", "#FF9800"];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % COLORS.length;
+    return COLORS[index];
   };
 
-  const handleSnooze = (id: number) => {
-    setReminders(
-      reminders.map((reminder) =>
-        reminder.id === id
-          ? { ...reminder, status: "snoozed" as const }
-          : reminder,
-      ),
-    );
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+
+  useEffect(() => {
+    const fetchReminders = async () => {
+      try {
+        // 1. Get the JWT
+        const token = await SecureStore.getItemAsync("jwt");
+        if (!token) {
+          console.warn("⚠️ No JWT found");
+          return;
+        }
+
+        // 2. Call backend
+        const res = await fetch(`${BACKEND_BASE_URL}/reminders/today`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("❌ Failed to fetch reminders:", res.status);
+          return;
+        }
+
+        // 3. Parse JSON
+        const data = await res.json();
+
+        const hydrated = data.map((item: any) => ({
+          ...item,
+          color: generateColor(item.name),
+        }));
+
+        // 4. Update state
+        setReminders(hydrated);
+      } catch (err) {
+        console.error("🔥 Error fetching reminders:", err);
+      }
+    };
+
+    fetchReminders();
+  }, []);
+
+  const handleMarkTaken = async (id: number) => {
+    try {
+      setReminders(
+        reminders.map((reminder) =>
+          reminder.id === id
+            ? { ...reminder, status: "taken" as const, overdue: false }
+            : reminder,
+        ),
+      );
+
+      // Get JWT
+      const token = await SecureStore.getItemAsync("jwt");
+      if (!token) return;
+
+      // Call backend to mark as taken
+      const res = await fetch(
+        `${BACKEND_BASE_URL}/reminders/${id}/mark-taken`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        console.error("❌ Failed to mark reminder as taken:", res.status);
+        // Optionally rollback local state here
+      }
+    } catch (err) {
+      console.error("🔥 Error marking reminder as taken:", err);
+    }
+  };
+
+  const handleSnooze = async (id: number) => {
+    try {
+      setReminders(
+        reminders.map((reminder) =>
+          reminder.id === id
+            ? { ...reminder, status: "snoozed" as const }
+            : reminder,
+        ),
+      );
+
+      const token = await SecureStore.getItemAsync("jwt");
+      if (!token) return;
+
+      const res = await fetch(`${BACKEND_BASE_URL}/reminders/${id}/snooze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error("❌ Failed to snooze reminder:", res.status);
+        // Optionally rollback local state here
+      }
+    } catch (err) {
+      console.error("🔥 Error snoozing reminder:", err);
+    }
   };
 
   const pendingReminders = reminders.filter(
@@ -92,7 +188,7 @@ export default function RemindersTab() {
       r.status === "snoozed",
   );
   const completedReminders = reminders.filter((r) => r.status === "taken");
-  const overdueCount = reminders.filter((r) => r.overdue).length;
+  const overdueCount = reminders.filter((r) => r.overdue)?.length;
 
   return (
     <ScrollView
@@ -104,14 +200,14 @@ export default function RemindersTab() {
         <View style={styles.row}>
           <Card style={styles.summaryCard}>
             <Text style={[styles.summaryNumber, { color: "#E85D5B" }]}>
-              {pendingReminders.length}
+              {pendingReminders?.length}
             </Text>
             <Text style={styles.summaryLabel}>Pending</Text>
           </Card>
 
           <Card style={styles.summaryCard}>
             <Text style={[styles.summaryNumber, { color: "#4CAF50" }]}>
-              {completedReminders.length}
+              {completedReminders?.length}
             </Text>
             <Text style={styles.summaryLabel}>Completed</Text>
           </Card>
@@ -126,7 +222,7 @@ export default function RemindersTab() {
       </View>
 
       {/* Pending Reminders */}
-      {pendingReminders.length > 0 && (
+      {pendingReminders?.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.subtitle}>Pending Reminders</Text>
           <View style={styles.list}>
@@ -234,7 +330,7 @@ export default function RemindersTab() {
       )}
 
       {/* Completed Reminders */}
-      {completedReminders.length > 0 && (
+      {completedReminders?.length > 0 && (
         <View style={[styles.section, styles.lastSection]}>
           <Text style={styles.subtitle}>Completed Today</Text>
           <View style={styles.list}>
