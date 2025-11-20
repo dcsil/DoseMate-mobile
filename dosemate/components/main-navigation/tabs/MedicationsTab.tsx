@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import { Calendar } from "react-native-calendars";
+import { useRouter } from "expo-router";
 import MedicationCard from "@/components/main-navigation/MedicationCard";
 import AddMedicationScreen from "@/components/main-navigation/AddMedicationScreen";
 import MedicationDetailsScreen from "@/components/main-navigation/MedicationsDetailsScreen";
@@ -61,7 +62,8 @@ export interface ApiMed {
 }
 
 export default function MedicationsTab() {
-  const [showAddMedication, setShowAddMedication] = useState(true);
+  const router = useRouter();
+  const [showAddMedication, setShowAddMedication] = useState(false);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
@@ -77,6 +79,7 @@ export default function MedicationsTab() {
 
   // ============ MEDICATION STATE ============
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const generateColor = (name: string) => {
     const COLORS = ["#2196F3", "#4CAF50", "#9C27B0", "#FF9800"];
@@ -100,7 +103,7 @@ export default function MedicationsTab() {
     const now = new Date();
     const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
 
-    // If schedule has days and today isn't included → tomorrow’s first time
+    // If schedule has days and today isn't included → tomorrow's first time
     if (schedule.days && !schedule.days.includes(today)) {
       return `Tomorrow ${schedule.time_of_day[0]}`;
     }
@@ -130,60 +133,89 @@ export default function MedicationsTab() {
       });
     }
 
-    // Case 2: no times left today → tomorrow’s first time
+    // Case 2: no times left today → tomorrow's first time
     return `Tomorrow ${schedule.time_of_day[0]}`;
   };
 
-  useEffect(() => {
-    const transformMedication = (apiMed: ApiMed): Medication => {
-      const schedule = apiMed.schedules[0]; // assuming 1 per med for now
+  const transformMedication = useCallback((apiMed: ApiMed): Medication => {
+    const schedule = apiMed.schedules[0]; // assuming 1 per med for now
 
-      return {
-        id: apiMed.id,
-        name: apiMed.brand_name,
-        strength: schedule?.strength || "Standard dosage",
-        quantity: schedule?.quantity || "",
-        frequency: schedule?.frequency,
-        times: schedule?.time_of_day || [],
-        days: schedule?.days || [],
-        color: generateColor(apiMed.brand_name),
-        nextDose: calculateNextDose(schedule),
-        adherence: apiMed.adherence_score ?? 99,
-        foodInstructions: schedule?.food_instructions || "",
-        purpose: apiMed.purpose || "General use",
-      };
+    return {
+      id: apiMed.id,
+      name: apiMed.brand_name,
+      strength: schedule?.strength || "Standard dosage",
+      quantity: schedule?.quantity || "",
+      frequency: schedule?.frequency,
+      times: schedule?.time_of_day || [],
+      days: schedule?.days || [],
+      color: generateColor(apiMed.brand_name),
+      nextDose: calculateNextDose(schedule),
+      adherence: apiMed.adherence_score ?? 99,
+      foodInstructions: schedule?.food_instructions || "",
+      purpose: apiMed.purpose || "General use",
     };
-
-    const fetchMeds = async () => {
-      try {
-        const token = await SecureStore.getItemAsync("jwt");
-        if (!token) throw new Error("No JWT token found");
-        const res = await fetch(`${BACKEND_BASE_URL}/user/medications`, {
-          method: "GET",
-          credentials: "include", // needed if you're using cookies/jwt
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          console.error("Failed to fetch medications");
-          return;
-        }
-
-        const data = await res.json();
-
-        const transformed = data.map(transformMedication);
-
-        setMedications(transformed);
-      } catch (err) {
-        console.error("Error fetching meds:", err);
-      }
-    };
-
-    fetchMeds();
   }, []);
+
+  const fetchMeds = useCallback(async () => {
+    try {
+      const token = await SecureStore.getItemAsync("jwt");
+
+      if (!token) {
+        console.error("No JWT token found");
+        Alert.alert("Authentication Error", "Please log in again");
+        return;
+      }
+
+      console.log("Fetching medications with token...");
+      // Add trailing slash to match backend format
+      const res = await fetch(`${BACKEND_BASE_URL}/user/medications/`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 401) {
+        console.error("Token expired or invalid");
+        Alert.alert(
+          "Session Expired",
+          "Your session has expired. Please log in again.",
+          [
+            {
+              text: "OK",
+              onPress: async () => {
+                await SecureStore.deleteItemAsync("jwt");
+                // Navigate back to login
+                router.replace("/onboarding/create-account");
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("Failed to fetch medications:", res.status);
+        Alert.alert("Error", "Failed to load medications");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Medications fetched successfully:", data.length);
+
+      const transformed = data.map(transformMedication);
+      setMedications(transformed);
+    } catch (err) {
+      console.error("Error fetching meds:", err);
+      Alert.alert("Error", "An error occurred while loading medications");
+    }
+  }, [transformMedication]);
+
+  useEffect(() => {
+    fetchMeds();
+  }, [refreshKey, fetchMeds]);
 
   // ============ NOTIFICATION SETUP ============
   useEffect(() => {
@@ -470,35 +502,6 @@ export default function MedicationsTab() {
   };
 
   // ============ OTHER HANDLERS ============
-  const handleTestNotification = async () => {
-    await notificationService.sendTestNotification("Test Medication");
-    Alert.alert("Test Sent!", "Check in 1 second. Tap it to test navigation!");
-  };
-
-  const handleViewScheduled = async () => {
-    const scheduled = await notificationService.getScheduledNotifications();
-
-    Alert.alert(
-      "📅 Scheduled Notifications",
-      `Total: ${scheduled.length} recurring reminders\n\nSpecific Dates: ${scheduledDoses.length} doses`,
-      [
-        {
-          text: "View Dates",
-          onPress: () => {
-            const details = scheduledDoses
-              .map((d) => `• ${d.medicationName}: ${d.date} at ${d.time}`)
-              .join("\n");
-            Alert.alert(
-              "Scheduled Dates",
-              details || "No specific dates scheduled",
-            );
-          },
-        },
-        { text: "OK" },
-      ],
-    );
-  };
-
   const handleDeleteMedication = async (id: number) => {
     Alert.alert(
       "Delete Medication",
@@ -545,41 +548,37 @@ export default function MedicationsTab() {
         )}
 
         <View style={styles.section}>
-          <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleTestNotification}
-            >
-              <View style={styles.actionIconCircle}>
-                <Ionicons name="notifications" size={26} color="#2196F3" />
-              </View>
-              <Text style={styles.actionButtonText}>Test Alert</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={handleViewScheduled}
-            >
-              <View style={styles.actionIconCircle}>
-                <Ionicons name="calendar" size={26} color="#4CAF50" />
-              </View>
-              <Text style={styles.actionButtonText}>View Scheduled</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.addMedicineButton}
+            onPress={() => setShowAddMedication(true)}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="#E85D5B" />
+            <Text style={styles.addMedicineButtonText}>Add Medicine</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={[styles.section, styles.lastSection]}>
           <Text style={styles.subtitle}>All Medications</Text>
-          {medications.map((med) => (
-            <TouchableOpacity key={med.id} activeOpacity={0.9}>
-              <MedicationCard
-                medication={med}
-                onEdit={() => handleScheduleForDate(med.id)}
-                onDelete={() => handleDeleteMedication(med.id)}
-                onViewDetails={() => handleViewDetails(med.id)}
-              />
-            </TouchableOpacity>
-          ))}
+          {medications.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="medical-outline" size={48} color="#D0D0D0" />
+              <Text style={styles.emptyStateText}>No medicine yet</Text>
+              <Text style={styles.emptyStateSubtext}>
+                Tap Add Medicine to get started
+              </Text>
+            </View>
+          ) : (
+            medications.map((med) => (
+              <TouchableOpacity key={med.id} activeOpacity={0.9}>
+                <MedicationCard
+                  medication={med}
+                  onEdit={() => handleScheduleForDate(med.id)}
+                  onDelete={() => handleDeleteMedication(med.id)}
+                  onViewDetails={() => handleViewDetails(med.id)}
+                />
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
         {/* Show Scheduled Specific Dates */}
@@ -732,7 +731,11 @@ export default function MedicationsTab() {
 
       <AddMedicationScreen
         visible={showAddMedication}
-        onClose={() => setShowAddMedication(false)}
+        onClose={() => {
+          setShowAddMedication(false);
+          // Refresh medications list when modal closes
+          setRefreshKey((prev) => prev + 1);
+        }}
       />
       <MedicationDetailsScreen
         visible={showMedicationDetails}
@@ -757,32 +760,44 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     marginBottom: 16,
   },
-  actionButton: {
-    flex: 1,
-    height: 100,
-    borderRadius: 16,
+  addMedicineButton: {
+    height: 56,
+    borderRadius: 12,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 8,
     backgroundColor: "#FFFFFF",
+    borderWidth: 2,
+    borderColor: "#E85D5B",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2,
   },
-  actionIconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#FFF5F5",
+  addMedicineButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#E85D5B",
+  },
+  emptyState: {
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
-  actionButtonText: {
-    fontSize: 15,
+  emptyStateText: {
+    fontSize: 18,
     fontWeight: "600",
-    color: "#2C2C2C",
+    color: "#888",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: "#AAA",
+    textAlign: "center",
   },
   warningBanner: {
     flexDirection: "row",
