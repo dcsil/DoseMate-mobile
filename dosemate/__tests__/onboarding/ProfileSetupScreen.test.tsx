@@ -276,8 +276,7 @@ describe("ProfileSetupScreen", () => {
       fireEvent.press(screen.getByText("Continue").parent!);
 
       const diabetesButton = screen.getByTestId("condition-Diabetes");
-      const hypertensionButton =
-        screen.getByTestId("condition-Hypertension");
+      const hypertensionButton = screen.getByTestId("condition-Hypertension");
 
       fireEvent.press(diabetesButton);
       fireEvent.press(hypertensionButton);
