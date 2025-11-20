@@ -74,7 +74,7 @@ export default function MedicationDetailsScreen({
     setError(null);
 
     try {
-      const normalizedStrength = medication.strength.replace(/\s+/g, ""); 
+      const normalizedStrength = medication.strength.replace(/\s+/g, "");
       const response = await fetch(
         `${BACKEND_BASE_URL}/medication-requests/${medication.id}/details?name=${encodeURIComponent(
           medication.name,
