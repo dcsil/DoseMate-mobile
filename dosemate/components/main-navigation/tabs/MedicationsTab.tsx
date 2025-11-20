@@ -48,6 +48,9 @@ export interface Schedule {
   time_of_day: string[]; // e.g. ["8:00 AM", "2:00 PM"]
   days: string[]; // e.g. ["Monday", "Wednesday"]
   food_instructions?: string;
+  start_date?: string;
+  end_date?: string;
+  times_per_day?: number;
 }
 
 // Backend medication format
@@ -145,7 +148,7 @@ export default function MedicationsTab() {
       name: apiMed.brand_name,
       strength: schedule?.strength || "Standard dosage",
       quantity: schedule?.quantity || "",
-      frequency: schedule?.frequency,
+      frequency: schedule?.frequency || "Daily",
       times: schedule?.time_of_day || [],
       days: schedule?.days || [],
       color: generateColor(apiMed.brand_name),
@@ -153,7 +156,11 @@ export default function MedicationsTab() {
       adherence: apiMed.adherence_score ?? 99,
       foodInstructions: schedule?.food_instructions || "",
       purpose: apiMed.purpose || "General use",
-    };
+      startDate: schedule?.start_date,
+      endDate: schedule?.end_date,
+      timesPerDay: schedule?.times_per_day || schedule?.time_of_day?.length || 1,
+      asNeeded: schedule?.frequency === "As Needed",
+    } as Medication;
   }, []);
 
   const fetchMeds = useCallback(async () => {
@@ -211,7 +218,7 @@ export default function MedicationsTab() {
       console.error("Error fetching meds:", err);
       Alert.alert("Error", "An error occurred while loading medications");
     }
-  }, [transformMedication]);
+  }, [transformMedication, router]);
 
   useEffect(() => {
     fetchMeds();
@@ -221,6 +228,13 @@ export default function MedicationsTab() {
   useEffect(() => {
     initializeNotifications();
   }, []);
+
+  // Re-schedule notifications whenever medications change
+  useEffect(() => {
+    if (medications.length > 0 && notificationsEnabled) {
+      scheduleAllMedications();
+    }
+  }, [medications]);
 
   const initializeNotifications = async () => {
     const hasPermission = await notificationService.requestPermissions();
@@ -251,17 +265,32 @@ export default function MedicationsTab() {
     try {
       await notificationService.cancelAllNotifications();
 
-      // Schedule recurring medications
+      // Schedule recurring medications with new flexible structure
       for (const med of medications) {
-        await notificationService.scheduleMedicationWithMultipleTimes(
-          med.id,
-          med.name,
-          med.strength,
-          med.quantity,
-          med.times,
-          med.days,
-          med.foodInstructions,
-        );
+        // Skip if no schedule info
+        if (!med.times || med.times.length === 0) {
+          console.log(`⚠️ Skipping ${med.name} - no times specified`);
+          continue;
+        }
+
+        console.log(`Scheduling ${med.name}:`, {
+          times: med.times,
+          days: med.days,
+          frequency: med.frequency,
+        });
+
+        await notificationService.scheduleMedicationNotifications({
+          medicationId: med.id,
+          name: med.name,
+          strength: med.strength,
+          quantity: med.quantity,
+          times: med.times,
+          days: med.days || [],
+          frequency: med.frequency || "Daily",
+          startDate: (med as any).startDate,
+          endDate: (med as any).endDate,
+          instructions: med.foodInstructions,
+        });
       }
 
       // Schedule specific date doses
@@ -269,7 +298,9 @@ export default function MedicationsTab() {
         await scheduleSpecificDateDose(dose);
       }
 
-      console.log("✅ All medication reminders scheduled");
+      // Get summary
+      const summary = await notificationService.getNotificationsSummary();
+      console.log(`✅ Scheduled ${summary.total} total reminders for ${medications.length} medications`);
     } catch (error) {
       console.error("❌ Error scheduling medications:", error);
       Alert.alert("Error", "Failed to schedule medication reminders");
@@ -512,12 +543,48 @@ export default function MedicationsTab() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await notificationService.cancelMedicationNotifications(id);
-            setMedications(medications.filter((med) => med.id !== id));
-            setScheduledDoses(
-              scheduledDoses.filter((d) => d.medicationId !== id),
-            );
-            Alert.alert("Deleted", "Medication removed");
+            try {
+              // Get JWT token
+              const token = await SecureStore.getItemAsync("jwt");
+              if (!token) {
+                Alert.alert("Error", "Authentication token not found");
+                return;
+              }
+
+              // Cancel all notifications for this medication
+              await notificationService.cancelMedicationNotifications(id);
+
+              // Delete from backend
+              console.log(`Deleting medication ${id} from backend...`);
+              const res = await fetch(`${BACKEND_BASE_URL}/user/medications/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Failed to delete medication from backend:", errorText);
+                Alert.alert("Error", "Failed to delete medication from server");
+                return;
+              }
+
+              console.log(`✅ Medication ${id} deleted from backend`);
+
+              // Remove from local state
+              setMedications(medications.filter((med) => med.id !== id));
+              setScheduledDoses(
+                scheduledDoses.filter((d) => d.medicationId !== id),
+              );
+
+              Alert.alert("Success", "Medication deleted successfully");
+            } catch (error) {
+              console.error("Error deleting medication:", error);
+              Alert.alert("Error", "An error occurred while deleting medication");
+            }
           },
         },
       ],
