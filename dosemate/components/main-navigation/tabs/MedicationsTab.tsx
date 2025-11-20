@@ -17,6 +17,8 @@ import AddMedicationScreen from "@/components/main-navigation/AddMedicationScree
 import MedicationDetailsScreen from "@/components/main-navigation/MedicationsDetailsScreen";
 import { Medication } from "./types";
 import { notificationService } from "@/components/services/notificationService";
+import { BACKEND_BASE_URL } from "@/config";
+import * as SecureStore from "expo-secure-store";
 
 interface ScheduledDose {
   id: string;
@@ -37,8 +39,29 @@ const DAYS_OF_WEEK = [
   "Sunday",
 ];
 
+// Backend schedule from API
+export interface Schedule {
+  strength: string;
+  quantity: string;
+  frequency: string;
+  time_of_day: string[]; // e.g. ["8:00 AM", "2:00 PM"]
+  days: string[]; // e.g. ["Monday", "Wednesday"]
+  food_instructions?: string;
+}
+
+// Backend medication format
+export interface ApiMed {
+  id: number;
+  brand_name: string;
+  purpose?: string;
+  adherence_score?: number;
+
+  // The backend returns a list of schedules per med
+  schedules: Schedule[];
+}
+
 export default function MedicationsTab() {
-  const [showAddMedication, setShowAddMedication] = useState(false);
+  const [showAddMedication, setShowAddMedication] = useState(true);
   const [showMedicationDetails, setShowMedicationDetails] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
@@ -50,92 +73,117 @@ export default function MedicationsTab() {
   );
   const [editedTimes, setEditedTimes] = useState<string[]>([]);
   const [editedDays, setEditedDays] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>("");
   const [scheduledDoses, setScheduledDoses] = useState<ScheduledDose[]>([]);
 
   // ============ MEDICATION STATE ============
-  const [medications, setMedications] = useState<Medication[]>([
-    {
-      id: 1,
-      name: "Metformin",
-      strength: "500mg",
-      quantity: "1 tablet",
-      frequency: "Twice daily",
-      times: ["8:00 AM", "8:00 PM"],
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      color: "#2196F3",
-      nextDose: "8:00 PM",
-      adherence: 95,
-      foodInstructions: "Take with food",
-      purpose: "Diabetes management",
-    },
-    {
-      id: 2,
-      name: "Lisinopril",
-      strength: "10mg",
-      quantity: "1 tablet",
-      frequency: "Once daily",
-      times: ["8:00 AM"],
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      color: "#4CAF50",
-      nextDose: "Tomorrow 8:00 AM",
-      adherence: 88,
-      foodInstructions: "No food restrictions",
-      purpose: "Blood pressure control",
-    },
-    {
-      id: 3,
-      name: "Atorvastatin",
-      strength: "20mg",
-      quantity: "1 tablet",
-      frequency: "Once daily",
-      times: ["9:00 PM"],
-      days: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      color: "#9C27B0",
-      nextDose: "9:00 PM",
-      adherence: 92,
-      foodInstructions: "Take in the evening",
-      purpose: "Cholesterol management",
-    },
-    {
-      id: 4,
-      name: "Aspirin",
-      strength: "81mg",
-      quantity: "1 tablet",
-      frequency: "Once daily",
-      times: ["8:00 AM"],
-      days: ["Monday", "Wednesday", "Friday"],
-      color: "#FF9800",
-      nextDose: "Tomorrow 8:00 AM",
-      adherence: 97,
-      foodInstructions: "Take with food",
-      purpose: "Heart protection",
-    },
-  ]);
+  const [medications, setMedications] = useState<Medication[]>([]);
+
+  const generateColor = (name: string) => {
+    const COLORS = ["#2196F3", "#4CAF50", "#9C27B0", "#FF9800"];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % COLORS.length;
+    return COLORS[index];
+  };
+
+  const calculateNextDose = (schedule: Schedule) => {
+    if (
+      !schedule ||
+      !schedule.time_of_day ||
+      schedule.time_of_day.length === 0
+    ) {
+      return "No scheduled times";
+    }
+
+    const now = new Date();
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+
+    // If schedule has days and today isn't included → tomorrow’s first time
+    if (schedule.days && !schedule.days.includes(today)) {
+      return `Tomorrow ${schedule.time_of_day[0]}`;
+    }
+
+    // Convert time_of_day entries to actual Date objects for today
+    const upcoming = schedule.time_of_day
+      .map((t: string) => {
+        const [time, modifier] = t.split(" ");
+        let [hour, minute] = time.split(":").map(Number);
+
+        if (modifier === "PM" && hour !== 12) hour += 12;
+        if (modifier === "AM" && hour === 12) hour = 0;
+
+        const d = new Date();
+        d.setHours(hour, minute, 0, 0);
+
+        return d;
+      })
+      .filter((d: Date) => d > now);
+
+    // Case 1: there's a remaining dose today
+    if (upcoming.length > 0) {
+      const nextTime = upcoming[0];
+      return nextTime.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+
+    // Case 2: no times left today → tomorrow’s first time
+    return `Tomorrow ${schedule.time_of_day[0]}`;
+  };
+
+  useEffect(() => {
+    const transformMedication = (apiMed: ApiMed): Medication => {
+      const schedule = apiMed.schedules[0]; // assuming 1 per med for now
+
+      return {
+        id: apiMed.id,
+        name: apiMed.brand_name,
+        strength: schedule?.strength || "Standard dosage",
+        quantity: schedule?.quantity || "",
+        frequency: schedule?.frequency,
+        times: schedule?.time_of_day || [],
+        days: schedule?.days || [],
+        color: generateColor(apiMed.brand_name),
+        nextDose: calculateNextDose(schedule),
+        adherence: apiMed.adherence_score ?? 99,
+        foodInstructions: schedule?.food_instructions || "",
+        purpose: apiMed.purpose || "General use",
+      };
+    };
+
+    const fetchMeds = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("jwt");
+        if (!token) throw new Error("No JWT token found");
+        const res = await fetch(`${BACKEND_BASE_URL}/user/medications`, {
+          method: "GET",
+          credentials: "include", // needed if you're using cookies/jwt
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch medications");
+          return;
+        }
+
+        const data = await res.json();
+
+        const transformed = data.map(transformMedication);
+
+        setMedications(transformed);
+      } catch (err) {
+        console.error("Error fetching meds:", err);
+      }
+    };
+
+    fetchMeds();
+  }, []);
 
   // ============ NOTIFICATION SETUP ============
   useEffect(() => {
@@ -265,7 +313,6 @@ export default function MedicationsTab() {
   };
 
   const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
     // Show time selection for this date
     Alert.alert(
       "Select Time",
