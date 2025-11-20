@@ -221,12 +221,12 @@ export default function AddMedicationScreen({
   // --- OCR detected ---
   const handleMedicineDetected = (detectedName: string) => {
     console.log("Medicine detected from OCR:", detectedName);
-    
+
     setScannerVisible(false);
     setQuery(detectedName);
     setSuggestions([]);
     setLoading(true); // Show loading while fetching
-    
+
     fetch(`${BACKEND_BASE_URL}/medicines/search?query=${detectedName}`)
       .then((res) => res.json())
       .then((data: MedicineDetails) => {
@@ -333,7 +333,7 @@ export default function AddMedicationScreen({
   // Get marked dates for calendar
   const getMarkedDates = () => {
     const marked: any = {};
-    
+
     if (medDetails.startDate) {
       marked[medDetails.startDate] = {
         startingDay: true,
@@ -341,7 +341,7 @@ export default function AddMedicationScreen({
         textColor: "#FFFFFF",
       };
     }
-    
+
     if (medDetails.endDate) {
       marked[medDetails.endDate] = {
         endingDay: true,
@@ -349,14 +349,14 @@ export default function AddMedicationScreen({
         textColor: "#FFFFFF",
       };
     }
-    
+
     // Mark dates in between if both start and end are selected
     if (medDetails.startDate && medDetails.endDate) {
       const start = new Date(medDetails.startDate);
       const end = new Date(medDetails.endDate);
       const current = new Date(start);
       current.setDate(current.getDate() + 1);
-      
+
       while (current < end) {
         const dateString = current.toISOString().split("T")[0];
         marked[dateString] = {
@@ -365,7 +365,7 @@ export default function AddMedicationScreen({
         };
         current.setDate(current.getDate() + 1);
       }
-      
+
       // Update start and end to show connected range
       if (medDetails.startDate && medDetails.endDate !== medDetails.startDate) {
         marked[medDetails.startDate] = {
@@ -380,7 +380,7 @@ export default function AddMedicationScreen({
         };
       }
     }
-    
+
     return marked;
   };
 
@@ -429,7 +429,7 @@ export default function AddMedicationScreen({
         <MaterialCommunityIcons name="camera-iris" size={24} color="#E85D5B" />
         <Text style={styles.scanButtonText}>Use Image</Text>
       </TouchableOpacity>
-      
+
       {/* Scanner Modal */}
       <MedicineOCRScanner
         visible={scannerVisible}
@@ -726,8 +726,8 @@ export default function AddMedicationScreen({
                   key={option}
                   style={styles.pickerOption}
                   onPress={() => {
-                    setMedDetails((prev) => ({ 
-                      ...prev, 
+                    setMedDetails((prev) => ({
+                      ...prev,
                       frequency: option,
                       days: option === "Daily" ? DAYS_OF_WEEK : [],
                     }));
@@ -742,12 +742,12 @@ export default function AddMedicationScreen({
         </View>
 
         {/* Day Selection for Specific Days or Every Other Day */}
-        {(medDetails.frequency === "Specific Days" || 
+        {(medDetails.frequency === "Specific Days" ||
           medDetails.frequency === "Daily") && (
           <View style={styles.formGroup}>
             <Text style={styles.label}>
-              {medDetails.frequency === "Daily" 
-                ? "Active Days (Select all for daily)" 
+              {medDetails.frequency === "Daily"
+                ? "Active Days (Select all for daily)"
                 : "Select Days"}
             </Text>
             <View style={styles.daysContainer}>
@@ -763,8 +763,7 @@ export default function AddMedicationScreen({
                   <Text
                     style={[
                       styles.dayChipText,
-                      medDetails.days.includes(day) &&
-                        styles.dayChipTextActive,
+                      medDetails.days.includes(day) && styles.dayChipTextActive,
                     ]}
                   >
                     {day.substring(0, 3)}
@@ -784,7 +783,8 @@ export default function AddMedicationScreen({
               onPress={() => setShowTimesPerDayPicker(!showTimesPerDayPicker)}
             >
               <Text style={styles.selectButtonTextActive}>
-                {medDetails.timesPerDay} {medDetails.timesPerDay === 1 ? "time" : "times"}
+                {medDetails.timesPerDay}{" "}
+                {medDetails.timesPerDay === 1 ? "time" : "times"}
               </Text>
               <Ionicons name="chevron-down" size={20} color="#999" />
             </TouchableOpacity>
@@ -795,7 +795,10 @@ export default function AddMedicationScreen({
                     key={option}
                     style={styles.pickerOption}
                     onPress={() => {
-                      setMedDetails((prev) => ({ ...prev, timesPerDay: option }));
+                      setMedDetails((prev) => ({
+                        ...prev,
+                        timesPerDay: option,
+                      }));
                       setShowTimesPerDayPicker(false);
                     }}
                   >
@@ -814,28 +817,30 @@ export default function AddMedicationScreen({
           <View style={styles.formGroup}>
             <Text style={styles.label}>Set reminder times</Text>
             <View style={styles.timeInputsContainer}>
-              {Array.from({ length: medDetails.timesPerDay }).map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.timeInputButton}
-                  onPress={() => {
-                    setCurrentTimeIndex(index);
-                    setTempTime(new Date());
-                    setShowTimePicker(true);
-                  }}
-                >
-                  <Ionicons name="time-outline" size={20} color="#E85D5B" />
-                  <Text
-                    style={
-                      medDetails.times[index]
-                        ? styles.timeInputTextActive
-                        : styles.timeInputText
-                    }
+              {Array.from({ length: medDetails.timesPerDay }).map(
+                (_, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.timeInputButton}
+                    onPress={() => {
+                      setCurrentTimeIndex(index);
+                      setTempTime(new Date());
+                      setShowTimePicker(true);
+                    }}
                   >
-                    {medDetails.times[index] || `Set time ${index + 1}`}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Ionicons name="time-outline" size={20} color="#E85D5B" />
+                    <Text
+                      style={
+                        medDetails.times[index]
+                          ? styles.timeInputTextActive
+                          : styles.timeInputText
+                      }
+                    >
+                      {medDetails.times[index] || `Set time ${index + 1}`}
+                    </Text>
+                  </TouchableOpacity>
+                ),
+              )}
             </View>
           </View>
         )}
@@ -899,17 +904,18 @@ export default function AddMedicationScreen({
         )}
       </View>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
           styles.saveButton,
-          (medDetails.frequency !== "As Needed" && 
-           (medDetails.days.length === 0 || medDetails.times.some(t => !t))) &&
-           styles.primaryButtonDisabled
+          medDetails.frequency !== "As Needed" &&
+            (medDetails.days.length === 0 ||
+              medDetails.times.some((t) => !t)) &&
+            styles.primaryButtonDisabled,
         ]}
         onPress={handleSave}
         disabled={
-          medDetails.frequency !== "As Needed" && 
-          (medDetails.days.length === 0 || medDetails.times.some(t => !t))
+          medDetails.frequency !== "As Needed" &&
+          (medDetails.days.length === 0 || medDetails.times.some((t) => !t))
         }
       >
         <Text style={styles.primaryButtonText}>Save Medication</Text>
@@ -999,7 +1005,9 @@ export default function AddMedicationScreen({
               <View style={styles.calendarModalContent}>
                 <View style={styles.calendarModalHeader}>
                   <Text style={styles.calendarModalTitle}>
-                    {calendarMode === "start" ? "Select Start Date" : "Select End Date"}
+                    {calendarMode === "start"
+                      ? "Select Start Date"
+                      : "Select End Date"}
                   </Text>
                   <TouchableOpacity onPress={() => setShowCalendarModal(false)}>
                     <Ionicons name="close" size={28} color="#2C2C2C" />
@@ -1027,15 +1035,21 @@ export default function AddMedicationScreen({
 
                 <View style={styles.calendarLegend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: "#4CAF50" }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#4CAF50" }]}
+                    />
                     <Text style={styles.legendText}>Start Date</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: "#FF9800" }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#FF9800" }]}
+                    />
                     <Text style={styles.legendText}>End Date</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: "#E8F5E9" }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#E8F5E9" }]}
+                    />
                     <Text style={styles.legendText}>Duration</Text>
                   </View>
                 </View>
@@ -1044,11 +1058,16 @@ export default function AddMedicationScreen({
                   <TouchableOpacity
                     style={styles.clearEndDateButton}
                     onPress={() => {
-                      setMedDetails((prev) => ({ ...prev, endDate: undefined }));
+                      setMedDetails((prev) => ({
+                        ...prev,
+                        endDate: undefined,
+                      }));
                       setShowCalendarModal(false);
                     }}
                   >
-                    <Text style={styles.clearEndDateText}>Clear End Date (Ongoing)</Text>
+                    <Text style={styles.clearEndDateText}>
+                      Clear End Date (Ongoing)
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>

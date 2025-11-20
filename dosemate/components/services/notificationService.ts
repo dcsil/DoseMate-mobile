@@ -57,8 +57,8 @@ class NotificationService {
   parseTime(timeStr: string): { hour: number; minute: number } {
     try {
       // Handle empty or invalid input
-      if (!timeStr || typeof timeStr !== 'string') {
-        console.error('Invalid time string:', timeStr);
+      if (!timeStr || typeof timeStr !== "string") {
+        console.error("Invalid time string:", timeStr);
         return { hour: 9, minute: 0 }; // Default to 9:00 AM
       }
 
@@ -66,34 +66,44 @@ class NotificationService {
       timeStr = timeStr.trim();
 
       // Debug: Log the exact string and its character codes
-      console.log('Parsing time string:', JSON.stringify(timeStr));
-      console.log('Character codes:', Array.from(timeStr).map(c => c.charCodeAt(0)));
+      console.log("Parsing time string:", JSON.stringify(timeStr));
+      console.log(
+        "Character codes:",
+        Array.from(timeStr).map((c) => c.charCodeAt(0)),
+      );
 
       // Try to match pattern: "H:MM AM/PM" or "HH:MM AM/PM" or "H:M AM/PM"
       const timeRegex = /^(\d{1,2}):(\d{1,2})\s+(AM|PM)$/i;
       const match = timeStr.match(timeRegex);
 
       if (!match) {
-        console.error('Time format invalid (expected "H:MM AM/PM" or "HH:MM AM/PM"):', timeStr);
-        console.error('Regex failed. Attempting manual parse...');
-        
+        console.error(
+          'Time format invalid (expected "H:MM AM/PM" or "HH:MM AM/PM"):',
+          timeStr,
+        );
+        console.error("Regex failed. Attempting manual parse...");
+
         // Fallback: Try manual parsing
         try {
           // Remove any non-standard characters and normalize
-          const cleaned = timeStr.replace(/[^\d:APMapm\s]/g, '').trim();
-          console.log('Cleaned string:', cleaned);
-          
+          const cleaned = timeStr.replace(/[^\d:APMapm\s]/g, "").trim();
+          console.log("Cleaned string:", cleaned);
+
           // Try splitting by colon
-          const colonSplit = cleaned.split(':');
+          const colonSplit = cleaned.split(":");
           if (colonSplit.length === 2) {
             const hour = parseInt(colonSplit[0].trim(), 10);
             const rest = colonSplit[1].trim().split(/\s+/);
             const minute = parseInt(rest[0], 10);
             const period = rest[1]?.toUpperCase();
-            
-            if (!isNaN(hour) && !isNaN(minute) && (period === 'AM' || period === 'PM')) {
-              console.log('Manual parse succeeded:', { hour, minute, period });
-              
+
+            if (
+              !isNaN(hour) &&
+              !isNaN(minute) &&
+              (period === "AM" || period === "PM")
+            ) {
+              console.log("Manual parse succeeded:", { hour, minute, period });
+
               // Convert to 24-hour format
               let finalHour = hour;
               if (period === "PM" && hour !== 12) {
@@ -101,15 +111,17 @@ class NotificationService {
               } else if (period === "AM" && hour === 12) {
                 finalHour = 0;
               }
-              
-              console.log(`✅ Parsed time "${timeStr}" → ${finalHour}:${minute}`);
+
+              console.log(
+                `✅ Parsed time "${timeStr}" → ${finalHour}:${minute}`,
+              );
               return { hour: finalHour, minute };
             }
           }
         } catch (fallbackError) {
-          console.error('Manual parse also failed:', fallbackError);
+          console.error("Manual parse also failed:", fallbackError);
         }
-        
+
         return { hour: 9, minute: 0 };
       }
 
@@ -119,17 +131,21 @@ class NotificationService {
 
       // Validate parsed values
       if (isNaN(hour) || isNaN(minute)) {
-        console.error('Failed to parse time components:', { hour, minute, timeStr });
+        console.error("Failed to parse time components:", {
+          hour,
+          minute,
+          timeStr,
+        });
         return { hour: 9, minute: 0 };
       }
 
       // Validate ranges
       if (hour < 1 || hour > 12) {
-        console.error('Hour out of range (1-12):', hour);
+        console.error("Hour out of range (1-12):", hour);
         hour = 9;
       }
       if (minute < 0 || minute > 59) {
-        console.error('Minute out of range (0-59):', minute);
+        console.error("Minute out of range (0-59):", minute);
         minute = 0;
       }
 
@@ -143,7 +159,7 @@ class NotificationService {
       console.log(`✅ Parsed time "${timeStr}" → ${hour}:${minute}`);
       return { hour, minute };
     } catch (error) {
-      console.error('Error parsing time:', timeStr, error);
+      console.error("Error parsing time:", timeStr, error);
       return { hour: 9, minute: 0 }; // Default fallback
     }
   }
@@ -189,7 +205,9 @@ class NotificationService {
 
     // Handle "As Needed" medications (no scheduled notifications)
     if (medication.frequency === "As Needed") {
-      console.log(`${medication.name} is "As Needed" - no notifications scheduled`);
+      console.log(
+        `${medication.name} is "As Needed" - no notifications scheduled`,
+      );
       return notificationIds;
     }
 
@@ -208,7 +226,11 @@ class NotificationService {
               minute,
             };
 
-            const id = await this.scheduleNotification(medication, trigger, timeStr);
+            const id = await this.scheduleNotification(
+              medication,
+              trigger,
+              timeStr,
+            );
             notificationIds.push(id);
           }
         } else {
@@ -219,7 +241,11 @@ class NotificationService {
             minute,
           };
 
-          const id = await this.scheduleNotification(medication, trigger, timeStr);
+          const id = await this.scheduleNotification(
+            medication,
+            trigger,
+            timeStr,
+          );
           notificationIds.push(id);
         }
       } else if (medication.frequency === "Specific Days") {
@@ -232,7 +258,11 @@ class NotificationService {
             minute,
           };
 
-          const id = await this.scheduleNotification(medication, trigger, timeStr);
+          const id = await this.scheduleNotification(
+            medication,
+            trigger,
+            timeStr,
+          );
           notificationIds.push(id);
         }
       } else if (medication.frequency === "Every Other Day") {
@@ -243,14 +273,19 @@ class NotificationService {
       }
     }
 
-    console.log(`✅ Scheduled ${notificationIds.length} notifications for ${medication.name}`);
+    console.log(
+      `✅ Scheduled ${notificationIds.length} notifications for ${medication.name}`,
+    );
     return notificationIds;
   }
 
   // Schedule notification with common content
   private async scheduleNotification(
     medication: MedicationNotification,
-    trigger: Notifications.DailyTriggerInput | Notifications.WeeklyTriggerInput | Notifications.TimeIntervalTriggerInput,
+    trigger:
+      | Notifications.DailyTriggerInput
+      | Notifications.WeeklyTriggerInput
+      | Notifications.TimeIntervalTriggerInput,
     timeStr: string,
   ): Promise<string> {
     const id = await Notifications.scheduleNotificationAsync({
@@ -283,20 +318,28 @@ class NotificationService {
     notificationIds: string[],
   ): Promise<void> {
     const { hour, minute } = this.parseTime(timeStr);
-    const startDate = medication.startDate ? new Date(medication.startDate) : new Date();
-    const endDate = medication.endDate ? new Date(medication.endDate) : new Date();
-    
+    const startDate = medication.startDate
+      ? new Date(medication.startDate)
+      : new Date();
+    const endDate = medication.endDate
+      ? new Date(medication.endDate)
+      : new Date();
+
     // If no end date, schedule for next 90 days
     if (!medication.endDate) {
       endDate.setDate(endDate.getDate() + 90);
     }
 
     // Start from today or start date
-    let currentDate = new Date(Math.max(startDate.getTime(), new Date().getTime()));
+    let currentDate = new Date(
+      Math.max(startDate.getTime(), new Date().getTime()),
+    );
     currentDate.setHours(hour, minute, 0, 0);
 
     // Determine if today should have a dose (if it's an even/odd day from start)
-    const daysSinceStart = Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceStart = Math.floor(
+      (currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
     if (daysSinceStart % 2 !== 0) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -305,7 +348,9 @@ class NotificationService {
     while (currentDate <= endDate) {
       const now = new Date();
       if (currentDate > now) {
-        const secondsUntil = Math.floor((currentDate.getTime() - now.getTime()) / 1000);
+        const secondsUntil = Math.floor(
+          (currentDate.getTime() - now.getTime()) / 1000,
+        );
 
         const trigger: Notifications.TimeIntervalTriggerInput = {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -313,7 +358,11 @@ class NotificationService {
           repeats: false,
         };
 
-        const id = await this.scheduleNotification(medication, trigger, timeStr);
+        const id = await this.scheduleNotification(
+          medication,
+          trigger,
+          timeStr,
+        );
         notificationIds.push(id);
       }
 
@@ -321,7 +370,6 @@ class NotificationService {
       currentDate.setDate(currentDate.getDate() + 2);
     }
   }
-
 
   async scheduleMedicationWithMultipleTimes(
     medicationId: number,
@@ -339,7 +387,8 @@ class NotificationService {
       quantity,
       times,
       days: days || [],
-      frequency: days && days.length > 0 && days.length < 7 ? "Specific Days" : "Daily",
+      frequency:
+        days && days.length > 0 && days.length < 7 ? "Specific Days" : "Daily",
       instructions,
     });
   }
@@ -394,8 +443,8 @@ class NotificationService {
         typeof medIdRaw === "number"
           ? medIdRaw
           : medIdRaw != null
-          ? parseInt(String(medIdRaw), 10)
-          : NaN;
+            ? parseInt(String(medIdRaw), 10)
+            : NaN;
 
       if (Number.isFinite(medId)) {
         byMedication.set(medId, (byMedication.get(medId) ?? 0) + 1);

@@ -89,7 +89,6 @@ export default function MedicationsTab() {
   };
 
   const calculateNextDose = (schedule: Schedule) => {
-
     console.log("Calculating next dose for schedule:", schedule);
     if (
       !schedule ||
@@ -111,9 +110,9 @@ export default function MedicationsTab() {
 
       if (startDate > todayDate) {
         // Start date is in the future
-        const startDay = startDate.toLocaleDateString("en-US", { 
-          month: "short", 
-          day: "numeric" 
+        const startDay = startDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
         });
         return `Starts ${startDay} at ${schedule.time_of_day[0]}`;
       }
@@ -121,7 +120,8 @@ export default function MedicationsTab() {
 
     // Check if medication is restricted to specific days
     const hasDaysRestriction = schedule.days && schedule.days.length > 0;
-    const isTodayScheduled = !hasDaysRestriction || schedule.days.includes(today);
+    const isTodayScheduled =
+      !hasDaysRestriction || schedule.days.includes(today);
 
     // Convert time_of_day entries to actual Date objects for today
     const upcomingToday = schedule.time_of_day
@@ -170,7 +170,8 @@ export default function MedicationsTab() {
       purpose: apiMed.purpose || "General use",
       startDate: schedule?.start_date,
       endDate: schedule?.end_date,
-      timesPerDay: schedule?.times_per_day || schedule?.time_of_day?.length || 1,
+      timesPerDay:
+        schedule?.times_per_day || schedule?.time_of_day?.length || 1,
       asNeeded: schedule?.frequency === "As Needed",
     } as Medication;
   }, []);
@@ -234,53 +235,58 @@ export default function MedicationsTab() {
     fetchMeds();
   }, [refreshKey, fetchMeds]);
 
-  const scheduleSpecificDateDose = useCallback(async (dose: ScheduledDose) => {
-    try {
-      const med = medications.find((m) => m.id === dose.medicationId);
-      if (!med) return;
+  const scheduleSpecificDateDose = useCallback(
+    async (dose: ScheduledDose) => {
+      try {
+        const med = medications.find((m) => m.id === dose.medicationId);
+        if (!med) return;
 
-      const [year, month, day] = dose.date.split("-").map(Number);
-      const [timeStr, period] = dose.time.split(" ");
-      let [hour, minute] = timeStr.split(":").map(Number);
+        const [year, month, day] = dose.date.split("-").map(Number);
+        const [timeStr, period] = dose.time.split(" ");
+        let [hour, minute] = timeStr.split(":").map(Number);
 
-      if (period === "PM" && hour !== 12) hour += 12;
-      if (period === "AM" && hour === 12) hour = 0;
+        if (period === "PM" && hour !== 12) hour += 12;
+        if (period === "AM" && hour === 12) hour = 0;
 
-      const scheduleDate = new Date(year, month - 1, day, hour, minute);
-      const now = new Date();
+        const scheduleDate = new Date(year, month - 1, day, hour, minute);
+        const now = new Date();
 
-      const secondsUntil = Math.floor(
-        (scheduleDate.getTime() - now.getTime()) / 1000,
-      );
+        const secondsUntil = Math.floor(
+          (scheduleDate.getTime() - now.getTime()) / 1000,
+        );
 
-      if (secondsUntil <= 0) {
-        console.log("⚠️ Time already passed, notification not scheduled");
-        return;
-      }
+        if (secondsUntil <= 0) {
+          console.log("⚠️ Time already passed, notification not scheduled");
+          return;
+        }
 
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `💊 Time for ${med.name}`,
-          body: `Take ${med.quantity} (${med.strength})\n${med.foodInstructions}`,
-          data: {
-            medicationId: med.id,
-            doseId: dose.id,
-            type: "specific-date-dose",
+        const notificationId = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: `💊 Time for ${med.name}`,
+            body: `Take ${med.quantity} (${med.strength})\n${med.foodInstructions}`,
+            data: {
+              medicationId: med.id,
+              doseId: dose.id,
+              type: "specific-date-dose",
+            },
+            sound: "default",
           },
-          sound: "default",
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: secondsUntil,
-        },
-      });
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+            seconds: secondsUntil,
+          },
+        });
 
-      console.log(`✅ Scheduled ${med.name} for ${dose.date} at ${dose.time}`);
-      return notificationId;
-    } catch (error) {
-      console.error("❌ Error scheduling specific date dose:", error);
-    }
-  }, [medications]);
+        console.log(
+          `✅ Scheduled ${med.name} for ${dose.date} at ${dose.time}`,
+        );
+        return notificationId;
+      } catch (error) {
+        console.error("❌ Error scheduling specific date dose:", error);
+      }
+    },
+    [medications],
+  );
 
   const scheduleAllMedications = useCallback(async () => {
     try {
@@ -317,7 +323,9 @@ export default function MedicationsTab() {
       }
 
       const summary = await notificationService.getNotificationsSummary();
-      console.log(`✅ Scheduled ${summary.total} total reminders for ${medications.length} medications`);
+      console.log(
+        `✅ Scheduled ${summary.total} total reminders for ${medications.length} medications`,
+      );
     } catch (error) {
       console.error("❌ Error scheduling medications:", error);
       Alert.alert("Error", "Failed to schedule medication reminders");
@@ -463,8 +471,6 @@ export default function MedicationsTab() {
     return marked;
   };
 
-  
-
   const handleUpdateTime = (index: number, newTime: string) => {
     const updated = [...editedTimes];
     updated[index] = newTime;
@@ -510,7 +516,7 @@ export default function MedicationsTab() {
           days: editedDays,
           food_instructions: med.foodInstructions,
         };
-        
+
         return {
           ...med,
           times: editedTimes,
@@ -549,18 +555,24 @@ export default function MedicationsTab() {
               await notificationService.cancelMedicationNotifications(id);
 
               console.log(`Deleting medication ${id} from backend...`);
-              const res = await fetch(`${BACKEND_BASE_URL}/user/medications/${id}`, {
-                method: "DELETE",
-                credentials: "include",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
+              const res = await fetch(
+                `${BACKEND_BASE_URL}/user/medications/${id}`,
+                {
+                  method: "DELETE",
+                  credentials: "include",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
                 },
-              });
+              );
 
               if (!res.ok) {
                 const errorText = await res.text();
-                console.error("Failed to delete medication from backend:", errorText);
+                console.error(
+                  "Failed to delete medication from backend:",
+                  errorText,
+                );
                 Alert.alert("Error", "Failed to delete medication from server");
                 return;
               }
@@ -575,7 +587,10 @@ export default function MedicationsTab() {
               Alert.alert("Success", "Medication deleted successfully");
             } catch (error) {
               console.error("Error deleting medication:", error);
-              Alert.alert("Error", "An error occurred while deleting medication");
+              Alert.alert(
+                "Error",
+                "An error occurred while deleting medication",
+              );
             }
           },
         },
