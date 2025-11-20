@@ -145,7 +145,7 @@ describe("ProfileSetupScreen", () => {
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
 
     // Mock fetch so saveProfile() succeeds
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    (globalThis as any).fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({}),
       text: jest.fn().mockResolvedValue(""),
