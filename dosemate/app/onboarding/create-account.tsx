@@ -22,6 +22,10 @@ export default function CreateAccountScreen() {
 
       if (token && typeof token === "string") {
         await SecureStore.setItemAsync("jwt", token);
+        try {
+          await WebBrowser.dismissBrowser();
+        } catch {}
+
         router.replace("/onboarding/privacy");
       }
     };

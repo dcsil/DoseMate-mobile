@@ -16,6 +16,9 @@ import {
   Lifestyle,
 } from "@/components/profile-setup";
 
+import * as SecureStore from "expo-secure-store";
+import { BACKEND_BASE_URL } from "@/config";
+
 export default function ProfileSetupScreen() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -51,6 +54,53 @@ export default function ProfileSetupScreen() {
     { label: "Very High - Athlete level", value: "athlete" },
   ];
 
+  async function getAuthToken() {
+    return await SecureStore.getItemAsync("jwt");
+  }
+
+  const saveProfile = async () => {
+    const token = await getAuthToken();
+
+    if (!token) {
+      console.warn("No JWT found in SecureStore – user might not be logged in");
+      // optionally redirect them back to login / create account
+      // router.replace("/auth/create-account");
+      return false;
+    }
+
+    const payload = {
+      age: profile.age ? Number(profile.age) : null,
+      conditions: profile.conditions,
+      allergies: profile.allergies || null,
+      sleep_schedule: profile.sleepSchedule || null,
+      activity_level: profile.activityLevel || null,
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_BASE_URL}/profile/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        console.error("Failed to save profile:", res.status, errBody);
+        return false;
+      }
+
+      const data = await res.json();
+      console.log("Profile saved:", data);
+      return true;
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      return false;
+    }
+  };
+
   const canContinue = () => {
     switch (step) {
       case 1:
@@ -64,8 +114,20 @@ export default function ProfileSetupScreen() {
     }
   };
 
-  const handleNext = () =>
-    step < 3 ? setStep(step + 1) : router.push("/onboarding/tutorial");
+  const handleNext = async () => {
+    if (step < 3) {
+      setStep(step + 1);
+      return;
+    }
+
+    const ok = await saveProfile();
+    if (ok) {
+      router.push("/onboarding/tutorial");
+    } else {
+      // maybe show an error toast / alert here instead of navigating
+    }
+  };
+
   const handleBack = () => (step === 1 ? router.back() : setStep(step - 1));
 
   return (
