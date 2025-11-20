@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { BACKEND_BASE_URL } from "@/config";
+
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import * as SecureStore from "expo-secure-store";
@@ -21,9 +22,6 @@ export default function CreateAccountScreen() {
 
       if (token && typeof token === "string") {
         await SecureStore.setItemAsync("jwt", token);
-        try {
-          await WebBrowser.dismissBrowser();
-        } catch {}
         router.replace("/onboarding/privacy");
       }
     };
@@ -34,6 +32,8 @@ export default function CreateAccountScreen() {
 
   const handleGoogleLogin = async () => {
     const authUrl = `${BACKEND_BASE_URL}/auth/google`;
+
+    // open in external browser
     await WebBrowser.openBrowserAsync(authUrl);
   };
 
@@ -52,7 +52,7 @@ export default function CreateAccountScreen() {
       <View style={styles.body}>
         <Text style={styles.welcome}>Welcome to DoseMate</Text>
         <Text style={styles.subtitle}>
-          Choose how you would like to create your account
+          Choose how you&apos;d like to create your account
         </Text>
 
         {/* Google Option */}
