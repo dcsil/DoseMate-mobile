@@ -159,7 +159,7 @@ export default function MedicationsTab() {
   const fetchMeds = useCallback(async () => {
     try {
       const token = await SecureStore.getItemAsync("jwt");
-      
+
       if (!token) {
         console.error("No JWT token found");
         Alert.alert("Authentication Error", "Please log in again");
@@ -191,7 +191,7 @@ export default function MedicationsTab() {
                 router.replace("/onboarding/create-account");
               },
             },
-          ]
+          ],
         );
         return;
       }
