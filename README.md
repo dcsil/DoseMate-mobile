@@ -77,6 +77,52 @@ npm install
 
 Locate config.tsx and update the BACKEND_BASE_URL to the correct URL (ngrok URL or localhost)
 
+### Progress API Integration
+
+Backend exposes user progress endpoints:
+
+- `GET /users/{user_id}/progress` – list entries
+- `POST /users/{user_id}/progress` – create entry `{ metric_name, value?, int_value? }`
+
+Mobile client utilities added:
+
+`components/services/progressService.ts`:
+- `listProgress(userId)`
+- `createProgress(userId, { metric_name, value?, int_value? })`
+- `getLatestProgress(userId, metricName)`
+
+`components/services/useProgress.ts` React hook:
+```ts
+const { entries, loading, error, refresh, addProgress, latestFor } = useProgress({ userId, pollMs: 10000 });
+```
+
+Sample component `LatestMetric.tsx` renders latest metric value with optional polling.
+
+Quick usage example inside a screen/component:
+```tsx
+import { LatestMetric } from '../components/LatestMetric';
+import { useProgress } from '../components/services/useProgress';
+import { Button } from 'react-native';
+
+export function Dashboard({ userId }: { userId: number }) {
+	const { addProgress } = useProgress({ userId });
+
+	return (
+		<>
+			<LatestMetric userId={userId} metricName="steps" pollMs={15000} />
+			{/* Add a new progress entry */}
+			<Button title="Add 500 steps" onPress={() => addProgress({ metric_name: 'steps', int_value: 500 })} />
+		</>
+	);
+}
+```
+
+Testing:
+- `__tests__/progressService.test.ts` covers service functions (fetch mocked).
+- `__tests__/useProgress.test.tsx` validates hook initial load.
+
+If BASE URL changes, update `config.tsx` only—services + hook consume that constant.
+
 
 ## 5. Run the App
 
