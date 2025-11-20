@@ -564,7 +564,7 @@ export default function MedicationsTab() {
               <Ionicons name="medical-outline" size={48} color="#D0D0D0" />
               <Text style={styles.emptyStateText}>No medicine yet</Text>
               <Text style={styles.emptyStateSubtext}>
-                Tap "Add Medicine" to get started
+                Tap Add Medicine to get started
               </Text>
             </View>
           ) : (

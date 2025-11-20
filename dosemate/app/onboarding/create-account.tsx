@@ -52,7 +52,7 @@ export default function CreateAccountScreen() {
       <View style={styles.body}>
         <Text style={styles.welcome}>Welcome to DoseMate</Text>
         <Text style={styles.subtitle}>
-          Choose how you'd like to create your account
+          Choose how you would like to create your account
         </Text>
 
         {/* Google Option */}
