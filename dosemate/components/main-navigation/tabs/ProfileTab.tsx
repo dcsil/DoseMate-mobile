@@ -87,7 +87,9 @@ export default function ProfileTab() {
               message = data.detail;
             } else if (Array.isArray(data.detail)) {
               // Pydantic-style error array
-              message = data.detail.map((d: any) => d.msg ?? String(d)).join("\n");
+              message = data.detail
+                .map((d: any) => d.msg ?? String(d))
+                .join("\n");
             }
           }
 
@@ -150,7 +152,10 @@ export default function ProfileTab() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.profileHeader}>
-        <View className="profileIconContainer" style={styles.profileIconContainer}>
+        <View
+          className="profileIconContainer"
+          style={styles.profileIconContainer}
+        >
           <Ionicons name="person" size={48} color="#E85D5B" />
         </View>
         <Text style={styles.profileName}>{displayName}</Text>
