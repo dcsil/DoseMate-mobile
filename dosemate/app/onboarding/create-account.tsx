@@ -75,16 +75,19 @@ export default function CreateAccountScreen() {
         {/* Email & Phone Options */}
         <TouchableOpacity
           style={styles.optionBtn}
-          onPress={() => router.push("/onboarding/privacy")}
+          onPress={() => router.push("/onboarding/email-signup")}
         >
           <Ionicons name="mail-outline" size={22} color="#333" />
           <Text style={styles.optionText}>Use Email Address</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.optionBtn}>
+        {/* <TouchableOpacity  
+          style={styles.optionBtn}
+          onPress={() => router.push("/onboarding/phone-signup")}
+        >
           <Ionicons name="call-outline" size={22} color="#333" />
           <Text style={styles.optionText}>Use Phone Number</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
