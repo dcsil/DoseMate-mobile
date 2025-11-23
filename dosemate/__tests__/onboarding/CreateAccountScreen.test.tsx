@@ -88,10 +88,10 @@ describe("CreateAccountScreen", () => {
       expect(getByText("Use Email Address")).toBeTruthy();
     });
 
-    it("displays the phone option button", () => {
-      const { getByText } = render(<CreateAccountScreen />);
-      expect(getByText("Use Phone Number")).toBeTruthy();
-    });
+    // it("displays the phone option button", () => {
+    //   const { getByText } = render(<CreateAccountScreen />);
+    //   expect(getByText("Use Phone Number")).toBeTruthy();
+    // });
   });
 
   describe("Navigation", () => {
@@ -104,13 +104,13 @@ describe("CreateAccountScreen", () => {
       expect(mockRouter.back).toHaveBeenCalledTimes(1);
     });
 
-    it("navigates to privacy screen when email option is pressed", () => {
+    it("navigates to email signup screen when email option is pressed", () => {
       const { getByText } = render(<CreateAccountScreen />);
       const emailButton = getByText("Use Email Address");
 
       fireEvent.press(emailButton.parent!);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/privacy");
+      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/email-signup");
     });
   });
 
@@ -258,7 +258,7 @@ describe("CreateAccountScreen", () => {
       expect(getByText("Continue with Google")).toBeTruthy();
       expect(getByText("OR")).toBeTruthy();
       expect(getByText("Use Email Address")).toBeTruthy();
-      expect(getByText("Use Phone Number")).toBeTruthy();
+      // expect(getByText("Use Phone Number")).toBeTruthy();
     });
   });
 
@@ -282,7 +282,7 @@ describe("CreateAccountScreen", () => {
       // Email button is the third TouchableOpacity
       fireEvent.press(touchables[2]);
 
-      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/privacy");
+      expect(mockRouter.push).toHaveBeenCalledWith("/onboarding/email-signup");
     });
   });
 });
