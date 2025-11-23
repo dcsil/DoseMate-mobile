@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
+import * as SecureStore from "expo-secure-store";
+import { BACKEND_BASE_URL } from "@/config";
 
 const profileOptions = [
   {
@@ -36,21 +39,110 @@ const profileOptions = [
   },
 ];
 
-export default function ProfileTab() {
-  // ============ STATIC DATA FOR PROFILE TAB - Organized for Backend Integration ============
-  const profileData = {
-    user: {
-      id: "user123",
-      name: "John Doe",
-    },
-  };
+type User = {
+  id: string;
+  name: string | null;
+  email?: string;
+};
 
-  const { user } = profileData;
+export default function ProfileTab() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const handleProfileOption = (option: string) =>
     console.log("Profile option pressed:", option);
+
   const handleLearnMorePremium = () =>
     console.log("Learn more about premium pressed");
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const token = await SecureStore.getItemAsync("jwt");
+        if (!token) {
+          setError("You’re not logged in.");
+          setIsLoading(false);
+          return;
+        }
+
+        const res = await fetch(`${BACKEND_BASE_URL}/users/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          console.warn("Failed to fetch user:", data || res.statusText);
+
+          let message = "Failed to load your profile.";
+          if (data?.detail) {
+            if (typeof data.detail === "string") {
+              message = data.detail;
+            } else if (Array.isArray(data.detail)) {
+              // Pydantic-style error array
+              message = data.detail.map((d: any) => d.msg ?? String(d)).join("\n");
+            }
+          }
+
+          setError(message);
+          setIsLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        // backend returns UserRead directly from /users/me
+        setUser(data);
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        setError("Something went wrong while loading your profile.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  const displayName = user?.name || user?.email || "Your Profile";
+
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          styles.scrollContent,
+          { flex: 1, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator />
+        <Text style={{ marginTop: 12, color: "#666" }}>
+          Loading your profile...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View
+        style={[
+          styles.scrollContent,
+          { flex: 1, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: "#E85D5B", marginBottom: 8 }}>{error}</Text>
+        <Text style={{ color: "#666", fontSize: 13, textAlign: "center" }}>
+          Try logging in again or restarting the app.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -58,10 +150,10 @@ export default function ProfileTab() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.profileHeader}>
-        <View style={styles.profileIconContainer}>
+        <View className="profileIconContainer" style={styles.profileIconContainer}>
           <Ionicons name="person" size={48} color="#E85D5B" />
         </View>
-        <Text style={styles.profileName}>{user.name}</Text>
+        <Text style={styles.profileName}>{displayName}</Text>
       </View>
 
       <View style={styles.section}>
