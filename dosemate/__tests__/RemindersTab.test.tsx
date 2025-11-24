@@ -2,7 +2,7 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import RemindersTab from "@/components/main-navigation/tabs/RemindersTab";
 
-const globalAny: any = global;
+const globalAny: any = globalThis as any;
 
 // ---- Mocks ----
 

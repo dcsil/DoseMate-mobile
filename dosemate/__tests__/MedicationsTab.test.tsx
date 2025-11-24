@@ -4,7 +4,7 @@ import { Alert } from "react-native";
 import MedicationsTab from "@/components/main-navigation/tabs/MedicationsTab";
 import { notificationService } from "@/components/services/notificationService";
 
-const globalAny: any = global;
+const globalAny: any = globalThis as any;
 
 // ---- Mocks ----
 jest.mock("expo-router", () => ({

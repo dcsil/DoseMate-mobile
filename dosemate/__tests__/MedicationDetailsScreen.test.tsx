@@ -15,7 +15,7 @@ jest.mock("@/components/main-navigation/Card", () => {
   return ({ children, ...props }: any) => <View {...props}>{children}</View>;
 });
 
-const globalAny: any = global;
+const globalAny: any = globalThis as any;
 
 const mockMedication = {
   id: 1,
