@@ -11,10 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "remote-notification",
-          "remote-notification"
-        ]
+        "UIBackgroundModes": ["remote-notification", "remote-notification"]
       },
       "bundleIdentifier": "com.anonymous.dosemate"
     },
