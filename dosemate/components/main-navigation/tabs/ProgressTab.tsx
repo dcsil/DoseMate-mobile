@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,75 +8,64 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import DetailedProgressScreen from "@/components/main-navigation/DetailedProgressScreen";
+import backend from "@/components/services/backend";
 
 export default function ProgressTab() {
-  // ============ STATIC DATA FOR PROGRESS TAB - Organized for Backend Integration ============
-  const progressData = {
-    progress: {
-      today: {
-        percentage: 92,
-        target: 90,
-        subtitle: "Target: 90%",
-      },
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<any | null>(null);
+  const [streak, setStreak] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [reminders, setReminders] = useState<any[]>([]);
+
+
+  // derive simple progress metrics from reminders
+  const progress = useMemo(() => {
+    const total = reminders.length;
+    const taken = reminders.filter((r) => r.status === "taken").length;
+    const percentage = total ? Math.round((taken / total) * 100) : 0;
+    const currentStreak = 0; // placeholder: compute properly later
+
+    return {
+      today: { percentage, target: 90, subtitle: "Target: 90%" },
       week: {
-        percentage: 88,
-        taken: 19,
-        total: 21,
-        currentStreak: 5,
-        subtitle: `19 of 21 doses taken`,
+        percentage,
+        taken,
+        total,
+        currentStreak,
+        subtitle: `${taken} of ${total} doses taken`,
       },
-      month: {
-        percentage: 85,
-        taken: 85,
-        total: 90,
-        subtitle: "85 of 90 doses taken",
-      },
-      weeklyData: [
-        { day: "Mon", score: 100 },
-        { day: "Tue", score: 100 },
-        { day: "Wed", score: 67 },
-        { day: "Thu", score: 100 },
-        { day: "Fri", score: 42 },
-        { day: "Sat", score: 100 },
-        { day: "Sun", score: 100 },
-      ],
-    },
-    recentActivity: [
-      {
-        id: "med1",
-        name: "Amlodipine",
-        strength: "5mg",
-        lastTaken: "Today at 12:00 PM",
-        time: "12:00 PM",
-        status: "taken" as const,
-      },
-      {
-        id: "med2",
-        name: "Levothyroxine",
-        strength: "50mcg",
-        lastTaken: "Today at 8:00 AM",
-        time: "8:00 AM",
-        status: "taken" as const,
-      },
-      {
-        id: "med3",
-        name: "Hydrochlorothiazide",
-        strength: "25mg",
-        lastTaken: "Today at 8:00 AM",
-        time: "8:00 AM",
-        status: "taken" as const,
-      },
-    ],
-  };
+      month: { percentage, taken, total, subtitle: `${taken} of ${total} doses taken` },
+      weeklyData: [],
+    };
+  }, [reminders]);
 
-  const { progress, recentActivity } = progressData;
+  // Detailed analytics removed — no-op handler kept for compatibility if needed
+  const handleViewDetailedProgress = () => { };
 
-  const [showDetailedProgress, setShowDetailedProgress] = useState(false);
+  useEffect(() => {
+    let mounted = true;
 
-  const handleViewDetailedProgress = () => {
-    setShowDetailedProgress(true);
-  };
+    async function load() {
+      try {
+        setLoading(true);
+        // Register a test user to obtain a JWT, then fetch today's reminders
+        const token = await backend.registerTestUser();
+        const data = await backend.getTodaysReminders(token);
+        if (!mounted) return;
+        setReminders(data || []);
+      } catch (err: any) {
+        console.warn("Failed to load reminders", err);
+        if (mounted) setError(err.message || String(err));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -92,7 +81,7 @@ export default function ProgressTab() {
             <Text style={styles.progressNumber}>
               {progress.week.percentage}%
             </Text>
-            <Text style={styles.progressLabel}>Weekly Adherence</Text>
+            <Text style={styles.progressLabel}>Today's Adherence</Text>
             <View style={styles.progressBar}>
               <View
                 style={[
@@ -106,15 +95,7 @@ export default function ProgressTab() {
 
         <View style={styles.section}>
           <View style={styles.row}>
-            <Card style={styles.statCard}>
-              <View style={styles.statIconContainer}>
-                <Ionicons name="flame" size={28} color="#E85D5B" />
-              </View>
-              <Text style={styles.statNumber}>
-                {progress.week.currentStreak}
-              </Text>
-              <Text style={styles.statLabel}>Day Streak</Text>
-            </Card>
+
 
             <Card style={styles.statCard}>
               <View style={styles.statIconContainer}>
@@ -123,7 +104,7 @@ export default function ProgressTab() {
               <Text style={styles.statNumber}>
                 {progress.week.taken}/{progress.week.total}
               </Text>
-              <Text style={styles.statLabel}>This Week</Text>
+              <Text style={styles.statLabel}>Doses taken today</Text>
             </Card>
           </View>
         </View>
@@ -131,42 +112,36 @@ export default function ProgressTab() {
         <View style={[styles.section, styles.lastSection]}>
           <Text style={styles.subtitle}>Recent Activity</Text>
           <View style={styles.activityList}>
-            {recentActivity.map((activity) => (
-              <View key={activity.id} style={styles.activityItem}>
+            {loading && <Text>Loading recent activity...</Text>}
+            {error && <Text style={{ color: "red" }}>{error}</Text>}
+            {!loading && !error && reminders.length === 0 && (
+              <Text>No reminders for today.</Text>
+            )}
+
+            {!loading && !error && reminders.map((r) => (
+              <View key={String(r.id)} style={styles.activityItem}>
                 <View style={styles.activityIcon}>
                   <MaterialCommunityIcons
-                    name="check"
+                    name={r.status === "taken" ? "check" : "clock-outline"}
                     size={16}
-                    color="#4CAF50"
+                    color={r.status === "taken" ? "#4CAF50" : "#FFA500"}
                   />
                 </View>
                 <View style={styles.listItemText}>
                   <Text style={styles.activityText}>
-                    Took {activity.name} {activity.strength}
+                    {r.name || r.title || "Medication"}
                   </Text>
                   <Text style={styles.listItemSubtitle}>
-                    {activity.lastTaken}
+                    {r.time || r.scheduled_time || (r.overdue ? "Overdue" : "Pending")}
                   </Text>
                 </View>
               </View>
             ))}
           </View>
 
-          <TouchableOpacity
-            style={styles.fullWidthButton}
-            onPress={handleViewDetailedProgress}
-          >
-            <Text style={styles.fullWidthButtonText}>
-              View Detailed Progress
-            </Text>
-          </TouchableOpacity>
+          {/* Detailed analytics removed per request */}
         </View>
       </ScrollView>
-
-      <DetailedProgressScreen
-        visible={showDetailedProgress}
-        onClose={() => setShowDetailedProgress(false)}
-      />
     </>
   );
 }

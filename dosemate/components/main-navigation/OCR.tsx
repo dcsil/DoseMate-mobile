@@ -127,23 +127,31 @@ export default function MedicineOCRScanner({
 
   const handleSelectMedicine = (medicineName: string) => {
     console.log("Selected medicine in OCR:", medicineName);
-
-    // // Clean up OCR state
-    // setSelectedImage(null);
-    // setExtractedText(null);
-    // setDetectedMedicines([]);
-    // setLoading(false);
-
-    // // First notify parent with the medicine name
-    onMedicineDetected(medicineName);
+    // First notify parent with the medicine name
+    try {
+      onMedicineDetected(medicineName);
+    } finally {
+      // Clean up OCR state and close this modal
+      setSelectedImage(null);
+      setExtractedText(null);
+      setDetectedMedicines([]);
+      setLoading(false);
+      // call parent's onClose to ensure modal is dismissed
+      try {
+        onClose();
+      } catch (e) {
+        // ignore
+      }
+    }
   };
 
   const handleClose = () => {
-    // setSelectedImage(null);
-    // setExtractedText(null);
-    // setDetectedMedicines([]);
-    // setLoading(false);
-    // onClose();
+    // Reset internal OCR state and propagate close to parent
+    setSelectedImage(null);
+    setExtractedText(null);
+    setDetectedMedicines([]);
+    setLoading(false);
+    onClose();
   };
 
   return (

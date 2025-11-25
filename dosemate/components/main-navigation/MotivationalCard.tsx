@@ -7,7 +7,8 @@ interface MotivationalCardProps {
   title: string;
   message: string;
   badgeText: string;
-  type?: "positive" | "negative";
+  // allow a neutral/unknown type — component will fall back to positive
+  type?: "positive" | "negative" | "neutral";
 }
 
 export default function MotivationalCard({
@@ -39,9 +40,19 @@ export default function MotivationalCard({
       badgeBg: "#F5B7B1",
       badgeText: "#922B21",
     },
+    neutral: {
+      cardBg: "#FFFFFF",
+      cardBorder: "#F0F0F0",
+      iconBg: "#FFF5F5",
+      iconColor: "#888",
+      icon: "notifications" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#333",
+      messageColor: "#666",
+      badgeBg: "#EFEFEF",
+      badgeText: "#333",
+    },
   };
-
-  const theme = colors[type];
+  const theme = colors[type as keyof typeof colors] ?? colors.positive;
 
   return (
     <Card
@@ -50,21 +61,24 @@ export default function MotivationalCard({
         { backgroundColor: theme.cardBg, borderColor: theme.cardBorder },
       ]}
     >
-      <View style={styles.content}>
-        <View style={[styles.icon, { backgroundColor: theme.iconBg }]}>
-          <Ionicons name={theme.icon} size={24} color={theme.iconColor} />
-        </View>
-        <View style={styles.text}>
-          <Text style={[styles.title, { color: theme.titleColor }]}>
-            {title}
-          </Text>
-          <Text style={[styles.message, { color: theme.messageColor }]}>
-            {message}
-          </Text>
-          <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
-            <Text style={[styles.badgeText, { color: theme.badgeText }]}>
-              {badgeText}
+      <View style={styles.rowWrap}>
+        <View style={[styles.accent, { backgroundColor: theme.iconColor, opacity: 0.08 }]} />
+        <View style={styles.content}>
+          <View style={[styles.icon, { backgroundColor: theme.iconBg }]}>
+            <Ionicons name={theme.icon} size={28} color={theme.iconColor} />
+          </View>
+          <View style={styles.text}>
+            <Text style={[styles.title, { color: theme.titleColor }]}>
+              {title}
             </Text>
+            <Text style={[styles.message, { color: theme.messageColor }]}>
+              {message}
+            </Text>
+            <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
+              <Text style={[styles.badgeText, { color: theme.badgeText }]}>
+                {badgeText}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -75,15 +89,28 @@ export default function MotivationalCard({
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
+    padding: 18,
+    borderRadius: 16,
   },
   content: {
     flexDirection: "row",
     gap: 16,
+    alignItems: "center",
+  },
+  rowWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  accent: {
+    width: 6,
+    height: "100%",
+    borderRadius: 4,
+    marginRight: 12,
   },
   icon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -91,20 +118,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   message: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 10,
+    fontStyle: "italic",
   },
   badge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6,
+    borderRadius: 12,
     alignSelf: "flex-start",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
   badgeText: {
     fontSize: 12,
