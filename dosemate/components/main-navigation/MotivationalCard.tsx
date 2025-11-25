@@ -62,7 +62,12 @@ export default function MotivationalCard({
       ]}
     >
       <View style={styles.rowWrap}>
-        <View style={[styles.accent, { backgroundColor: theme.iconColor, opacity: 0.08 }]} />
+        <View
+          style={[
+            styles.accent,
+            { backgroundColor: theme.iconColor, opacity: 0.08 },
+          ]}
+        />
         <View style={styles.content}>
           <View style={[styles.icon, { backgroundColor: theme.iconBg }]}>
             <Ionicons name={theme.icon} size={28} color={theme.iconColor} />

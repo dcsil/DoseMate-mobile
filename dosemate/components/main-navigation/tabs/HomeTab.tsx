@@ -6,7 +6,12 @@ import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgres
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
-import { registerTestUser, getProgressSummary, getStreak, getTodaysReminders } from "@/components/services/backend";
+import {
+  registerTestUser,
+  getProgressSummary,
+  getStreak,
+  getTodaysReminders,
+} from "@/components/services/backend";
 import * as SecureStore from "expo-secure-store";
 
 interface HomeTabProps {
@@ -20,10 +25,20 @@ export default function HomeTab({
   onViewDetails,
 }: HomeTabProps) {
   // local UI state — server data will replace these when available
-  const [medications, setMedications] = useState<any>({ today: { taken: 0, total: 0 }, recent: [] });
-  const [remindersState, setRemindersState] = useState<any>({ allReminders: [] });
+  const [medications, setMedications] = useState<any>({
+    today: { taken: 0, total: 0 },
+    recent: [],
+  });
+  const [remindersState, setRemindersState] = useState<any>({
+    allReminders: [],
+  });
   const [progress, setProgress] = useState<any | null>(null);
-  const [motivation, setMotivation] = useState<any>({ title: "Keep it up!", message: "", badgeText: "", type: "neutral" });
+  const [motivation, setMotivation] = useState<any>({
+    title: "Keep it up!",
+    message: "",
+    badgeText: "",
+    type: "neutral",
+  });
 
   // Set a friendly motivational quote on mount
   useEffect(() => {
@@ -40,7 +55,8 @@ export default function HomeTab({
 
   const fetchSummary = async () => {
     try {
-      const token = (await SecureStore.getItemAsync("jwt")) || (await registerTestUser());
+      const token =
+        (await SecureStore.getItemAsync("jwt")) || (await registerTestUser());
       const [summaryData, streakData, remindersData] = await Promise.all([
         getProgressSummary(token).catch(() => null),
         getStreak(token).catch(() => null),
@@ -53,9 +69,23 @@ export default function HomeTab({
 
       if (summaryData) {
         setProgress({
-          today: { percentage: summaryData.daily?.percentage ?? 0, subtitle: "Target: 90%" },
-          week: { percentage: summaryData.weekly?.percentage ?? 0, taken: summaryData.weekly?.taken ?? 0, total: summaryData.weekly?.total ?? 0, currentStreak: streakData?.current_streak ?? 0, subtitle: `${summaryData.weekly?.taken ?? 0} of ${summaryData.weekly?.total ?? 0} doses taken` },
-          month: { percentage: summaryData.monthly?.percentage ?? 0, taken: summaryData.monthly?.taken ?? 0, total: summaryData.monthly?.total ?? 0, subtitle: `${summaryData.monthly?.taken ?? 0} of ${summaryData.monthly?.total ?? 0} doses taken` },
+          today: {
+            percentage: summaryData.daily?.percentage ?? 0,
+            subtitle: "Target: 90%",
+          },
+          week: {
+            percentage: summaryData.weekly?.percentage ?? 0,
+            taken: summaryData.weekly?.taken ?? 0,
+            total: summaryData.weekly?.total ?? 0,
+            currentStreak: streakData?.current_streak ?? 0,
+            subtitle: `${summaryData.weekly?.taken ?? 0} of ${summaryData.weekly?.total ?? 0} doses taken`,
+          },
+          month: {
+            percentage: summaryData.monthly?.percentage ?? 0,
+            taken: summaryData.monthly?.taken ?? 0,
+            total: summaryData.monthly?.total ?? 0,
+            subtitle: `${summaryData.monthly?.taken ?? 0} of ${summaryData.monthly?.total ?? 0} doses taken`,
+          },
           weeklyData: summaryData.weekly?.daily ?? [],
         });
         // Update today's medication counts so the "Today's Meds" card shows accurate taken/total
@@ -67,11 +97,15 @@ export default function HomeTab({
           },
         }));
         // Color and badge for motivation based on today's adherence
-        const pct = summaryData.daily?.percentage ?? (
-          summaryData.daily?.total
-            ? Math.round(((summaryData.daily?.taken ?? 0) / (summaryData.daily?.total ?? 1)) * 100)
-            : 0
-        );
+        const pct =
+          summaryData.daily?.percentage ??
+          (summaryData.daily?.total
+            ? Math.round(
+                ((summaryData.daily?.taken ?? 0) /
+                  (summaryData.daily?.total ?? 1)) *
+                  100,
+              )
+            : 0);
 
         let type: "positive" | "neutral" | "negative" = "neutral";
         if (pct >= 80) type = "positive";
@@ -110,7 +144,6 @@ export default function HomeTab({
             cardBgColor="#FFFFFF"
             borderColor="#F0F0F0"
           />
-
         </View>
       </View>
 
@@ -130,7 +163,6 @@ export default function HomeTab({
             percentage: progress?.today?.percentage ?? 0,
             subtitle: progress?.today?.subtitle ?? "",
           }}
-
         />
       </View>
 
@@ -148,16 +180,20 @@ export default function HomeTab({
       <View style={styles.section}>
         {/* Use today's reminders as recent activity to match Progress tab */}
         <RecentActivityCard
-          activities={
-            (remindersState.allReminders || []).map((r: any) => ({
-              id: String(r.id || `${r.name}-${r.time}`),
-              name: r.name || r.title || "Medication",
-              strength: r.strength || r.quantity || "",
-              lastTaken: r.taken_time ?? null,
-              time: r.time || r.scheduled_time || (r.overdue ? "Overdue" : "Pending"),
-              status: r.status === "taken" ? "taken" : r.overdue ? "overdue" : "upcoming",
-            }))
-          }
+          activities={(remindersState.allReminders || []).map((r: any) => ({
+            id: String(r.id || `${r.name}-${r.time}`),
+            name: r.name || r.title || "Medication",
+            strength: r.strength || r.quantity || "",
+            lastTaken: r.taken_time ?? null,
+            time:
+              r.time || r.scheduled_time || (r.overdue ? "Overdue" : "Pending"),
+            status:
+              r.status === "taken"
+                ? "taken"
+                : r.overdue
+                  ? "overdue"
+                  : "upcoming",
+          }))}
         />
       </View>
 

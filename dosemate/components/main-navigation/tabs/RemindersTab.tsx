@@ -190,8 +190,8 @@ export default function RemindersTab() {
                   styles.reminderCard,
                   reminder.overdue && styles.overdueCard,
                   !reminder.overdue &&
-                  reminder.status === "snoozed" &&
-                  styles.snoozedCard,
+                    reminder.status === "snoozed" &&
+                    styles.snoozedCard,
                 ]}
               >
                 <View style={styles.reminderHeader}>
@@ -238,8 +238,8 @@ export default function RemindersTab() {
                       styles.timeBadge,
                       reminder.overdue && styles.overdueBadge,
                       !reminder.overdue &&
-                      reminder.status === "snoozed" &&
-                      styles.snoozedBadge,
+                        reminder.status === "snoozed" &&
+                        styles.snoozedBadge,
                     ]}
                   >
                     <Text
@@ -247,8 +247,8 @@ export default function RemindersTab() {
                         styles.timeBadgeText,
                         reminder.overdue && styles.overdueBadgeText,
                         !reminder.overdue &&
-                        reminder.status === "snoozed" &&
-                        styles.snoozedBadgeText,
+                          reminder.status === "snoozed" &&
+                          styles.snoozedBadgeText,
                       ]}
                     >
                       {reminder.overdue

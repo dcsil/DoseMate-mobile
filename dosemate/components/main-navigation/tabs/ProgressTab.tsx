@@ -1,20 +1,17 @@
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import { registerTestUser, getTodaysReminders } from "@/components/services/backend";
+import {
+  registerTestUser,
+  getTodaysReminders,
+} from "@/components/services/backend";
 
 export default function ProgressTab() {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
   const [reminders, setReminders] = useState<any[]>([]);
-
 
   // derive simple progress metrics from reminders
   const progress = useMemo(() => {
@@ -32,7 +29,12 @@ export default function ProgressTab() {
         currentStreak,
         subtitle: `${taken} of ${total} doses taken`,
       },
-      month: { percentage, taken, total, subtitle: `${taken} of ${total} doses taken` },
+      month: {
+        percentage,
+        taken,
+        total,
+        subtitle: `${taken} of ${total} doses taken`,
+      },
       weeklyData: [],
     };
   }, [reminders]);
@@ -92,8 +94,6 @@ export default function ProgressTab() {
 
         <View style={styles.section}>
           <View style={styles.row}>
-
-
             <Card style={styles.statCard}>
               <View style={styles.statIconContainer}>
                 <MaterialCommunityIcons name="pill" size={28} color="#E85D5B" />
@@ -115,25 +115,29 @@ export default function ProgressTab() {
               <Text>No reminders for today.</Text>
             )}
 
-            {!loading && !error && reminders.map((r) => (
-              <View key={String(r.id)} style={styles.activityItem}>
-                <View style={styles.activityIcon}>
-                  <MaterialCommunityIcons
-                    name={r.status === "taken" ? "check" : "clock-outline"}
-                    size={16}
-                    color={r.status === "taken" ? "#4CAF50" : "#FFA500"}
-                  />
+            {!loading &&
+              !error &&
+              reminders.map((r) => (
+                <View key={String(r.id)} style={styles.activityItem}>
+                  <View style={styles.activityIcon}>
+                    <MaterialCommunityIcons
+                      name={r.status === "taken" ? "check" : "clock-outline"}
+                      size={16}
+                      color={r.status === "taken" ? "#4CAF50" : "#FFA500"}
+                    />
+                  </View>
+                  <View style={styles.listItemText}>
+                    <Text style={styles.activityText}>
+                      {r.name || r.title || "Medication"}
+                    </Text>
+                    <Text style={styles.listItemSubtitle}>
+                      {r.time ||
+                        r.scheduled_time ||
+                        (r.overdue ? "Overdue" : "Pending")}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.listItemText}>
-                  <Text style={styles.activityText}>
-                    {r.name || r.title || "Medication"}
-                  </Text>
-                  <Text style={styles.listItemSubtitle}>
-                    {r.time || r.scheduled_time || (r.overdue ? "Overdue" : "Pending")}
-                  </Text>
-                </View>
-              </View>
-            ))}
+              ))}
           </View>
 
           {/* Detailed analytics removed per request */}
