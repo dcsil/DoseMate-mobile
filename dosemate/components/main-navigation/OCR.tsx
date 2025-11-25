@@ -139,7 +139,7 @@ export default function MedicineOCRScanner({
       // call parent's onClose to ensure modal is dismissed
       try {
         onClose();
-      } catch (e) {
+      } catch {
         // ignore
       }
     }

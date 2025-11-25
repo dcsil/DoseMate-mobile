@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 import StatsCard from "@/components/main-navigation/StatsCard";
 import NextReminderCard from "@/components/main-navigation/NextReminderCard";
 import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
-import backend from "@/components/services/backend";
+import { registerTestUser, getProgressSummary, getStreak, getTodaysReminders } from "@/components/services/backend";
 import * as SecureStore from "expo-secure-store";
 
 interface HomeTabProps {
@@ -40,11 +40,11 @@ export default function HomeTab({
 
   const fetchSummary = async () => {
     try {
-      const token = (await SecureStore.getItemAsync("jwt")) || (await backend.registerTestUser());
+      const token = (await SecureStore.getItemAsync("jwt")) || (await registerTestUser());
       const [summaryData, streakData, remindersData] = await Promise.all([
-        backend.getProgressSummary(token).catch(() => null),
-        backend.getStreak(token).catch(() => null),
-        backend.getTodaysReminders(token).catch(() => []),
+        getProgressSummary(token).catch(() => null),
+        getStreak(token).catch(() => null),
+        getTodaysReminders(token).catch(() => []),
       ]);
 
       if (remindersData) {

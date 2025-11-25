@@ -8,7 +8,7 @@ export async function registerTestUser(): Promise<string> {
     try {
         const existing = await SecureStore.getItemAsync("jwt");
         if (existing) return existing;
-    } catch (e) {
+    } catch {
         // ignore secure store read errors and continue to register
     }
 
@@ -89,49 +89,4 @@ export async function getStreak(token: string): Promise<any> {
     return data;
 }
 
-export async function getDailySummary(token: string): Promise<any> {
-    const url = `${BACKEND_BASE_URL}/reminders/summary/daily`;
-    const res = await fetch(url, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Fetch daily summary failed: ${res.status} ${text}`);
-    }
-
-    return await res.json();
-}
-
-export async function getWeeklySummary(token: string): Promise<any> {
-    const url = `${BACKEND_BASE_URL}/reminders/summary/weekly`;
-    const res = await fetch(url, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Fetch weekly summary failed: ${res.status} ${text}`);
-    }
-
-    return await res.json();
-}
-
-export async function getMonthlySummary(token: string): Promise<any> {
-    const url = `${BACKEND_BASE_URL}/reminders/summary/monthly`;
-    const res = await fetch(url, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Fetch monthly summary failed: ${res.status} ${text}`);
-    }
-
-    return await res.json();
-}
-
-export default { registerTestUser, getTodaysReminders, getProgressSummary, getStreak, getDailySummary, getWeeklySummary, getMonthlySummary };
+export default { registerTestUser, getTodaysReminders, getProgressSummary, getStreak };

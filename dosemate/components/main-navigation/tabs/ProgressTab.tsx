@@ -3,17 +3,15 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import backend from "@/components/services/backend";
+import { registerTestUser, getTodaysReminders } from "@/components/services/backend";
 
 export default function ProgressTab() {
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState<any | null>(null);
-  const [streak, setStreak] = useState<any | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [reminders, setReminders] = useState<any[]>([]);
 
@@ -39,8 +37,7 @@ export default function ProgressTab() {
     };
   }, [reminders]);
 
-  // Detailed analytics removed — no-op handler kept for compatibility if needed
-  const handleViewDetailedProgress = () => { };
+  // Detailed analytics removed — handler intentionally omitted
 
   useEffect(() => {
     let mounted = true;
@@ -49,8 +46,8 @@ export default function ProgressTab() {
       try {
         setLoading(true);
         // Register a test user to obtain a JWT, then fetch today's reminders
-        const token = await backend.registerTestUser();
-        const data = await backend.getTodaysReminders(token);
+        const token = await registerTestUser();
+        const data = await getTodaysReminders(token);
         if (!mounted) return;
         setReminders(data || []);
       } catch (err: any) {
@@ -81,7 +78,7 @@ export default function ProgressTab() {
             <Text style={styles.progressNumber}>
               {progress.week.percentage}%
             </Text>
-            <Text style={styles.progressLabel}>Today's Adherence</Text>
+            <Text style={styles.progressLabel}>Today&apos;s Adherence</Text>
             <View style={styles.progressBar}>
               <View
                 style={[
