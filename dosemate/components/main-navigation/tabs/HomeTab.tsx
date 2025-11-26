@@ -1,146 +1,127 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import StatsCard from "@/components/main-navigation/StatsCard";
 import NextReminderCard from "@/components/main-navigation/NextReminderCard";
 import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
-import OverviewChartCard from "@/components/main-navigation/OverviewChartCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
+import {
+  registerTestUser,
+  getProgressSummary,
+  getStreak,
+  getTodaysReminders,
+} from "@/components/services/backend";
+import * as SecureStore from "expo-secure-store";
 
 interface HomeTabProps {
   onViewReminder: () => void;
   onViewDetails: () => void;
 }
 
+// OverviewChartCard removed per user request
 export default function HomeTab({
   onViewReminder,
   onViewDetails,
 }: HomeTabProps) {
-  // ============ STATIC DATA FOR HOME TAB - Organized for Backend Integration ============
-  const homeData = {
-    medications: {
-      today: {
-        taken: 3,
-        total: 4,
-      },
-      recent: [
-        {
-          id: "med1",
-          name: "Amlodipine",
-          strength: "5mg",
-          lastTaken: "Today at 12:00 PM",
-          time: "12:00 PM",
-          status: "taken" as const,
-        },
-        {
-          id: "med2",
-          name: "Levothyroxine",
-          strength: "50mcg",
-          lastTaken: "Today at 8:00 AM",
-          time: "8:00 AM",
-          status: "taken" as const,
-        },
-        {
-          id: "med3",
-          name: "Hydrochlorothiazide",
-          strength: "25mg",
-          lastTaken: "Today at 8:00 AM",
-          time: "8:00 AM",
-          status: "taken" as const,
-        },
-      ],
-    },
+  // local UI state — server data will replace these when available
+  const [medications, setMedications] = useState<any>({
+    today: { taken: 0, total: 0 },
+    recent: [],
+  });
+  const [remindersState, setRemindersState] = useState<any>({
+    allReminders: [],
+  });
+  const [progress, setProgress] = useState<any | null>(null);
+  const [motivation, setMotivation] = useState<any>({
+    title: "Keep it up!",
+    message: "",
+    badgeText: "",
+    type: "neutral",
+  });
 
-    reminders: {
-      allReminders: [
-        {
-          id: 1,
-          name: "Metformin",
-          strength: "500mg",
-          quantity: "1 tablet",
-          time: "2:00 PM",
-          status: "pending" as const,
-          color: "#2196F3",
-          overdue: false,
-          instructions: "Take with food",
-        },
-        {
-          id: 2,
-          name: "Atorvastatin",
-          strength: "20mg",
-          quantity: "1 tablet",
-          time: "9:00 PM",
-          status: "pending" as const,
-          color: "#9C27B0",
-          overdue: false,
-          instructions: "Take in the evening",
-        },
-        {
-          id: 3,
-          name: "Lisinopril",
-          strength: "10mg",
-          quantity: "1 tablet",
-          time: "8:00 AM",
-          status: "taken" as const,
-          color: "#4CAF50",
-          overdue: false,
-          instructions: "No food restrictions",
-        },
-        {
-          id: 4,
-          name: "Aspirin",
-          strength: "81mg",
-          quantity: "1 tablet",
-          time: "8:00 AM",
-          status: "overdue" as const,
-          color: "#FF9800",
-          overdue: true,
-          instructions: "Take with food",
-        },
-      ],
-    },
+  // Set a friendly motivational quote on mount
+  useEffect(() => {
+    const quotes = [
+      "Small steps every day add up to big changes.",
+      "You're doing great — consistency is the key.",
+      "Progress, not perfection. One dose at a time.",
+      "Celebrate the wins — even the tiny ones.",
+      "Keep going — your future self will thank you.",
+    ];
+    const pick = quotes[Math.floor(Math.random() * quotes.length)];
+    setMotivation((prev: any) => ({ ...prev, message: pick }));
+  }, []);
 
-    progress: {
-      today: {
-        percentage: 92,
-        target: 90,
-        subtitle: "Target: 90%",
-      },
-      week: {
-        percentage: 88,
-        taken: 19,
-        total: 21,
-        currentStreak: 5,
-        subtitle: `19 of 21 doses taken`,
-      },
-      month: {
-        percentage: 85,
-        taken: 85,
-        total: 90,
-        subtitle: "85 of 90 doses taken",
-      },
-      weeklyData: [
-        { day: "Mon", score: 100 },
-        { day: "Tue", score: 100 },
-        { day: "Wed", score: 67 },
-        { day: "Thu", score: 100 },
-        { day: "Fri", score: 42 },
-        { day: "Sat", score: 100 },
-        { day: "Sun", score: 100 },
-      ],
-    },
+  const fetchSummary = async () => {
+    try {
+      const token =
+        (await SecureStore.getItemAsync("jwt")) || (await registerTestUser());
+      const [summaryData, streakData, remindersData] = await Promise.all([
+        getProgressSummary(token).catch(() => null),
+        getStreak(token).catch(() => null),
+        getTodaysReminders(token).catch(() => []),
+      ]);
 
-    motivation: {
-      title: "Great job this week!",
-      message:
-        "You've maintained a 88% adherence rate. Keep up the excellent work!",
-      badgeText: "Above Target",
-      type: "positive" as const,
-    },
+      if (remindersData) {
+        setRemindersState({ allReminders: remindersData });
+      }
+
+      if (summaryData) {
+        setProgress({
+          today: {
+            percentage: summaryData.daily?.percentage ?? 0,
+            subtitle: "Target: 90%",
+          },
+          week: {
+            percentage: summaryData.weekly?.percentage ?? 0,
+            taken: summaryData.weekly?.taken ?? 0,
+            total: summaryData.weekly?.total ?? 0,
+            currentStreak: streakData?.current_streak ?? 0,
+            subtitle: `${summaryData.weekly?.taken ?? 0} of ${summaryData.weekly?.total ?? 0} doses taken`,
+          },
+          month: {
+            percentage: summaryData.monthly?.percentage ?? 0,
+            taken: summaryData.monthly?.taken ?? 0,
+            total: summaryData.monthly?.total ?? 0,
+            subtitle: `${summaryData.monthly?.taken ?? 0} of ${summaryData.monthly?.total ?? 0} doses taken`,
+          },
+          weeklyData: summaryData.weekly?.daily ?? [],
+        });
+        // Update today's medication counts so the "Today's Meds" card shows accurate taken/total
+        setMedications((prev: any) => ({
+          ...prev,
+          today: {
+            taken: summaryData.daily?.taken ?? prev.today?.taken ?? 0,
+            total: summaryData.daily?.total ?? prev.today?.total ?? 0,
+          },
+        }));
+        // Color and badge for motivation based on today's adherence
+        const pct =
+          summaryData.daily?.percentage ??
+          (summaryData.daily?.total
+            ? Math.round(
+                ((summaryData.daily?.taken ?? 0) /
+                  (summaryData.daily?.total ?? 1)) *
+                  100,
+              )
+            : 0);
+
+        let type: "positive" | "neutral" | "negative" = "neutral";
+        if (pct >= 80) type = "positive";
+        else if (pct < 50) type = "negative";
+
+        const badge = `${pct}% adherence`;
+        setMotivation((prev: any) => ({ ...prev, badgeText: badge, type }));
+      }
+    } catch (e) {
+      console.warn("Error fetching home summary", e);
+    }
   };
 
-  const { medications, reminders, progress, motivation } = homeData;
+  useEffect(() => {
+    fetchSummary();
+  }, []);
 
   const handleWeeklyReport = () => console.log("Weekly report pressed");
   const handleMonthlyReport = () => console.log("Monthly report pressed");
@@ -159,16 +140,7 @@ export default function HomeTab({
             iconColor="#ffffff"
             iconBgColor="#E85D5B"
             label="Today's Meds"
-            value={`${medications.today.taken} of ${medications.today.total}`}
-            cardBgColor="#FFFFFF"
-            borderColor="#F0F0F0"
-          />
-          <StatsCard
-            icon="bar-chart"
-            iconColor="#ffffff"
-            iconBgColor="#E85D5B"
-            label="This Week"
-            value={`${progress.week.percentage}%`}
+            value={`${medications.today?.taken ?? 0} of ${medications.today?.total ?? 0}`}
             cardBgColor="#FFFFFF"
             borderColor="#F0F0F0"
           />
@@ -177,9 +149,9 @@ export default function HomeTab({
 
       <View style={styles.section}>
         <NextReminderCard
-          name={reminders.allReminders[0]?.name ?? ""}
-          strength={reminders.allReminders[0]?.strength ?? ""}
-          time={reminders.allReminders[0]?.time ?? ""}
+          name={remindersState.allReminders[0]?.name ?? ""}
+          strength={remindersState.allReminders[0]?.strength ?? ""}
+          time={remindersState.allReminders[0]?.time ?? ""}
           onViewPress={onViewReminder}
         />
       </View>
@@ -188,18 +160,8 @@ export default function HomeTab({
         <AdherenceProgressCard
           todayData={{
             label: "Today",
-            percentage: progress.today.percentage,
-            subtitle: progress.today.subtitle,
-          }}
-          weekData={{
-            label: "This Week",
-            percentage: progress.week.percentage,
-            subtitle: progress.week.subtitle,
-          }}
-          monthData={{
-            label: "This Month",
-            percentage: progress.month.percentage,
-            subtitle: progress.month.subtitle,
+            percentage: progress?.today?.percentage ?? 0,
+            subtitle: progress?.today?.subtitle ?? "",
           }}
         />
       </View>
@@ -213,16 +175,26 @@ export default function HomeTab({
         />
       </View>
 
-      <View style={styles.section}>
-        <OverviewChartCard
-          data={progress.weeklyData}
-          timeRange="week"
-          onViewDetails={onViewDetails}
-        />
-      </View>
+      {/* Weekly overview removed per request */}
 
       <View style={styles.section}>
-        <RecentActivityCard activities={medications.recent} />
+        {/* Use today's reminders as recent activity to match Progress tab */}
+        <RecentActivityCard
+          activities={(remindersState.allReminders || []).map((r: any) => ({
+            id: String(r.id || `${r.name}-${r.time}`),
+            name: r.name || r.title || "Medication",
+            strength: r.strength || r.quantity || "",
+            lastTaken: r.taken_time ?? null,
+            time:
+              r.time || r.scheduled_time || (r.overdue ? "Overdue" : "Pending"),
+            status:
+              r.status === "taken"
+                ? "taken"
+                : r.overdue
+                  ? "overdue"
+                  : "upcoming",
+          }))}
+        />
       </View>
 
       <View style={[styles.section, styles.lastSection]}>

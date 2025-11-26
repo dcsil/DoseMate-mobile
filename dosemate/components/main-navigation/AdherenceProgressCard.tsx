@@ -11,13 +11,13 @@ interface AdherenceData {
 }
 
 interface AdherenceProgressCardProps {
-  todayData: AdherenceData;
-  weekData: AdherenceData;
-  monthData: AdherenceData;
+  todayData?: AdherenceData;
+  weekData?: AdherenceData;
+  monthData?: AdherenceData;
 }
 
 export default function AdherenceProgressCard({
-  todayData,
+  todayData = { label: "Today", percentage: 0, subtitle: "" },
   weekData,
   monthData,
 }: AdherenceProgressCardProps) {
@@ -32,16 +32,6 @@ export default function AdherenceProgressCard({
           label={todayData.label}
           percentage={todayData.percentage}
           subtitle={todayData.subtitle}
-        />
-        <ProgressBar
-          label={weekData.label}
-          percentage={weekData.percentage}
-          subtitle={weekData.subtitle}
-        />
-        <ProgressBar
-          label={monthData.label}
-          percentage={monthData.percentage}
-          subtitle={monthData.subtitle}
         />
       </View>
     </Card>
