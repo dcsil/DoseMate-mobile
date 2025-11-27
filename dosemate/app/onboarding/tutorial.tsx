@@ -24,7 +24,7 @@ export default function TutorialScreen() {
       title: "Add Your Medications",
       description:
         "Easily add medications by searching our database or scanning prescription labels with your camera.",
-      features: ["Search by name", "Barcode scanner", "Dosage tracking"],
+      features: ["Search by name", "Search by image", "Dosage tracking"],
     },
     {
       iconName: "notifications",
