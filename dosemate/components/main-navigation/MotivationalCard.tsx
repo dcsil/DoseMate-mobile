@@ -7,7 +7,7 @@ interface MotivationalCardProps {
   title: string;
   message: string;
   badgeText: string;
-  type?: "positive" | "negative";
+  type?: "positive" | "negative" | "neutral" | "warning";
 }
 
 export default function MotivationalCard({
@@ -38,6 +38,28 @@ export default function MotivationalCard({
       messageColor: "#C0392B",
       badgeBg: "#F5B7B1",
       badgeText: "#922B21",
+    },
+    neutral: {
+      cardBg: "#EEF2F3",
+      cardBorder: "#D6DBDF",
+      iconBg: "#D5DBDB",
+      iconColor: "#566573",
+      icon: "alert" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#34495E",
+      messageColor: "#566573",
+      badgeBg: "#D5DBDB",
+      badgeText: "#34495E",
+    },
+    warning: {
+      cardBg: "#FEF5E7",
+      cardBorder: "#FAD7A0",
+      iconBg: "#FDEBD0",
+      iconColor: "#D35400",
+      icon: "warning" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#B9770E",
+      messageColor: "#D35400",
+      badgeBg: "#FDEBD0",
+      badgeText: "#B9770E",
     },
   };
 
