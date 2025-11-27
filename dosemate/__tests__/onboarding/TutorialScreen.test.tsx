@@ -45,7 +45,7 @@ describe("TutorialScreen", () => {
     it("shows all features of the first slide", () => {
       const { getByText } = render(<TutorialScreen />);
       expect(getByText("Search by name")).toBeTruthy();
-      expect(getByText("Barcode scanner")).toBeTruthy();
+      expect(getByText("Search by image")).toBeTruthy();
       expect(getByText("Dosage tracking")).toBeTruthy();
     });
 
