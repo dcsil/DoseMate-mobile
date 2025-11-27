@@ -13,6 +13,7 @@ import NextReminderCard from "@/components/main-navigation/NextReminderCard";
 import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
+import OverviewChartCard from "@/components/main-navigation/OverviewChartCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
 import * as SecureStore from "expo-secure-store";
 import { BACKEND_BASE_URL } from "@/config";
