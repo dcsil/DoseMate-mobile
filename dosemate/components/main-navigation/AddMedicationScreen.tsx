@@ -176,7 +176,11 @@ export default function AddMedicationScreen({
 
   // --- Save medication ---
   const handleSave = async () => {
-    console.log("Saving medication:", { selectedMedicine, medDetails, isManualEntry });
+    console.log("Saving medication:", {
+      selectedMedicine,
+      medDetails,
+      isManualEntry,
+    });
 
     try {
       // Get JWT from SecureStore
@@ -491,12 +495,12 @@ export default function AddMedicationScreen({
 
       {/* Manual Entry Option */}
       {(() => {
-        console.log('Manual Entry Check:', {
+        console.log("Manual Entry Check:", {
           query: query,
           queryLength: query.length,
           suggestionsLength: suggestions.length,
           loading: loading,
-          shouldShow: query.length > 0 && suggestions.length === 0 && !loading
+          shouldShow: query.length > 0 && suggestions.length === 0 && !loading,
         });
         return query.length > 0 && suggestions.length === 0 && !loading;
       })() && (
@@ -504,15 +508,13 @@ export default function AddMedicationScreen({
           <View style={styles.manualEntryCard}>
             <Ionicons name="create-outline" size={32} color="#4CAF50" />
             <View style={styles.manualEntryTextContainer}>
-              <Text style={styles.manualEntryTitle}>
-                Medicine not found?
-              </Text>
+              <Text style={styles.manualEntryTitle}>Medicine not found?</Text>
               <Text style={styles.manualEntrySubtitle}>
                 Add "{query}" manually without database information
               </Text>
             </View>
           </View>
-          
+
           <TouchableOpacity
             style={styles.manualEntryButton}
             onPress={() => {
@@ -622,12 +624,12 @@ export default function AddMedicationScreen({
             <Text style={styles.manualBadgeText}>Manual Entry</Text>
           </View>
         )}
-        
+
         <View style={styles.selectedMedIcon}>
           <MaterialCommunityIcons name="pill" size={32} color="#E85D5B" />
         </View>
         <Text style={styles.stepTitle}>{selectedMedicine?.brand_name}</Text>
-        
+
         {isManualEntry ? (
           <Text style={styles.stepSubtitle}>User-entered medication</Text>
         ) : (
@@ -1317,13 +1319,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   manualEntryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#F0FFF4',
+    backgroundColor: "#F0FFF4",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#C8E6C9',
+    borderColor: "#C8E6C9",
     marginBottom: 16,
     gap: 16,
   },
@@ -1332,24 +1334,24 @@ const styles = StyleSheet.create({
   },
   manualEntryTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#2C2C2C',
+    fontWeight: "700",
+    color: "#2C2C2C",
     marginBottom: 4,
   },
   manualEntrySubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     lineHeight: 20,
   },
   manualEntryButton: {
     height: 56,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    shadowColor: '#4CAF50',
+    shadowColor: "#4CAF50",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -1357,24 +1359,24 @@ const styles = StyleSheet.create({
   },
   manualEntryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   manualBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: "#E8F5E9",
     borderRadius: 16,
     gap: 6,
     marginBottom: 12,
   },
   manualBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#4CAF50',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#4CAF50",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   infoSection: {
