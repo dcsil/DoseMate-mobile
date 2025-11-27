@@ -34,17 +34,10 @@ describe("OnboardingStart", () => {
       expect(getByText("DoseMate")).toBeTruthy();
     });
 
-    it("displays the subtitle", () => {
-      const { getByText } = render(<OnboardingStart />);
-      expect(getByText("Your partner in staying on track")).toBeTruthy();
-    });
-
     it("displays the description text", () => {
       const { getByText } = render(<OnboardingStart />);
       expect(
-        getByText(
-          "Never miss your medication again with smart reminders and tracking.",
-        ),
+        getByText("Your reliable partner in medication adherence."),
       ).toBeTruthy();
     });
 
@@ -58,26 +51,26 @@ describe("OnboardingStart", () => {
     it("displays all three feature items", () => {
       const { getByText } = render(<OnboardingStart />);
 
-      expect(getByText("Secure & Private")).toBeTruthy();
-      expect(getByText("Smart Reminders")).toBeTruthy();
-      expect(getByText("Health Tracking")).toBeTruthy();
+      expect(getByText("Secure")).toBeTruthy();
+      expect(getByText("Reminders")).toBeTruthy();
+      expect(getByText("Tracking")).toBeTruthy();
     });
 
     it("renders the security feature with correct text", () => {
       const { getByText } = render(<OnboardingStart />);
-      const secureFeature = getByText("Secure & Private");
+      const secureFeature = getByText("Secure");
       expect(secureFeature).toBeTruthy();
     });
 
     it("renders the reminders feature with correct text", () => {
       const { getByText } = render(<OnboardingStart />);
-      const remindersFeature = getByText("Smart Reminders");
+      const remindersFeature = getByText("Reminders");
       expect(remindersFeature).toBeTruthy();
     });
 
     it("renders the health tracking feature with correct text", () => {
       const { getByText } = render(<OnboardingStart />);
-      const healthFeature = getByText("Health Tracking");
+      const healthFeature = getByText("Tracking");
       expect(healthFeature).toBeTruthy();
     });
   });
@@ -109,13 +102,12 @@ describe("OnboardingStart", () => {
 
       // Header section
       expect(getByText("DoseMate")).toBeTruthy();
-      expect(getByText("Your partner in staying on track")).toBeTruthy();
-
-      // Description
-      expect(getByText(/Never miss your medication/)).toBeTruthy();
+      expect(
+        getByText("Your reliable partner in medication adherence."),
+      ).toBeTruthy();
 
       // Features
-      expect(getByText("Secure & Private")).toBeTruthy();
+      expect(getByText("Secure")).toBeTruthy();
 
       // CTA
       expect(getByText("Get Started")).toBeTruthy();
