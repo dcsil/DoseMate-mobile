@@ -290,8 +290,8 @@ export default function AddMedicationScreen({
       }));
     }
   };
-  
-    const applyTimeAndClose = (date?: Date) => {
+
+  const applyTimeAndClose = (date?: Date) => {
     const d = date ?? tempTime;
 
     const timeString = d.toLocaleTimeString("en-US", {
@@ -992,8 +992,8 @@ export default function AddMedicationScreen({
                   display="spinner"
                   onChange={handleTimeChange}
                   style={styles.dateTimePicker}
-                  themeVariant="light"      
-                  textColor="#000000"  
+                  themeVariant="light"
+                  textColor="#000000"
                 />
               </View>
             </View>
