@@ -304,26 +304,31 @@ export default function AddMedicationScreen({
     }
   };
 
+  const applyTimeAndClose = (date?: Date) => {
+    const d = date ?? tempTime;
+
+    const timeString = d.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const newTimes = [...medDetails.times];
+    newTimes[currentTimeIndex] = timeString;
+    setMedDetails((prev) => ({ ...prev, times: newTimes }));
+    setShowTimePicker(false);
+  };
+
   // Handle time selection
   const handleTimeChange = (event: any, selectedDate?: Date) => {
-    if (Platform.OS === "android") {
-      setShowTimePicker(false);
-    }
+    if (!selectedDate) return;
 
-    if (selectedDate) {
-      const timeString = selectedDate.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
+    // Just keep the latest value the user is scrolling to
+    setTempTime(selectedDate);
 
-      const newTimes = [...medDetails.times];
-      newTimes[currentTimeIndex] = timeString;
-      setMedDetails((prev) => ({ ...prev, times: newTimes }));
-
-      if (Platform.OS === "ios") {
-        setShowTimePicker(false);
-      }
+    // (Optional) Android: if you still want the native dialog to close after "OK":
+    if (Platform.OS === "android" && event.type === "set") {
+      applyTimeAndClose(selectedDate); // see below
     }
   };
 
@@ -1046,7 +1051,7 @@ export default function AddMedicationScreen({
                   <Text style={styles.pickerModalTitle}>
                     Select Time {currentTimeIndex + 1}
                   </Text>
-                  <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                  <TouchableOpacity onPress={() => applyTimeAndClose()}>
                     <Text style={styles.pickerModalDone}>Done</Text>
                   </TouchableOpacity>
                 </View>
@@ -1056,6 +1061,8 @@ export default function AddMedicationScreen({
                   display="spinner"
                   onChange={handleTimeChange}
                   style={styles.dateTimePicker}
+                  themeVariant="light"
+                  textColor="#000000"
                 />
               </View>
             </View>

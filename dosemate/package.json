@@ -16,7 +16,7 @@
     "@expo/metro": "^54.1.0",
     "@expo/vector-icons": "^15.0.2",
     "@radix-ui/react-dialog": "^1.1.15",
-    "@react-native-community/datetimepicker": "^8.5.0",
+    "@react-native-community/datetimepicker": "^8.5.1",
     "@react-native-picker/picker": "2.11.1",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
