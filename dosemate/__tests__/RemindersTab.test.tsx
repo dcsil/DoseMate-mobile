@@ -169,16 +169,29 @@ describe("RemindersTab", () => {
       },
     ];
 
-    (globalAny.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => payload,
+    // Mock both API calls that happen on mount
+    (globalAny.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/reminders/today")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => payload,
+        });
+      }
+      if (url.includes("/reminders/adaptation-suggestions")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [], // No suggestions
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
     });
 
     const { getByText } = render(<RemindersTab />);
 
     await waitFor(() => {
-      expect(globalAny.fetch).toHaveBeenCalledTimes(1);
+      expect(globalAny.fetch).toHaveBeenCalledTimes(2); // Both initial fetches
     });
 
     // Initially should show Pending Reminders and NOT Completed Today
@@ -190,7 +203,7 @@ describe("RemindersTab", () => {
 
     // There will be a POST call to mark-taken
     await waitFor(() => {
-      expect(globalAny.fetch).toHaveBeenCalledTimes(2);
+      expect(globalAny.fetch).toHaveBeenCalledTimes(3); // 2 initial + 1 POST
       expect(globalAny.fetch).toHaveBeenLastCalledWith(
         "http://test-base/reminders/1/mark-taken",
         expect.objectContaining({
@@ -223,16 +236,29 @@ describe("RemindersTab", () => {
       },
     ];
 
-    (globalAny.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => payload,
+    // Mock both API calls that happen on mount
+    (globalAny.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url.includes("/reminders/today")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => payload,
+        });
+      }
+      if (url.includes("/reminders/adaptation-suggestions")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [], // No suggestions
+        });
+      }
+      return Promise.reject(new Error("Unknown URL"));
     });
 
     const { getByText, queryByText } = render(<RemindersTab />);
 
     await waitFor(() => {
-      expect(globalAny.fetch).toHaveBeenCalledTimes(1);
+      expect(globalAny.fetch).toHaveBeenCalledTimes(2); // Both initial fetches
     });
 
     // Initial badge shows the time
@@ -243,7 +269,7 @@ describe("RemindersTab", () => {
 
     // POST /snooze
     await waitFor(() => {
-      expect(globalAny.fetch).toHaveBeenCalledTimes(2);
+      expect(globalAny.fetch).toHaveBeenCalledTimes(3); // 2 initial + 1 POST
       expect(globalAny.fetch).toHaveBeenLastCalledWith(
         "http://test-base/reminders/1/snooze",
         expect.objectContaining({

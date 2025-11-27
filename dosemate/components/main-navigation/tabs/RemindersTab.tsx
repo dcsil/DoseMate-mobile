@@ -5,12 +5,19 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
-import { Reminder } from "./types";
+import { Reminder, AdaptationSuggestion } from "./types";
 import { BACKEND_BASE_URL } from "@/config";
 import * as SecureStore from "expo-secure-store";
+import AdaptationSuggestionModal from "@/components/main-navigation/AdaptationSuggestionModal";
+import {
+  getAdaptationSuggestions,
+  acceptAdaptation,
+  rejectAdaptation,
+} from "@/components/services/backend";
 
 export default function RemindersTab() {
   // ============ STATIC DATA FOR REMINDERS TAB - Organized for Backend Integration ============
@@ -26,6 +33,11 @@ export default function RemindersTab() {
   };
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [suggestions, setSuggestions] = useState<AdaptationSuggestion[]>([]);
+  const [currentSuggestion, setCurrentSuggestion] =
+    useState<AdaptationSuggestion | null>(null);
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -66,6 +78,29 @@ export default function RemindersTab() {
     };
 
     fetchReminders();
+  }, []);
+
+  // Fetch adaptation suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("jwt");
+        if (!token) return;
+
+        const data = await getAdaptationSuggestions(token);
+        setSuggestions(data);
+
+        // Show first suggestion if available
+        if (data.length > 0) {
+          setCurrentSuggestion(data[0]);
+          setShowSuggestionModal(true);
+        }
+      } catch (err) {
+        console.error("🔥 Error fetching suggestions:", err);
+      }
+    };
+
+    fetchSuggestions();
   }, []);
 
   const handleMarkTaken = async (id: number) => {
@@ -136,6 +171,82 @@ export default function RemindersTab() {
     } catch (err) {
       console.error("🔥 Error snoozing reminder:", err);
     }
+  };
+
+  const handleAcceptSuggestion = async () => {
+    if (!currentSuggestion) return;
+
+    setSuggestionLoading(true);
+    try {
+      const token = await SecureStore.getItemAsync("jwt");
+      if (!token) return;
+
+      await acceptAdaptation(
+        token,
+        currentSuggestion.schedule_id,
+        currentSuggestion.current_time,
+        currentSuggestion.suggested_time,
+        currentSuggestion.confidence_score,
+      );
+
+      Alert.alert(
+        "✅ Time Updated!",
+        `Your ${currentSuggestion.medication_name} reminder has been moved to ${currentSuggestion.suggested_time}`,
+      );
+
+      // Remove current suggestion and show next if available
+      const remainingSuggestions = suggestions.filter(
+        (s) => s.schedule_id !== currentSuggestion.schedule_id,
+      );
+      setSuggestions(remainingSuggestions);
+
+      if (remainingSuggestions.length > 0) {
+        setCurrentSuggestion(remainingSuggestions[0]);
+      } else {
+        setShowSuggestionModal(false);
+        setCurrentSuggestion(null);
+      }
+    } catch (err) {
+      console.error("🔥 Error accepting suggestion:", err);
+      Alert.alert("Error", "Failed to update reminder time");
+    } finally {
+      setSuggestionLoading(false);
+    }
+  };
+
+  const handleRejectSuggestion = async () => {
+    if (!currentSuggestion) return;
+
+    setSuggestionLoading(true);
+    try {
+      const token = await SecureStore.getItemAsync("jwt");
+      if (!token) return;
+
+      await rejectAdaptation(token, currentSuggestion.schedule_id);
+
+      // Remove current suggestion and show next if available
+      const remainingSuggestions = suggestions.filter(
+        (s) => s.schedule_id !== currentSuggestion.schedule_id,
+      );
+      setSuggestions(remainingSuggestions);
+
+      if (remainingSuggestions.length > 0) {
+        setCurrentSuggestion(remainingSuggestions[0]);
+      } else {
+        setShowSuggestionModal(false);
+        setCurrentSuggestion(null);
+      }
+    } catch (err) {
+      console.error("🔥 Error rejecting suggestion:", err);
+      Alert.alert("Error", "Failed to decline suggestion");
+    } finally {
+      setSuggestionLoading(false);
+    }
+  };
+
+  const handleCloseSuggestionModal = () => {
+    setShowSuggestionModal(false);
+    // Keep suggestions in state so they can be shown later if user wants
   };
 
   const pendingReminders = reminders.filter(
@@ -339,6 +450,16 @@ export default function RemindersTab() {
           </Text>
         </View>
       )}
+
+      {/* Adaptation Suggestion Modal */}
+      <AdaptationSuggestionModal
+        visible={showSuggestionModal}
+        suggestion={currentSuggestion}
+        loading={suggestionLoading}
+        onAccept={handleAcceptSuggestion}
+        onReject={handleRejectSuggestion}
+        onClose={handleCloseSuggestionModal}
+      />
     </ScrollView>
   );
 }
