@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
   Platform,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -126,27 +127,18 @@ export default function MedicineOCRScanner({
   };
 
   const handleSelectMedicine = (medicineName: string) => {
-    console.log("Selected medicine in OCR:", medicineName);
-    // First notify parent with the medicine name
     try {
       onMedicineDetected(medicineName);
     } finally {
-      // Clean up OCR state and close this modal
       setSelectedImage(null);
       setExtractedText(null);
       setDetectedMedicines([]);
       setLoading(false);
-      // call parent's onClose to ensure modal is dismissed
-      try {
-        onClose();
-      } catch {
-        // ignore
-      }
+      onClose();
     }
   };
 
   const handleClose = () => {
-    // Reset internal OCR state and propagate close to parent
     setSelectedImage(null);
     setExtractedText(null);
     setDetectedMedicines([]);
@@ -240,27 +232,34 @@ export default function MedicineOCRScanner({
                       <Text style={styles.detectedTitle}>
                         Detected Medicines:
                       </Text>
-                      {detectedMedicines.map((medicine, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          style={styles.medicineOption}
-                          onPress={() => handleSelectMedicine(medicine)}
-                        >
-                          <MaterialCommunityIcons
-                            name="pill"
-                            size={24}
-                            color="#E85D5B"
-                          />
-                          <Text style={styles.medicineOptionText}>
-                            {medicine}
-                          </Text>
-                          <Ionicons
-                            name="chevron-forward"
-                            size={20}
-                            color="#999"
-                          />
-                        </TouchableOpacity>
-                      ))}
+
+                      {/* ✅ SCROLLABLE LIST */}
+                      <ScrollView
+                        style={styles.detectedScroll}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                      >
+                        {detectedMedicines.map((medicine, i) => (
+                          <TouchableOpacity
+                            key={i}
+                            style={styles.medicineOption}
+                            onPress={() => handleSelectMedicine(medicine)}
+                          >
+                            <MaterialCommunityIcons
+                              name="pill"
+                              size={24}
+                              color="#E85D5B"
+                            />
+                            <Text style={styles.medicineOptionText}>
+                              {medicine}
+                            </Text>
+                            <Ionicons
+                              name="chevron-forward"
+                              size={20}
+                              color="#999"
+                            />
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
                     </View>
                   )}
 
@@ -369,6 +368,12 @@ const styles = StyleSheet.create({
     color: "#2C2C2C",
     marginBottom: 12,
   },
+
+  /** ⭐️ Scrollable list */
+  detectedScroll: {
+    maxHeight: 200,
+  },
+
   medicineOption: {
     flexDirection: "row",
     alignItems: "center",
