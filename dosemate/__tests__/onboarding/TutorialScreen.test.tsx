@@ -248,7 +248,7 @@ describe("TutorialScreen", () => {
       expect(getByText("Add Your Medications")).toBeTruthy();
       expect(getByText(/Easily add medications by searching/)).toBeTruthy();
       expect(getByText("Search by name")).toBeTruthy();
-      expect(getByText("Barcode scanner")).toBeTruthy();
+      expect(getByText("Search by image")).toBeTruthy();
       expect(getByText("Dosage tracking")).toBeTruthy();
     });
 
