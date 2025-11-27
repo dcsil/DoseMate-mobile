@@ -9,7 +9,7 @@ jest.mock("expo-secure-store", () => ({
 }));
 
 // Mock fetch
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn() as jest.Mock;
 
 const mockReminders = [
   {
@@ -50,7 +50,7 @@ describe("<RemindersTab />", () => {
 
     (SecureStore.getItemAsync as jest.Mock).mockResolvedValue("mock-jwt");
 
-    (fetch as jest.Mock).mockResolvedValue({
+    (globalThis.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: async () => mockReminders,
     });
@@ -97,7 +97,7 @@ describe("<RemindersTab />", () => {
 
     // UI updates instantly
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining("/reminders/1/mark-taken"),
         expect.objectContaining({
           method: "POST",
@@ -118,7 +118,7 @@ describe("<RemindersTab />", () => {
     fireEvent.press(snoozeButtons[0]);
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         expect.stringContaining("/reminders/1/snooze"),
         expect.objectContaining({
           method: "POST",
@@ -131,7 +131,7 @@ describe("<RemindersTab />", () => {
   });
 
   it("shows empty state when no pending reminders", async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => [
         { ...mockReminders[1], status: "taken" }, // only completed
@@ -188,9 +188,11 @@ describe("<RemindersTab />", () => {
   it("handles fetch error gracefully", async () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
-    (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+    (globalThis.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error("Network error"),
+    );
 
-    const { getByText } = render(<RemindersTab />);
+    render(<RemindersTab />);
 
     await waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith(
