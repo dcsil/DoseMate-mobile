@@ -12,7 +12,6 @@ import StatsCard from "@/components/main-navigation/StatsCard";
 import NextReminderCard from "@/components/main-navigation/NextReminderCard";
 import AdherenceProgressCard from "@/components/main-navigation/AdherenceProgressCard";
 import MotivationalCard from "@/components/main-navigation/MotivationalCard";
-import OverviewChartCard from "@/components/main-navigation/OverviewChartCard";
 import RecentActivityCard from "@/components/main-navigation/RecentActivityCard";
 import ShareHealthcareCard from "@/components/main-navigation/ShareHealthcareCard";
 import * as SecureStore from "expo-secure-store";

@@ -82,9 +82,9 @@ export default function RemindersTab() {
       const token = await SecureStore.getItemAsync("jwt");
       if (!token) return;
 
-      // Call backend to mark as taken
+      // Call backend to mark as taken (ensure id is a string)
       const res = await fetch(
-        `${BACKEND_BASE_URL}/reminders/${id}/mark-taken`,
+        `${BACKEND_BASE_URL}/reminders/${encodeURIComponent(String(id))}/mark-taken`,
         {
           method: "POST",
           headers: {
@@ -95,7 +95,8 @@ export default function RemindersTab() {
       );
 
       if (!res.ok) {
-        console.error("❌ Failed to mark reminder as taken:", res.status);
+        const text = await res.text();
+        console.error("❌ Failed to mark reminder as taken:", res.status, text);
         // Optionally rollback local state here
       }
     } catch (err) {
@@ -116,16 +117,20 @@ export default function RemindersTab() {
       const token = await SecureStore.getItemAsync("jwt");
       if (!token) return;
 
-      const res = await fetch(`${BACKEND_BASE_URL}/reminders/${id}/snooze`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${BACKEND_BASE_URL}/reminders/${encodeURIComponent(String(id))}/snooze`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!res.ok) {
-        console.error("❌ Failed to snooze reminder:", res.status);
+        const text = await res.text();
+        console.error("❌ Failed to snooze reminder:", res.status, text);
         // Optionally rollback local state here
       }
     } catch (err) {
