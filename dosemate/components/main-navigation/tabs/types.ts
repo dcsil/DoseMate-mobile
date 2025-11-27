@@ -87,3 +87,14 @@ export interface NavigationData {
   progress: ProgressData;
   motivation: MotivationData;
 }
+
+export interface AdaptationSuggestion {
+  schedule_id: string;
+  medication_name: string;
+  current_time: string;
+  suggested_time: string;
+  confidence_score: number;
+  snooze_count: number;
+  total_doses: number;
+  median_actual_time: string;
+}
