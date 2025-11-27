@@ -96,7 +96,7 @@ export default function RemindersTab() {
           setShowSuggestionModal(true);
         }
       } catch (err) {
-        console.error("🔥 Error fetching suggestions:", err);
+        // console.error("🔥 Error fetching suggestions:", err);
       }
     };
 
