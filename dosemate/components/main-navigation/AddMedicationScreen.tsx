@@ -506,7 +506,7 @@ export default function AddMedicationScreen({
             <View style={styles.manualEntryTextContainer}>
               <Text style={styles.manualEntryTitle}>Medicine not found?</Text>
               <Text style={styles.manualEntrySubtitle}>
-                Add "{query}" manually without database information
+                Add {query} manually without database information
               </Text>
             </View>
           </View>
