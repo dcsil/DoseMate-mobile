@@ -80,7 +80,6 @@ export default function AddMedicationScreen({
   });
   const [scannerVisible, setScannerVisible] = useState(false);
   const [isManualEntry, setIsManualEntry] = useState(false);
-  const [manualMedicineName, setManualMedicineName] = useState("");
 
   // Dropdown states
   const [showStrengthPicker, setShowStrengthPicker] = useState(false);
@@ -149,7 +148,6 @@ export default function AddMedicationScreen({
       setSuggestions([]);
       setSelectedMedicine(null);
       setIsManualEntry(false);
-      setManualMedicineName("");
       setMedDetails({
         strength: "",
         quantity: "",
@@ -166,7 +164,6 @@ export default function AddMedicationScreen({
       if (step === 3 && isManualEntry) {
         setStep(1);
         setIsManualEntry(false);
-        setManualMedicineName("");
         setSelectedMedicine(null);
       } else {
         setStep(step - 1);
@@ -218,7 +215,6 @@ export default function AddMedicationScreen({
       setSuggestions([]);
       setSelectedMedicine(null);
       setIsManualEntry(false);
-      setManualMedicineName("");
       setMedDetails({
         strength: "",
         quantity: "",
@@ -519,7 +515,6 @@ export default function AddMedicationScreen({
             style={styles.manualEntryButton}
             onPress={() => {
               setIsManualEntry(true);
-              setManualMedicineName(query);
               setSelectedMedicine({
                 brand_name: query,
                 generic_name: "",
