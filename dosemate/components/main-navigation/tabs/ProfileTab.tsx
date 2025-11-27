@@ -37,9 +37,7 @@ export default function ProfileTab() {
     Alert.alert(
       "DoseMate Premium",
       "Upgrade to Premium for:\n\n• Advanced analytics\n• Clinical Dashboard Integration \n• Priority support\n• Unlimited medications\n• Adaptive reminders",
-      [
-        { text: "stay tuned!", style: "cancel" }
-      ]
+      [{ text: "stay tuned!", style: "cancel" }],
     );
   };
 
@@ -90,13 +88,16 @@ export default function ProfileTab() {
         console.log("Fetched user:", userData);
 
         // Call 2: Get profile data
-        const profileRes = await fetch(`${BACKEND_BASE_URL}/profile/me/complete`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const profileRes = await fetch(
+          `${BACKEND_BASE_URL}/profile/me/complete`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
@@ -105,7 +106,6 @@ export default function ProfileTab() {
         } else {
           console.warn("Failed to fetch profile, continuing without it");
         }
-
       } catch (err) {
         console.error("Error loading profile:", err);
         setError("Something went wrong while loading your profile.");
@@ -151,9 +151,7 @@ export default function ProfileTab() {
           <Ionicons name="person" size={48} color="#E85D5B" />
         </View>
         <Text style={styles.profileName}>{displayName}</Text>
-        {user?.email && (
-          <Text style={styles.profileEmail}>{user.email}</Text>
-        )}
+        {user?.email && <Text style={styles.profileEmail}>{user.email}</Text>}
       </View>
 
       {/* Profile Information */}
@@ -181,8 +179,8 @@ export default function ProfileTab() {
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Activity Level</Text>
                   <Text style={styles.infoValue}>
-                    {profile.activity_level.charAt(0).toUpperCase() + 
-                     profile.activity_level.slice(1)}
+                    {profile.activity_level.charAt(0).toUpperCase() +
+                      profile.activity_level.slice(1)}
                   </Text>
                 </View>
               </View>
@@ -196,8 +194,8 @@ export default function ProfileTab() {
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Sleep Schedule</Text>
                   <Text style={styles.infoValue}>
-                    {profile.sleep_schedule.charAt(0).toUpperCase() + 
-                     profile.sleep_schedule.slice(1)}
+                    {profile.sleep_schedule.charAt(0).toUpperCase() +
+                      profile.sleep_schedule.slice(1)}
                   </Text>
                 </View>
               </View>
@@ -235,10 +233,15 @@ export default function ProfileTab() {
       {!profile && (
         <View style={styles.section}>
           <Card style={styles.emptyCard}>
-            <Ionicons name="information-circle-outline" size={48} color="#CCC" />
+            <Ionicons
+              name="information-circle-outline"
+              size={48}
+              color="#CCC"
+            />
             <Text style={styles.emptyText}>No profile information yet</Text>
             <Text style={styles.emptySubtext}>
-              Add your health information to get personalized medication reminders
+              Add your health information to get personalized medication
+              reminders
             </Text>
           </Card>
         </View>
@@ -267,8 +270,8 @@ export default function ProfileTab() {
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { 
-    flex: 1, 
+  scrollContent: {
+    flex: 1,
     paddingHorizontal: 20,
     backgroundColor: "#F8F9FA",
   },

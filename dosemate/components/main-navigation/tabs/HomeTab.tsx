@@ -87,11 +87,15 @@ export default function HomeTab({
   onViewDetails,
 }: HomeTabProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [todayAdherence, setTodayAdherence] = useState<TodayAdherence | null>(null);
-  const [weeklyAdherence, setWeeklyAdherence] = useState<WeeklyAdherence | null>(null);
-  const [monthlyAdherence, setMonthlyAdherence] = useState<MonthlyAdherence | null>(null);
+  const [todayAdherence, setTodayAdherence] = useState<TodayAdherence | null>(
+    null,
+  );
+  const [weeklyAdherence, setWeeklyAdherence] =
+    useState<WeeklyAdherence | null>(null);
+  const [monthlyAdherence, setMonthlyAdherence] =
+    useState<MonthlyAdherence | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,13 +121,16 @@ export default function HomeTab({
       };
 
       // Load all data in parallel
-      const [remindersRes, todayRes, weekRes, monthRes, activityRes] = await Promise.all([
-        fetch(`${BACKEND_BASE_URL}/reminders/today`, { headers }),
-        fetch(`${BACKEND_BASE_URL}/reminders/adherence/today`, { headers }),
-        fetch(`${BACKEND_BASE_URL}/reminders/adherence/week`, { headers }),
-        fetch(`${BACKEND_BASE_URL}/reminders/adherence/month`, { headers }),
-        fetch(`${BACKEND_BASE_URL}/reminders/recent-activity?limit=5`, { headers }),
-      ]);
+      const [remindersRes, todayRes, weekRes, monthRes, activityRes] =
+        await Promise.all([
+          fetch(`${BACKEND_BASE_URL}/reminders/today`, { headers }),
+          fetch(`${BACKEND_BASE_URL}/reminders/adherence/today`, { headers }),
+          fetch(`${BACKEND_BASE_URL}/reminders/adherence/week`, { headers }),
+          fetch(`${BACKEND_BASE_URL}/reminders/adherence/month`, { headers }),
+          fetch(`${BACKEND_BASE_URL}/reminders/recent-activity?limit=5`, {
+            headers,
+          }),
+        ]);
 
       if (remindersRes.ok) {
         const data = await remindersRes.json();
@@ -149,7 +156,6 @@ export default function HomeTab({
         const data = await activityRes.json();
         setRecentActivity(data);
       }
-
     } catch (err) {
       console.error("Error loading data:", err);
       setError("Failed to load data");
@@ -249,18 +255,18 @@ export default function HomeTab({
       Alert.alert(
         "Generating Report",
         "Your weekly report is being prepared...",
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
 
       const url = `${BACKEND_BASE_URL}/reminders/reports/weekly`;
-      
+
       // On mobile, open PDF in browser
       const fullUrl = `${url}?token=${token}`;
-      
+
       // Use Linking to open in browser (works on iOS/Android)
-      const { Linking } = require('react-native');
+      const { Linking } = require("react-native");
       await Linking.openURL(fullUrl);
-      
+
       console.log("Weekly report opened");
     } catch (err) {
       console.error("Error generating weekly report:", err);
@@ -279,18 +285,18 @@ export default function HomeTab({
       Alert.alert(
         "Generating Report",
         "Your monthly report is being prepared...",
-        [{ text: "OK" }]
+        [{ text: "OK" }],
       );
 
       const url = `${BACKEND_BASE_URL}/reminders/reports/monthly`;
-      
+
       // On mobile, open PDF in browser
       const fullUrl = `${url}?token=${token}`;
-      
+
       // Use Linking to open in browser (works on iOS/Android)
-      const { Linking } = require('react-native');
+      const { Linking } = require("react-native");
       await Linking.openURL(fullUrl);
-      
+
       console.log("Monthly report opened");
     } catch (err) {
       console.error("Error generating monthly report:", err);
@@ -299,24 +305,20 @@ export default function HomeTab({
   };
 
   const handleGenerateShare = async () => {
-    Alert.alert(
-      "Share Report",
-      "Which report would you like to share?",
-      [
-        {
-          text: "Weekly Report",
-          onPress: handleWeeklyReport
-        },
-        {
-          text: "Monthly Report",
-          onPress: handleMonthlyReport
-        },
-        {
-          text: "Cancel",
-          style: "cancel"
-        }
-      ]
-    );
+    Alert.alert("Share Report", "Which report would you like to share?", [
+      {
+        text: "Weekly Report",
+        onPress: handleWeeklyReport,
+      },
+      {
+        text: "Monthly Report",
+        onPress: handleMonthlyReport,
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
   };
 
   if (isLoading) {
@@ -346,7 +348,9 @@ export default function HomeTab({
         }
       >
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No medications scheduled for today</Text>
+          <Text style={styles.emptyText}>
+            No medications scheduled for today
+          </Text>
           <Text style={styles.emptySubtext}>
             Add medications to start tracking your adherence
           </Text>
@@ -356,7 +360,9 @@ export default function HomeTab({
   }
 
   // Get next pending reminder
-  const nextReminder = reminders.find((r) => r.status === "pending" && !r.overdue);
+  const nextReminder = reminders.find(
+    (r) => r.status === "pending" && !r.overdue,
+  );
 
   // Format recent activity for display
   const formattedActivity = recentActivity.map((activity) => ({
@@ -369,10 +375,11 @@ export default function HomeTab({
   }));
 
   // Format weekly chart data
-  const chartData = weeklyAdherence?.days.map((day) => ({
-    day: day.day,
-    score: day.percentage,
-  })) || [];
+  const chartData =
+    weeklyAdherence?.days.map((day) => ({
+      day: day.day,
+      score: day.percentage,
+    })) || [];
 
   const motivation = getMotivation();
 
