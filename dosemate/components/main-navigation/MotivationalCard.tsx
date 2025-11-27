@@ -7,8 +7,7 @@ interface MotivationalCardProps {
   title: string;
   message: string;
   badgeText: string;
-  // allow a neutral/unknown type — component will fall back to positive
-  type?: "positive" | "negative" | "neutral";
+  type?: "positive" | "negative" | "neutral" | "warning";
 }
 
 export default function MotivationalCard({
@@ -41,15 +40,26 @@ export default function MotivationalCard({
       badgeText: "#922B21",
     },
     neutral: {
-      cardBg: "#FFFFFF",
-      cardBorder: "#F0F0F0",
-      iconBg: "#FFF5F5",
-      iconColor: "#888",
-      icon: "notifications" as keyof typeof Ionicons.glyphMap,
-      titleColor: "#333",
-      messageColor: "#666",
-      badgeBg: "#EFEFEF",
-      badgeText: "#333",
+      cardBg: "#EEF2F3",
+      cardBorder: "#D6DBDF",
+      iconBg: "#D5DBDB",
+      iconColor: "#566573",
+      icon: "alert" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#34495E",
+      messageColor: "#566573",
+      badgeBg: "#D5DBDB",
+      badgeText: "#34495E",
+    },
+    warning: {
+      cardBg: "#FEF5E7",
+      cardBorder: "#FAD7A0",
+      iconBg: "#FDEBD0",
+      iconColor: "#D35400",
+      icon: "warning" as keyof typeof Ionicons.glyphMap,
+      titleColor: "#B9770E",
+      messageColor: "#D35400",
+      badgeBg: "#FDEBD0",
+      badgeText: "#B9770E",
     },
   };
   const theme = colors[type as keyof typeof colors] ?? colors.positive;

@@ -6,38 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/main-navigation/Card";
 import * as SecureStore from "expo-secure-store";
 import { BACKEND_BASE_URL } from "@/config";
-
-const profileOptions = [
-  {
-    icon: "person-outline",
-    title: "Personal Information",
-    subtitle: "Update your profile details",
-    action: "personal-info",
-  },
-  {
-    icon: "notifications-outline",
-    title: "Notification Settings",
-    subtitle: "Customize your reminders",
-    action: "notifications",
-  },
-  {
-    icon: "calendar-outline",
-    title: "Schedule Preferences",
-    subtitle: "Set your daily routine",
-    action: "schedule",
-  },
-  {
-    icon: "bar-chart-outline",
-    title: "Health Goals",
-    subtitle: "Set adherence targets",
-    action: "health-goals",
-  },
-];
 
 type User = {
   id: string;
@@ -45,31 +19,43 @@ type User = {
   email?: string;
 };
 
+type UserProfile = {
+  age: number | null;
+  allergies: string | null;
+  conditions: string[] | null;
+  activity_level: string | null;
+  sleep_schedule: string | null;
+};
+
 export default function ProfileTab() {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleProfileOption = (option: string) =>
-    console.log("Profile option pressed:", option);
-
-  const handleLearnMorePremium = () =>
-    console.log("Learn more about premium pressed");
+  const handleLearnMorePremium = () => {
+    Alert.alert(
+      "DoseMate Premium",
+      "Upgrade to Premium for:\n\n• Advanced analytics\n• Clinical Dashboard Integration \n• Priority support\n• Unlimited medications\n• Adaptive reminders",
+      [{ text: "stay tuned!", style: "cancel" }],
+    );
+  };
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserAndProfile = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
         const token = await SecureStore.getItemAsync("jwt");
         if (!token) {
-          setError("You’re not logged in.");
+          setError("You're not logged in.");
           setIsLoading(false);
           return;
         }
 
-        const res = await fetch(`${BACKEND_BASE_URL}/users/me`, {
+        // Call 1: Get basic user info
+        const userRes = await fetch(`${BACKEND_BASE_URL}/users/me`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -77,9 +63,9 @@ export default function ProfileTab() {
           },
         });
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => null);
-          console.warn("Failed to fetch user:", data || res.statusText);
+        if (!userRes.ok) {
+          const data = await userRes.json().catch(() => null);
+          console.warn("Failed to fetch user:", data || userRes.statusText);
 
           let message = "Failed to load your profile.";
           if (data?.detail) {
@@ -97,8 +83,29 @@ export default function ProfileTab() {
           return;
         }
 
-        const data = await res.json();
-        setUser(data);
+        const userData = await userRes.json();
+        setUser(userData);
+        console.log("Fetched user:", userData);
+
+        // Call 2: Get profile data
+        const profileRes = await fetch(
+          `${BACKEND_BASE_URL}/profile/me/complete`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          console.log("Fetched profile:", profileData);
+          setProfile(profileData);
+        } else {
+          console.warn("Failed to fetch profile, continuing without it");
+        }
       } catch (err) {
         console.error("Error loading profile:", err);
         setError("Something went wrong while loading your profile.");
@@ -107,37 +114,26 @@ export default function ProfileTab() {
       }
     };
 
-    loadUser();
+    loadUserAndProfile();
   }, []);
 
   const displayName = user?.name || user?.email || "Your Profile";
 
   if (isLoading) {
     return (
-      <View
-        style={[
-          styles.scrollContent,
-          { flex: 1, justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <ActivityIndicator />
-        <Text style={{ marginTop: 12, color: "#666" }}>
-          Loading your profile...
-        </Text>
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#E85D5B" />
+        <Text style={styles.loadingText}>Loading your profile...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View
-        style={[
-          styles.scrollContent,
-          { flex: 1, justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <Text style={{ color: "#E85D5B", marginBottom: 8 }}>{error}</Text>
-        <Text style={{ color: "#666", fontSize: 13, textAlign: "center" }}>
+      <View style={styles.centerContainer}>
+        <Ionicons name="alert-circle-outline" size={64} color="#E85D5B" />
+        <Text style={styles.errorText}>{error}</Text>
+        <Text style={styles.errorSubtext}>
           Try logging in again or restarting the app.
         </Text>
       </View>
@@ -149,39 +145,109 @@ export default function ProfileTab() {
       style={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
+      {/* Profile Header */}
       <View style={styles.profileHeader}>
         <View style={styles.profileIconContainer}>
           <Ionicons name="person" size={48} color="#E85D5B" />
         </View>
         <Text style={styles.profileName}>{displayName}</Text>
+        {user?.email && <Text style={styles.profileEmail}>{user.email}</Text>}
       </View>
 
-      <View style={styles.section}>
-        {profileOptions.map((option, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => handleProfileOption(option.action)}
-          >
-            <Card style={styles.listItem}>
-              <View style={styles.listItemContent}>
-                <View style={styles.profileOptionIcon}>
-                  <Ionicons
-                    name={option.icon as any}
-                    size={22}
-                    color="#E85D5B"
-                  />
+      {/* Profile Information */}
+      {profile && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Profile Information</Text>
+          <Card style={styles.infoCard}>
+            {profile.age && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="calendar-outline" size={20} color="#E85D5B" />
                 </View>
-                <View style={styles.listItemText}>
-                  <Text style={styles.listItemTitle}>{option.title}</Text>
-                  <Text style={styles.listItemSubtitle}>{option.subtitle}</Text>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Age</Text>
+                  <Text style={styles.infoValue}>{profile.age} years old</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#CCC" />
               </View>
-            </Card>
-          </TouchableOpacity>
-        ))}
-      </View>
+            )}
 
+            {profile.activity_level && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="fitness-outline" size={20} color="#E85D5B" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Activity Level</Text>
+                  <Text style={styles.infoValue}>
+                    {profile.activity_level.charAt(0).toUpperCase() +
+                      profile.activity_level.slice(1)}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {profile.sleep_schedule && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="moon-outline" size={20} color="#E85D5B" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Sleep Schedule</Text>
+                  <Text style={styles.infoValue}>
+                    {profile.sleep_schedule.charAt(0).toUpperCase() +
+                      profile.sleep_schedule.slice(1)}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {profile.conditions && profile.conditions.length > 0 && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="medical-outline" size={20} color="#E85D5B" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Medical Conditions</Text>
+                  <Text style={styles.infoValue}>
+                    {profile.conditions.join(", ")}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {profile.allergies && (
+              <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                <View style={styles.infoIcon}>
+                  <Ionicons name="warning-outline" size={20} color="#E85D5B" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Allergies</Text>
+                  <Text style={styles.infoValue}>{profile.allergies}</Text>
+                </View>
+              </View>
+            )}
+          </Card>
+        </View>
+      )}
+
+      {!profile && (
+        <View style={styles.section}>
+          <Card style={styles.emptyCard}>
+            <Ionicons
+              name="information-circle-outline"
+              size={48}
+              color="#CCC"
+            />
+            <Text style={styles.emptyText}>No profile information yet</Text>
+            <Text style={styles.emptySubtext}>
+              Add your health information to get personalized medication
+              reminders
+            </Text>
+          </Card>
+        </View>
+      )}
+
+      {/* Premium Card */}
       <View style={[styles.section, styles.lastSection]}>
         <Card style={styles.premiumCard}>
           <View style={styles.premiumIconContainer}>
@@ -204,9 +270,47 @@ export default function ProfileTab() {
 }
 
 const styles = StyleSheet.create({
-  scrollContent: { flex: 1, paddingHorizontal: 20 },
+  scrollContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: "#F8F9FA",
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    backgroundColor: "#F8F9FA",
+  },
   section: { marginTop: 20 },
   lastSection: { marginBottom: 100 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2C2C2C",
+    marginBottom: 12,
+    letterSpacing: -0.3,
+  },
+
+  // Loading & Error States
+  loadingText: {
+    marginTop: 12,
+    color: "#666",
+    fontSize: 15,
+  },
+  errorText: {
+    color: "#E85D5B",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 16,
+    textAlign: "center",
+  },
+  errorSubtext: {
+    color: "#666",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 8,
+  },
 
   // Profile Header
   profileHeader: {
@@ -235,46 +339,72 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: -0.5,
   },
-  profileSubtext: {
+  profileEmail: {
     fontSize: 14,
     color: "#999",
     fontWeight: "400",
   },
 
-  // List Items
-  listItem: {
+  // Profile Info Card
+  infoCard: {
     padding: 16,
-    marginBottom: 8,
+    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  listItemContent: {
+  infoRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
+    alignItems: "flex-start",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
   },
-  profileOptionIcon: {
+  infoIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: "#FFF5F5",
     alignItems: "center",
     justifyContent: "center",
+    marginRight: 14,
   },
-  listItemText: { flex: 1 },
-  listItemTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#2C2C2C",
-    marginBottom: 4,
-    letterSpacing: -0.2,
+  infoContent: {
+    flex: 1,
   },
-  listItemSubtitle: {
+  infoLabel: {
     fontSize: 13,
     color: "#999",
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  infoValue: {
+    fontSize: 16,
+    color: "#2C2C2C",
+    fontWeight: "600",
+    lineHeight: 22,
+  },
+
+  // Empty State
+  emptyCard: {
+    padding: 40,
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#999",
+    textAlign: "center",
+    lineHeight: 20,
   },
 
   // Premium Card
