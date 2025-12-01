@@ -19,7 +19,7 @@ export default function NextReminderCard({
     <View style={styles.card}>
       <View style={styles.content}>
         <View style={styles.left}>
-          <Ionicons name="notifications" size={24} color="#F39C12" />
+          <Ionicons name="notifications" size={24} color="#F39C12" testID="next-reminder-icon"/>
           <View style={styles.text}>
             <Text style={styles.label}>Next reminder</Text>
             <Text style={styles.medication}>

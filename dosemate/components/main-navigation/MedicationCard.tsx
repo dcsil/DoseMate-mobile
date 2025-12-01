@@ -63,10 +63,10 @@ export default function MedicationCard({
           </View>
         </View>
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.iconButton} onPress={onEdit}>
+          <TouchableOpacity style={styles.iconButton} onPress={onEdit} accessibilityRole="button" accessibilityLabel="Edit medication" >
             <Ionicons name="pencil" size={16} color="#666" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={onDelete}>
+          <TouchableOpacity style={styles.iconButton} onPress={onDelete} accessibilityRole="button" accessibilityLabel="Delete medication">
             <Ionicons name="trash" size={16} color="#E74C3C" />
           </TouchableOpacity>
         </View>
@@ -122,7 +122,7 @@ export default function MedicationCard({
         </View>
 
         {/* View Details Button */}
-        <TouchableOpacity style={styles.detailsButton} onPress={onViewDetails}>
+        <TouchableOpacity style={styles.detailsButton} onPress={onViewDetails} accessibilityRole="button" accessibilityLabel="View medication details and side effects">
           <Ionicons
             name="information-circle-outline"
             size={16}
