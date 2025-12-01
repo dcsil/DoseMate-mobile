@@ -305,14 +305,11 @@ describe("notificationService", () => {
 
   it("scheduleMedicationWithMultipleTimes uses 'Specific Days' when a subset of days is provided", async () => {
     const spy = jest
-      .spyOn(
-        notificationService as any,
-        "scheduleMedicationNotifications",
-      )
-      .mockResolvedValue(["id-1"]);
+        .spyOn(notificationService as any, "scheduleMedicationNotifications")
+        .mockResolvedValue(["id-1"]);
 
     const result =
-      await notificationService.scheduleMedicationWithMultipleTimes(
+        await notificationService.scheduleMedicationWithMultipleTimes(
         10,
         "MultiMed",
         "25 mg",
@@ -320,10 +317,14 @@ describe("notificationService", () => {
         ["8:00 AM"],
         ["Monday", "Wednesday"],
         "With food",
-      );
+        );
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    const arg = spy.mock.calls[0][0];
+    // 👇 derive the real arg type from the function
+    type ScheduleMedArg =
+        Parameters<typeof notificationService.scheduleMedicationNotifications>[0];
+
+    const arg = spy.mock.calls[0][0] as ScheduleMedArg;
+
     expect(arg.frequency).toBe("Specific Days");
     expect(arg.days).toEqual(["Monday", "Wednesday"]);
     expect(result).toEqual(["id-1"]);
@@ -333,27 +334,29 @@ describe("notificationService", () => {
 
   it("scheduleMedicationWithMultipleTimes uses 'Daily' when no days provided", async () => {
     const spy = jest
-      .spyOn(
-        notificationService as any,
-        "scheduleMedicationNotifications",
-      )
-      .mockResolvedValue(["id-2"]);
+        .spyOn(notificationService as any, "scheduleMedicationNotifications")
+        .mockResolvedValue(["id-2"]);
 
     await notificationService.scheduleMedicationWithMultipleTimes(
-      11,
-      "DailyMultiMed",
-      "10 mg",
-      "1 tablet",
-      ["9:00 AM"],
-      undefined,
-      "With water",
+        11,
+        "DailyMultiMed",
+        "10 mg",
+        "1 tablet",
+        ["9:00 AM"],
+        undefined,
+        "With water",
     );
 
-    const arg = spy.mock.calls[0][0];
+    type ScheduleMedArg =
+        Parameters<typeof notificationService.scheduleMedicationNotifications>[0];
+
+    const arg = spy.mock.calls[0][0] as ScheduleMedArg;
+
     expect(arg.frequency).toBe("Daily");
     expect(arg.days).toEqual([]);
     spy.mockRestore();
   });
+
 
   // --- cancel / get notifications ---
 
@@ -500,18 +503,25 @@ describe("notificationService", () => {
 
   it("sendTestNotification schedules a time-interval notification with correct content", async () => {
     (Notifications.scheduleNotificationAsync as jest.Mock)
-      .mockResolvedValue("test-id");
+        .mockResolvedValue("test-id");
 
     await notificationService.sendTestNotification("SampleMed");
 
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(1);
+
+    // ⬇️ add a type here instead of leaving arg as unknown
+    type SchedulePayload = {
+        content: { title: string; body?: string; data?: any };
+        trigger: { type: string; seconds?: number; hour?: number; minute?: number; weekday?: number };
+    };
+
     const arg = (Notifications.scheduleNotificationAsync as jest.Mock)
-      .mock.calls[0][0];
+        .mock.calls[0][0] as SchedulePayload;  // <-- cast from unknown
 
     expect(arg.content.title).toContain("Test: Time for SampleMed");
     expect(arg.trigger).toEqual({
-      type: "timeInterval",
-      seconds: 2,
+        type: "timeInterval",
+        seconds: 2,
     });
   });
 });

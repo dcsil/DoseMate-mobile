@@ -9,6 +9,9 @@ import MedicineOCRScanner from "@/components/main-navigation/OCR";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
 
+declare const global: any;
+const globalAny: any = global as any;
+
 // ---- Mocks ----
 
 // Mock expo-image-picker
