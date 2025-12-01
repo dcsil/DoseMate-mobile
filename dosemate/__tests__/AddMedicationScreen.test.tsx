@@ -89,7 +89,6 @@ afterEach(() => {
   consoleErrorSpy.mockRestore();
 });
 
-
 // --- Core tests ---
 
 describe("AddMedicationScreen", () => {
@@ -302,9 +301,8 @@ describe("AddMedicationScreen", () => {
       });
     });
 
-    const { getByPlaceholderText, getByText, getByTestId, getAllByText } = render(
-    <AddMedicationScreen visible={true} onClose={onClose} />,
-    );
+    const { getByPlaceholderText, getByText, getByTestId, getAllByText } =
+      render(<AddMedicationScreen visible={true} onClose={onClose} />);
 
     const input = getByPlaceholderText("Search medication name...");
     fireEvent.changeText(input, "ManualBackMed");
@@ -325,10 +323,10 @@ describe("AddMedicationScreen", () => {
     fireEvent.press(getByTestId("back-button"));
 
     await waitFor(() => {
-    expect(getAllByText("Add Medication").length).toBeGreaterThan(0);
-    expect(
+      expect(getAllByText("Add Medication").length).toBeGreaterThan(0);
+      expect(
         getByText("Search for your medication or scan the barcode"),
-    ).toBeTruthy();
+      ).toBeTruthy();
     });
 
     expect(onClose).not.toHaveBeenCalled();

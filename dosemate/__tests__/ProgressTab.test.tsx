@@ -1,9 +1,6 @@
 // __tests__/ProgressTab.test.tsx
 import React from "react";
-import {
-  render,
-  waitFor,
-} from "@testing-library/react-native";
+import { render, waitFor } from "@testing-library/react-native";
 import ProgressTab from "@/components/main-navigation/tabs/ProgressTab";
 import {
   registerTestUser,
@@ -182,7 +179,6 @@ describe("ProgressTab", () => {
     // Fallback title for missing name/title
     const fallbackTitles = getAllByText("Medication");
     expect(fallbackTitles.length).toBeGreaterThan(0);
-
 
     // Fallback subtitles from status flags
     expect(getByText("Pending")).toBeTruthy();

@@ -61,14 +61,14 @@ describe("notificationService", () => {
     // Force Android for this test
     // @ts-ignore - overriding read-only type in tests is ok
     Object.defineProperty(Platform, "OS", {
-        value: "android",
+      value: "android",
     });
 
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({
-        status: "undetermined",
+      status: "undetermined",
     });
     (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({
-        status: "granted",
+      status: "granted",
     });
 
     const result = await notificationService.requestPermissions();
@@ -76,19 +76,19 @@ describe("notificationService", () => {
     expect(result).toBe(true);
     expect(Notifications.requestPermissionsAsync).toHaveBeenCalledTimes(1);
     expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
-        "medication-reminders",
-        expect.objectContaining({
+      "medication-reminders",
+      expect.objectContaining({
         name: "Medication Reminders",
         importance: Notifications.AndroidImportance.MAX,
-        }),
+      }),
     );
 
     // Restore original platform
     // @ts-ignore
     Object.defineProperty(Platform, "OS", {
-        value: originalOS,
+      value: originalOS,
     });
- });
+  });
 
   it("returns false when permissions are denied", async () => {
     (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({
@@ -102,9 +102,7 @@ describe("notificationService", () => {
 
     expect(result).toBe(false);
     expect(Notifications.setNotificationChannelAsync).not.toHaveBeenCalled();
-    expect(logSpy).toHaveBeenCalledWith(
-      "Notification permissions not granted",
-    );
+    expect(logSpy).toHaveBeenCalledWith("Notification permissions not granted");
   });
 
   // --- parseTime ---
@@ -156,29 +154,17 @@ describe("notificationService", () => {
 
     // Inside range
     expect(
-        notificationService.isDateInRange(
-        date,
-        "2025-01-01",
-        "2025-01-31",
-        ),
+      notificationService.isDateInRange(date, "2025-01-01", "2025-01-31"),
     ).toBe(true);
 
     // Start date after the date -> should be false
     expect(
-        notificationService.isDateInRange(
-        date,
-        "2025-02-01",
-        "2025-02-28",
-        ),
+      notificationService.isDateInRange(date, "2025-02-01", "2025-02-28"),
     ).toBe(false);
 
     // End date before the date -> should be false
     expect(
-        notificationService.isDateInRange(
-        date,
-        "2025-01-01",
-        "2025-01-09",
-        ),
+      notificationService.isDateInRange(date, "2025-01-01", "2025-01-09"),
     ).toBe(false);
   });
 
@@ -295,8 +281,8 @@ describe("notificationService", () => {
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalled();
     expect(result.length).toBeGreaterThan(0);
 
-    const trigger = (Notifications.scheduleNotificationAsync as jest.Mock)
-      .mock.calls[0][0].trigger;
+    const trigger = (Notifications.scheduleNotificationAsync as jest.Mock).mock
+      .calls[0][0].trigger;
     expect(trigger.type).toBe("timeInterval");
     expect(typeof trigger.seconds).toBe("number");
   });
@@ -305,11 +291,11 @@ describe("notificationService", () => {
 
   it("scheduleMedicationWithMultipleTimes uses 'Specific Days' when a subset of days is provided", async () => {
     const spy = jest
-        .spyOn(notificationService as any, "scheduleMedicationNotifications")
-        .mockResolvedValue(["id-1"]);
+      .spyOn(notificationService as any, "scheduleMedicationNotifications")
+      .mockResolvedValue(["id-1"]);
 
     const result =
-        await notificationService.scheduleMedicationWithMultipleTimes(
+      await notificationService.scheduleMedicationWithMultipleTimes(
         10,
         "MultiMed",
         "25 mg",
@@ -317,11 +303,12 @@ describe("notificationService", () => {
         ["8:00 AM"],
         ["Monday", "Wednesday"],
         "With food",
-        );
+      );
 
     // 👇 derive the real arg type from the function
-    type ScheduleMedArg =
-        Parameters<typeof notificationService.scheduleMedicationNotifications>[0];
+    type ScheduleMedArg = Parameters<
+      typeof notificationService.scheduleMedicationNotifications
+    >[0];
 
     const arg = spy.mock.calls[0][0] as ScheduleMedArg;
 
@@ -334,21 +321,22 @@ describe("notificationService", () => {
 
   it("scheduleMedicationWithMultipleTimes uses 'Daily' when no days provided", async () => {
     const spy = jest
-        .spyOn(notificationService as any, "scheduleMedicationNotifications")
-        .mockResolvedValue(["id-2"]);
+      .spyOn(notificationService as any, "scheduleMedicationNotifications")
+      .mockResolvedValue(["id-2"]);
 
     await notificationService.scheduleMedicationWithMultipleTimes(
-        11,
-        "DailyMultiMed",
-        "10 mg",
-        "1 tablet",
-        ["9:00 AM"],
-        undefined,
-        "With water",
+      11,
+      "DailyMultiMed",
+      "10 mg",
+      "1 tablet",
+      ["9:00 AM"],
+      undefined,
+      "With water",
     );
 
-    type ScheduleMedArg =
-        Parameters<typeof notificationService.scheduleMedicationNotifications>[0];
+    type ScheduleMedArg = Parameters<
+      typeof notificationService.scheduleMedicationNotifications
+    >[0];
 
     const arg = spy.mock.calls[0][0] as ScheduleMedArg;
 
@@ -357,45 +345,47 @@ describe("notificationService", () => {
     spy.mockRestore();
   });
 
-
   // --- cancel / get notifications ---
 
   it("cancelNotifications cancels each provided id", async () => {
-    (Notifications.cancelScheduledNotificationAsync as jest.Mock)
-      .mockResolvedValue(undefined);
+    (
+      Notifications.cancelScheduledNotificationAsync as jest.Mock
+    ).mockResolvedValue(undefined);
 
     await notificationService.cancelNotifications(["id-1", "id-2"]);
 
     expect(
       Notifications.cancelScheduledNotificationAsync,
     ).toHaveBeenCalledTimes(2);
-    expect(
-      Notifications.cancelScheduledNotificationAsync,
-    ).toHaveBeenCalledWith("id-1");
-    expect(
-      Notifications.cancelScheduledNotificationAsync,
-    ).toHaveBeenCalledWith("id-2");
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
+      "id-1",
+    );
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
+      "id-2",
+    );
   });
 
   it("cancelMedicationNotifications cancels only notifications for that medicationId", async () => {
-    (Notifications.getAllScheduledNotificationsAsync as jest.Mock)
-      .mockResolvedValue([
-        {
-          identifier: "a",
-          content: { data: { medicationId: 1 } },
-        },
-        {
-          identifier: "b",
-          content: { data: { medicationId: 2 } },
-        },
-        {
-          identifier: "c",
-          content: { data: { medicationId: 1 } },
-        },
-      ]);
+    (
+      Notifications.getAllScheduledNotificationsAsync as jest.Mock
+    ).mockResolvedValue([
+      {
+        identifier: "a",
+        content: { data: { medicationId: 1 } },
+      },
+      {
+        identifier: "b",
+        content: { data: { medicationId: 2 } },
+      },
+      {
+        identifier: "c",
+        content: { data: { medicationId: 1 } },
+      },
+    ]);
 
-    (Notifications.cancelScheduledNotificationAsync as jest.Mock)
-      .mockResolvedValue(undefined);
+    (
+      Notifications.cancelScheduledNotificationAsync as jest.Mock
+    ).mockResolvedValue(undefined);
 
     await notificationService.cancelMedicationNotifications(1);
 
@@ -409,17 +399,18 @@ describe("notificationService", () => {
   });
 
   it("getMedicationNotifications filters by medicationId", async () => {
-    (Notifications.getAllScheduledNotificationsAsync as jest.Mock)
-      .mockResolvedValue([
-        {
-          identifier: "a",
-          content: { data: { medicationId: 1 } },
-        },
-        {
-          identifier: "b",
-          content: { data: { medicationId: 2 } },
-        },
-      ]);
+    (
+      Notifications.getAllScheduledNotificationsAsync as jest.Mock
+    ).mockResolvedValue([
+      {
+        identifier: "a",
+        content: { data: { medicationId: 1 } },
+      },
+      {
+        identifier: "b",
+        content: { data: { medicationId: 2 } },
+      },
+    ]);
 
     const result = await notificationService.getMedicationNotifications(2);
 
@@ -428,25 +419,26 @@ describe("notificationService", () => {
   });
 
   it("getNotificationsSummary groups notifications by medication", async () => {
-    (Notifications.getAllScheduledNotificationsAsync as jest.Mock)
-      .mockResolvedValue([
-        {
-          identifier: "a",
-          content: { data: { medicationId: 1 } },
-        },
-        {
-          identifier: "b",
-          content: { data: { medicationId: "1" } },
-        },
-        {
-          identifier: "c",
-          content: { data: { medicationId: 2 } },
-        },
-        {
-          identifier: "d",
-          content: { data: { foo: "no med id" } },
-        },
-      ]);
+    (
+      Notifications.getAllScheduledNotificationsAsync as jest.Mock
+    ).mockResolvedValue([
+      {
+        identifier: "a",
+        content: { data: { medicationId: 1 } },
+      },
+      {
+        identifier: "b",
+        content: { data: { medicationId: "1" } },
+      },
+      {
+        identifier: "c",
+        content: { data: { medicationId: 2 } },
+      },
+      {
+        identifier: "d",
+        content: { data: { foo: "no med id" } },
+      },
+    ]);
 
     const summary = await notificationService.getNotificationsSummary();
 
@@ -463,17 +455,19 @@ describe("notificationService", () => {
     const receivedHandlers: any[] = [];
     const responseHandlers: any[] = [];
 
-    (Notifications.addNotificationReceivedListener as jest.Mock)
-      .mockImplementation((handler) => {
-        receivedHandlers.push(handler);
-        return { remove: receivedRemove };
-      });
+    (
+      Notifications.addNotificationReceivedListener as jest.Mock
+    ).mockImplementation((handler) => {
+      receivedHandlers.push(handler);
+      return { remove: receivedRemove };
+    });
 
-    (Notifications.addNotificationResponseReceivedListener as jest.Mock)
-      .mockImplementation((handler) => {
-        responseHandlers.push(handler);
-        return { remove: responseRemove };
-      });
+    (
+      Notifications.addNotificationResponseReceivedListener as jest.Mock
+    ).mockImplementation((handler) => {
+      responseHandlers.push(handler);
+      return { remove: responseRemove };
+    });
 
     const onReceived = jest.fn();
     const onResponse = jest.fn();
@@ -502,8 +496,9 @@ describe("notificationService", () => {
   // --- sendTestNotification ---
 
   it("sendTestNotification schedules a time-interval notification with correct content", async () => {
-    (Notifications.scheduleNotificationAsync as jest.Mock)
-        .mockResolvedValue("test-id");
+    (Notifications.scheduleNotificationAsync as jest.Mock).mockResolvedValue(
+      "test-id",
+    );
 
     await notificationService.sendTestNotification("SampleMed");
 
@@ -511,17 +506,23 @@ describe("notificationService", () => {
 
     // ⬇️ add a type here instead of leaving arg as unknown
     type SchedulePayload = {
-        content: { title: string; body?: string; data?: any };
-        trigger: { type: string; seconds?: number; hour?: number; minute?: number; weekday?: number };
+      content: { title: string; body?: string; data?: any };
+      trigger: {
+        type: string;
+        seconds?: number;
+        hour?: number;
+        minute?: number;
+        weekday?: number;
+      };
     };
 
-    const arg = (Notifications.scheduleNotificationAsync as jest.Mock)
-        .mock.calls[0][0] as SchedulePayload;  // <-- cast from unknown
+    const arg = (Notifications.scheduleNotificationAsync as jest.Mock).mock
+      .calls[0][0] as SchedulePayload; // <-- cast from unknown
 
     expect(arg.content.title).toContain("Test: Time for SampleMed");
     expect(arg.trigger).toEqual({
-        type: "timeInterval",
-        seconds: 2,
+      type: "timeInterval",
+      seconds: 2,
     });
   });
 });

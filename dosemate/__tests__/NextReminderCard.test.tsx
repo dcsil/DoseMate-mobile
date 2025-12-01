@@ -22,9 +22,7 @@ describe("NextReminderCard", () => {
     expect(getByText("Next reminder")).toBeTruthy();
 
     // Combined multiline medication text (name + strength + newline + time)
-    expect(
-      getByText(/Amoxicillin 50 mg\s*Today at 10:00 AM/),
-    ).toBeTruthy();
+    expect(getByText(/Amoxicillin 50 mg\s*Today at 10:00 AM/)).toBeTruthy();
 
     // View button text
     expect(getByText("View")).toBeTruthy();
@@ -43,9 +41,7 @@ describe("NextReminderCard", () => {
     expect(queryByText(/Amoxicillin 50 mg/)).toBeNull();
 
     // New combined text
-    expect(
-      getByText(/Ibuprofen 200 mg\s*Tomorrow at 9:00 PM/),
-    ).toBeTruthy();
+    expect(getByText(/Ibuprofen 200 mg\s*Tomorrow at 9:00 PM/)).toBeTruthy();
   });
 
   it("renders the notifications icon (from Ionicons mock)", () => {
@@ -108,9 +104,7 @@ describe("NextReminderCard", () => {
       />,
     );
 
-    expect(
-      getByText(/Amoxicillin 50 mg\s*Today at 10:00 AM/),
-    ).toBeTruthy();
+    expect(getByText(/Amoxicillin 50 mg\s*Today at 10:00 AM/)).toBeTruthy();
 
     rerender(
       <NextReminderCard
@@ -121,8 +115,6 @@ describe("NextReminderCard", () => {
     );
 
     expect(queryByText(/Amoxicillin 50 mg/)).toBeNull();
-    expect(
-      getByText(/Metformin 500 mg\s*Tonight at 8:30 PM/),
-    ).toBeTruthy();
+    expect(getByText(/Metformin 500 mg\s*Tonight at 8:30 PM/)).toBeTruthy();
   });
 });

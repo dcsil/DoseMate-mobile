@@ -149,10 +149,12 @@ beforeEach(() => {
   (notificationService.cancelAllNotifications as jest.Mock).mockResolvedValue(
     undefined,
   );
-  (notificationService.scheduleMedicationNotifications as jest.Mock)
-    .mockResolvedValue(undefined);
-  (notificationService.cancelMedicationNotifications as jest.Mock)
-    .mockResolvedValue(undefined);
+  (
+    notificationService.scheduleMedicationNotifications as jest.Mock
+  ).mockResolvedValue(undefined);
+  (
+    notificationService.cancelMedicationNotifications as jest.Mock
+  ).mockResolvedValue(undefined);
   (notificationService.getNotificationsSummary as jest.Mock).mockResolvedValue({
     total: 0,
   });
@@ -190,9 +192,7 @@ describe("MedicationsTab", () => {
 
     await waitFor(() => {
       expect(getByText("No medicine yet")).toBeTruthy();
-      expect(
-        getByText("Tap Add Medicine to get started"),
-      ).toBeTruthy();
+      expect(getByText("Tap Add Medicine to get started")).toBeTruthy();
     });
 
     expect(
@@ -359,8 +359,7 @@ describe("MedicationsTab", () => {
 
     const before = (globalAny.fetch as jest.Mock).mock.calls.filter(
       (c: any[]) =>
-        typeof c[0] === "string" &&
-        c[0].includes("/user/medications/"),
+        typeof c[0] === "string" && c[0].includes("/user/medications/"),
     ).length;
 
     fireEvent.press(getByText("Add Medicine"));
@@ -374,8 +373,7 @@ describe("MedicationsTab", () => {
     await waitFor(() => {
       const after = (globalAny.fetch as jest.Mock).mock.calls.filter(
         (c: any[]) =>
-          typeof c[0] === "string" &&
-          c[0].includes("/user/medications/"),
+          typeof c[0] === "string" && c[0].includes("/user/medications/"),
       ).length;
 
       expect(after).toBeGreaterThan(before);
@@ -523,9 +521,7 @@ describe("MedicationsTab", () => {
     // Success alert was shown
     expect(
       alertMock.mock.calls.some(
-        (c) =>
-          c[0] === "Success" &&
-          c[1] === "Medication deleted successfully",
+        (c) => c[0] === "Success" && c[1] === "Medication deleted successfully",
       ),
     ).toBe(true);
   });
@@ -587,9 +583,7 @@ describe("MedicationsTab", () => {
     await waitFor(() => {
       expect(
         alertMock.mock.calls.some(
-          (c) =>
-            c[0] === "Error" &&
-            c[1] === "Authentication token not found",
+          (c) => c[0] === "Error" && c[1] === "Authentication token not found",
         ),
       ).toBe(true);
     });
@@ -597,8 +591,7 @@ describe("MedicationsTab", () => {
     // Only the initial GET should have been made (no DELETE)
     const medFetchCalls = (globalAny.fetch as jest.Mock).mock.calls.filter(
       (c: any[]) =>
-        typeof c[0] === "string" &&
-        c[0].includes("/user/medications/"),
+        typeof c[0] === "string" && c[0].includes("/user/medications/"),
     );
     expect(medFetchCalls.length).toBe(1);
   });

@@ -1,10 +1,6 @@
 // __tests__/ProfileTab.test.tsx
 import React from "react";
-import {
-  render,
-  waitFor,
-  fireEvent,
-} from "@testing-library/react-native";
+import { render, waitFor, fireEvent } from "@testing-library/react-native";
 import { Alert } from "react-native";
 import ProfileTab from "@/components/main-navigation/tabs/ProfileTab";
 import * as SecureStore from "expo-secure-store";
@@ -177,9 +173,7 @@ describe("ProfileTab", () => {
 
     // Premium card
     expect(getByText("DoseMate Premium")).toBeTruthy();
-    expect(
-      getByText("Get advanced analytics and family sharing"),
-    ).toBeTruthy();
+    expect(getByText("Get advanced analytics and family sharing")).toBeTruthy();
     expect(getByText("Learn More")).toBeTruthy();
   });
 

@@ -1,10 +1,6 @@
 // __tests__/HomeTab.test.tsx
 import React from "react";
-import {
-  render,
-  waitFor,
-  fireEvent,
-} from "@testing-library/react-native";
+import { render, waitFor, fireEvent } from "@testing-library/react-native";
 import HomeTab from "@/components/main-navigation/tabs/HomeTab";
 import * as SecureStore from "expo-secure-store";
 import { Alert, Linking } from "react-native";
@@ -34,10 +30,7 @@ jest.mock("@/components/main-navigation/NextReminderCard", () => {
       <Text>{name}</Text>
       <Text>{strength}</Text>
       <Text>{time}</Text>
-      <TouchableOpacity
-        testID="next-reminder-view"
-        onPress={onViewPress}
-      >
+      <TouchableOpacity testID="next-reminder-view" onPress={onViewPress}>
         <Text>View</Text>
       </TouchableOpacity>
     </View>
@@ -75,10 +68,7 @@ jest.mock("@/components/main-navigation/OverviewChartCard", () => {
     <View testID="overview-chart-card">
       <Text>{timeRange}</Text>
       <Text>Points: {data?.length ?? 0}</Text>
-      <TouchableOpacity
-        testID="overview-view-details"
-        onPress={onViewDetails}
-      >
+      <TouchableOpacity testID="overview-view-details" onPress={onViewDetails}>
         <Text>View Details</Text>
       </TouchableOpacity>
     </View>
@@ -100,22 +90,12 @@ jest.mock("@/components/main-navigation/RecentActivityCard", () => {
 jest.mock("@/components/main-navigation/ShareHealthcareCard", () => {
   const React = require("react");
   const { View, Text, TouchableOpacity } = require("react-native");
-  return ({
-    onWeeklyReport,
-    onMonthlyReport,
-    onGenerateShare,
-  }: any) => (
+  return ({ onWeeklyReport, onMonthlyReport, onGenerateShare }: any) => (
     <View testID="share-healthcare-card">
-      <TouchableOpacity
-        testID="share-weekly-button"
-        onPress={onWeeklyReport}
-      >
+      <TouchableOpacity testID="share-weekly-button" onPress={onWeeklyReport}>
         <Text>Weekly</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        testID="share-monthly-button"
-        onPress={onMonthlyReport}
-      >
+      <TouchableOpacity testID="share-monthly-button" onPress={onMonthlyReport}>
         <Text>Monthly</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -324,9 +304,7 @@ describe("HomeTab", () => {
     const { getByText } = renderHomeTab();
 
     await waitFor(() => {
-      expect(
-        getByText("No medications scheduled for today"),
-      ).toBeTruthy();
+      expect(getByText("No medications scheduled for today")).toBeTruthy();
     });
 
     expect(
@@ -385,7 +363,7 @@ describe("HomeTab", () => {
 
     // Recent activity
     expect(getByTestId("recent-activity-card")).toBeTruthy();
-    
+
     const morningActivityNodes = getAllByText("Morning Med");
     expect(morningActivityNodes.length).toBeGreaterThan(0);
 
@@ -531,9 +509,7 @@ describe("HomeTab", () => {
     });
 
     expect(getByText("Welcome to DoseMate!")).toBeTruthy();
-    expect(
-      getByText("Start tracking your medications today"),
-    ).toBeTruthy();
+    expect(getByText("Start tracking your medications today")).toBeTruthy();
   });
 
   it("shows 'Great Streak' motivational card and 'You're on fire!' badge for 3-day streak", async () => {
@@ -853,9 +829,7 @@ describe("HomeTab", () => {
 
     expect(getByText("Let's Get Back on Track")).toBeTruthy();
     expect(getByText("Needs Attention")).toBeTruthy();
-    expect(
-      getByText(/3 medications still pending today/),
-    ).toBeTruthy();
+    expect(getByText(/3 medications still pending today/)).toBeTruthy();
   });
 
   it("handles weekly report generation: alerts and opens URL with token", async () => {
@@ -908,8 +882,7 @@ describe("HomeTab", () => {
     await waitFor(() => {
       expect(
         alertMock.mock.calls.some(
-          (c) =>
-            c[0] === "Error" && c[1] === "You're not logged in",
+          (c) => c[0] === "Error" && c[1] === "You're not logged in",
         ),
       ).toBe(true);
     });
@@ -932,9 +905,7 @@ describe("HomeTab", () => {
     await waitFor(() => {
       expect(
         alertMock.mock.calls.some(
-          (c) =>
-            c[0] === "Error" &&
-            c[1] === "Failed to generate report",
+          (c) => c[0] === "Error" && c[1] === "Failed to generate report",
         ),
       ).toBe(true);
     });
@@ -953,8 +924,7 @@ describe("HomeTab", () => {
     fireEvent.press(getByTestId("share-generate-button"));
 
     expect(alertMock).toHaveBeenCalled();
-    const lastCall =
-      alertMock.mock.calls[alertMock.mock.calls.length - 1];
+    const lastCall = alertMock.mock.calls[alertMock.mock.calls.length - 1];
     const [title, message, buttons] = lastCall as any;
 
     expect(title).toBe("Share Report");

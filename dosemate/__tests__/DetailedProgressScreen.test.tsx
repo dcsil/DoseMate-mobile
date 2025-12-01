@@ -79,7 +79,7 @@ describe("DetailedProgressScreen", () => {
     expect(getByText("Perfect Week")).toBeTruthy();
     expect(getByText("Early Bird")).toBeTruthy();
     expect(getByText("Consistency")).toBeTruthy();
-    
+
     const achievedBadges = getAllByText("Achieved");
     expect(achievedBadges.length).toBeGreaterThan(0);
 

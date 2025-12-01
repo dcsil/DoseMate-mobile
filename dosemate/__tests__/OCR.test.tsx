@@ -1,10 +1,6 @@
 // __tests__/OCR.test.tsx
 import React from "react";
-import {
-  render,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react-native";
+import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import MedicineOCRScanner from "@/components/main-navigation/OCR";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
@@ -131,9 +127,9 @@ describe("MedicineOCRScanner", () => {
     fireEvent.press(getByText("Take Photo"));
 
     await waitFor(() => {
-      expect(
-        ImagePicker.requestCameraPermissionsAsync,
-      ).toHaveBeenCalledTimes(1);
+      expect(ImagePicker.requestCameraPermissionsAsync).toHaveBeenCalledTimes(
+        1,
+      );
       expect(ImagePicker.launchCameraAsync).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledTimes(1);
     });
@@ -322,9 +318,7 @@ describe("MedicineOCRScanner", () => {
 
     await waitFor(() => {
       expect(getByText("Extracted Text:")).toBeTruthy();
-      expect(
-        getByText("AMOXICILLIN 500MG CAPSULES"),
-      ).toBeTruthy();
+      expect(getByText("AMOXICILLIN 500MG CAPSULES")).toBeTruthy();
     });
   });
 });
