@@ -6,8 +6,11 @@ import * as SecureStore from "expo-secure-store";
 import { notificationService } from "@/components/services/notificationService";
 
 // --- Router mock with shared mockReplace we can assert on ---
+
+declare const global: any;
+const globalAny: any = global as any;
+
 const mockReplace = jest.fn();
-const globalAny = global as any;
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({

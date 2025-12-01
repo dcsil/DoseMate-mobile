@@ -9,6 +9,8 @@ import { Alert } from "react-native";
 import ProfileTab from "@/components/main-navigation/tabs/ProfileTab";
 import * as SecureStore from "expo-secure-store";
 
+declare const global: any;
+
 jest.mock("@/config", () => ({
   BACKEND_BASE_URL: "https://example.com",
 }));

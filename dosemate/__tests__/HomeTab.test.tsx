@@ -9,7 +9,8 @@ import HomeTab from "@/components/main-navigation/tabs/HomeTab";
 import * as SecureStore from "expo-secure-store";
 import { Alert, Linking } from "react-native";
 
-const globalAny = global as any;
+declare const global: any;
+const globalAny: any = global as any;
 
 // --- Child component mocks to keep tests focused on logic/UI wiring ---
 
