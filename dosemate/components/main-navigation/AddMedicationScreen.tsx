@@ -1007,7 +1007,11 @@ export default function AddMedicationScreen({
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backButton}
+            testID="back-button"
+          >
             <Ionicons name="arrow-back" size={24} color="#2C2C2C" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
